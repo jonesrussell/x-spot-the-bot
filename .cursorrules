@@ -7,20 +7,24 @@ Core Project Requirements:
 - Use modern TypeScript/JavaScript features supported by Edge browser
 - Cross-browser compatibility considerations for future expansion
 
-Technical Implementation:
+Technical Implementation (Current):
 - Uses MutationObserver for real-time notification monitoring
 - Implements DOM parsing for data extraction
-- Uses local storage for pattern tracking
-- Follows strict TypeScript practices with full type checking
-- Optimizes for performance and minimal bundle size
-- Implements proper security practices and CSP requirements
 - Uses async/await patterns for all asynchronous operations
+- Follows strict TypeScript practices with full type checking
+
+Technical Implementation (Planned):
+- Local storage for pattern tracking and history
+- Security practices and CSP requirements
+- Response time analysis system
+- Hot reload configuration for development
+- Performance and bundle size optimization
 
 Current Focus:
 - Profile analysis (followers/following counts)
-- Response time patterns
-- Username characteristics
+- Username characteristics detection
 - Profile image analysis
+- Response time patterns (to be implemented)
 
 IMPORTANT LESSONS & MISTAKES TO AVOID:
 1. TypeScript Configuration:
@@ -65,6 +69,13 @@ When suggesting code:
 - Consider cross-browser compatibility implications
 - Optimize bundle size and performance
 - Use modern TypeScript/JavaScript features supported by Edge
+
+Immediate TODOs:
+- Add CSP headers to manifest.json
+- Implement local storage for pattern tracking
+- Add response time analysis
+- Configure hot reload for development
+- Set up proper build optimization
 
 Current challenges:
 - Node.js type definitions in build scripts
