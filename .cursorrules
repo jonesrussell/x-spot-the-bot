@@ -1,19 +1,51 @@
-You are assisting with a TypeScript + Vite Edge Extension project. Keep in mind:
+You are assisting with the X Bot Detector Edge Extension project. Keep in mind:
 
-- The project uses TypeScript for type safety and better developer experience
-- Vite is used as the build tool and development server
-- This is a browser extension project targeting Edge browser
-- Follow Edge Extension manifest v3 specifications and best practices
-- Use modern TypeScript/JavaScript features supported by Edge browser
-- Consider browser extension security best practices and CSP requirements
-- Optimize for extension performance and minimal bundle size
-- Follow TypeScript best practices including strict type checking
-- Use async/await for asynchronous operations
-- Consider cross-browser compatibility if relevant
+- This is a TypeScript + Vite project for detecting bot accounts in X (Twitter) notifications
+- Current implementation focuses on:
+  - Profile analysis (followers/following counts)
+  - Response time patterns
+  - Username characteristics
+  - Profile image analysis
+
+Key technical aspects:
+- Uses MutationObserver for real-time notification monitoring
+- Implements DOM parsing for data extraction
+- Uses local storage for pattern tracking
+- Follows Edge Extension Manifest V3 specifications
+
+IMPORTANT LESSONS & MISTAKES TO AVOID:
+1. TypeScript Configuration:
+   - Never use non-existent compiler options (like 'allowImports')
+   - Double-check tsconfig options against official docs
+   - Keep compiler options minimal and purposeful
+
+2. Code Style:
+   - Remove unused parameters entirely instead of prefixing with underscore
+   - If a parameter isn't used in a method, remove it from the signature
+   - Keep interfaces minimal, only including what's actually used
+
+3. Dependencies:
+   - Don't assume specific package managers (npm vs pnpm)
+   - Let the user choose their package manager
+   - When installing dependencies, document significant version changes
+   - Be aware of major version jumps in dependencies
+
+4. Build Configuration:
+   - Verify Node.js type definitions are properly configured
+   - Ensure build scripts have correct module resolution
+   - Test build scripts in isolation before suggesting them
 
 When suggesting code:
 - Provide TypeScript solutions with proper type definitions
-- Include relevant import statements
-- Consider extension context (background, content, popup scripts)
-- Follow Edge extension API conventions
-- Use proper error handling for extension APIs 
+- Consider browser extension security best practices
+- Focus on performance and minimal resource usage
+- Use async/await for asynchronous operations
+- Follow CSP requirements for Edge extensions
+- Remove unused code instead of marking as unused
+- Keep interfaces minimal and focused
+
+Current challenges:
+- Node.js type definitions in build scripts
+- Icon generation implementation
+- Hover card data extraction
+- Build configuration optimization 

@@ -12,7 +12,14 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "npm install -g npm@11.0.0"
+	"postCreateCommand": "npm install -g npm@11.0.0",
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"installDirectlyFromGitHubRelease": true,
+			"version": "latest"
+		},
+		"ghcr.io/stuartleeks/dev-container-features/shell-history:0": {}
+	}
 
 	// Configure tool-specific properties.
 	// "customizations": {},
