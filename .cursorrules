@@ -1,0 +1,19 @@
+You are assisting with a TypeScript + Vite Edge Extension project. Keep in mind:
+
+- The project uses TypeScript for type safety and better developer experience
+- Vite is used as the build tool and development server
+- This is a browser extension project targeting Edge browser
+- Follow Edge Extension manifest v3 specifications and best practices
+- Use modern TypeScript/JavaScript features supported by Edge browser
+- Consider browser extension security best practices and CSP requirements
+- Optimize for extension performance and minimal bundle size
+- Follow TypeScript best practices including strict type checking
+- Use async/await for asynchronous operations
+- Consider cross-browser compatibility if relevant
+
+When suggesting code:
+- Provide TypeScript solutions with proper type definitions
+- Include relevant import statements
+- Consider extension context (background, content, popup scripts)
+- Follow Edge extension API conventions
+- Use proper error handling for extension APIs 
