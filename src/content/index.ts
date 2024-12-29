@@ -53,7 +53,7 @@ class BotDetector {
     const botProbability = await this.analyzeBotProbability(profileData);
     
     if (botProbability > 0.7) { // Threshold for suspicious accounts
-      this.addBotWarningUI(notification, profileData, botProbability);
+      this.addBotWarningUI(notification, botProbability);
     }
   }
 
@@ -109,7 +109,6 @@ class BotDetector {
 
   private addBotWarningUI(
     notification: HTMLElement, 
-    profile: ProfileData, 
     probability: number
   ): void {
     const warning = document.createElement('div');
