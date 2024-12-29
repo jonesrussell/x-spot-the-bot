@@ -1,3 +1,5 @@
+import { StorageService } from '../services/storage';
+
 interface ProfileData {
   username: string;
   displayName: string;
@@ -11,9 +13,11 @@ interface ProfileData {
 class BotDetector {
   private observer: MutationObserver;
   private processedProfiles: Set<string> = new Set();
+  private storage: StorageService;
 
   constructor() {
     this.observer = new MutationObserver(this.handleMutations.bind(this));
+    this.storage = new StorageService();
     this.init();
   }
 
@@ -50,10 +54,27 @@ class BotDetector {
     if (!profileData || this.processedProfiles.has(profileData.username)) return;
 
     this.processedProfiles.add(profileData.username);
-    const botProbability = await this.analyzeBotProbability(profileData);
     
-    if (botProbability > 0.7) { // Threshold for suspicious accounts
-      this.addBotWarningUI(notification, botProbability);
+    // Analyze current interaction
+    const currentAnalysis = await this.analyzeBotProbability(profileData);
+    
+    // Record interaction and get historical analysis
+    await this.storage.recordInteraction(
+      profileData.username,
+      profileData.interactionTimestamp,
+      profileData.interactionType,
+      currentAnalysis.probability,
+      currentAnalysis.reasons
+    );
+
+    const responsePattern = await this.storage.analyzeResponsePattern(profileData.username);
+    
+    // Combine current and historical analysis
+    const finalProbability = (currentAnalysis.probability + responsePattern.confidence) / 2;
+    const allReasons = [...currentAnalysis.reasons, ...responsePattern.reasons];
+
+    if (finalProbability > 0.7) {
+      this.addBotWarningUI(notification, finalProbability, allReasons);
     }
   }
 
@@ -91,34 +112,57 @@ class BotDetector {
     return 'follow';
   }
 
-  private async analyzeBotProbability(profile: ProfileData): Promise<number> {
+  private async analyzeBotProbability(profile: ProfileData): Promise<{
+    probability: number;
+    reasons: string[];
+  }> {
     let probability = 0;
+    const reasons: string[] = [];
 
     // Basic heuristics
     if (profile.followersCount === 0 && profile.followingCount === 0) {
       probability += 0.4;
+      reasons.push('No followers or following');
     }
 
-    // TODO: Add more sophisticated analysis
-    // - Response time analysis
-    // - Profile image analysis
-    // - Username pattern analysis
+    // Username analysis
+    if (this.isGeneratedUsername(profile.username)) {
+      probability += 0.3;
+      reasons.push('Suspicious username pattern');
+    }
 
-    return probability;
+    return { probability, reasons };
+  }
+
+  private isGeneratedUsername(username: string): boolean {
+    // Check for patterns like random characters, numbers, or common bot patterns
+    const botPatterns = [
+      /^[a-z0-9]{8,}$/i, // Random alphanumeric
+      /[0-9]{4,}/, // Too many numbers
+      /(bot|spam|[0-9]+[a-z]+[0-9]+)/i, // Contains bot-like words or patterns
+    ];
+
+    return botPatterns.some(pattern => pattern.test(username));
   }
 
   private addBotWarningUI(
-    notification: HTMLElement, 
-    probability: number
+    notification: HTMLElement,
+    probability: number,
+    reasons: string[]
   ): void {
     const warning = document.createElement('div');
     warning.className = 'xbd-warning';
     warning.innerHTML = `
       <div class="xbd-warning-icon">🤖</div>
-      <div class="xbd-warning-text">Possible Bot (${Math.round(probability * 100)}%)</div>
+      <div class="xbd-warning-text">
+        Possible Bot (${Math.round(probability * 100)}%)
+        <div class="xbd-warning-reasons">
+          ${reasons.map(reason => `<div class="xbd-reason">• ${reason}</div>`).join('')}
+        </div>
+      </div>
     `;
 
-    // Add styles
+    // Enhanced styles
     const style = document.createElement('style');
     style.textContent = `
       .xbd-warning {
@@ -129,13 +173,25 @@ class BotDetector {
         padding: 4px 8px;
         border-radius: 4px;
         display: flex;
-        align-items: center;
+        align-items: start;
         gap: 4px;
         font-size: 12px;
         z-index: 1000;
       }
       .xbd-warning-icon {
         font-size: 14px;
+      }
+      .xbd-warning-reasons {
+        display: none;
+        margin-top: 4px;
+        color: #666;
+      }
+      .xbd-warning:hover .xbd-warning-reasons {
+        display: block;
+      }
+      .xbd-reason {
+        font-size: 11px;
+        line-height: 1.4;
       }
     `;
     document.head.appendChild(style);
