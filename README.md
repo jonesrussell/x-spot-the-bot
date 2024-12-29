@@ -14,7 +14,7 @@ A modern browser extension built with TypeScript and Vite, targeting Microsoft E
 
 - Node.js (v16 or higher)
 - Microsoft Edge browser
-- pnpm (recommended) or npm
+- npm
 
 ## Installation
 
@@ -26,14 +26,14 @@ cd <your-repo-name>
 
 2. Install dependencies:
 ```bash
-pnpm install
+npm install
 ```
 
 ## Development
 
 Start the development server:
 ```bash
-pnpm dev
+npm dev
 ```
 
 ### Loading the extension in Edge
@@ -49,7 +49,7 @@ The extension will automatically reload when you make changes.
 
 Build the extension:
 ```bash
-pnpm build
+npm build
 ```
 
 The built extension will be in the `dist` folder.
