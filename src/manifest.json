@@ -19,6 +19,10 @@
       "js": ["content.js"]
     }
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline'",
+    "sandbox": "script-src 'self'; object-src 'self'"
+  },
   "icons": {
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
