@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "X Bot Detector",
+  "name": "X Spot The Bot",
   "version": "1.0.0",
-  "description": "Identifies potential bot accounts in X (Twitter) notifications",
+  "description": "Identifies potential bot accounts in X (Twitter) notifications using behavioral analysis",
   "permissions": [
     "storage"
   ],

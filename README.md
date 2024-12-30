@@ -1,6 +1,6 @@
-# Edge Extension with TypeScript + Vite
+# X Spot The Bot - Edge Extension
 
-A modern browser extension built with TypeScript and Vite, targeting Microsoft Edge.
+A browser extension that helps identify potential bot accounts in X (Twitter) notifications by analyzing behavioral patterns, response times, and profile characteristics.
 
 ## Features
 
