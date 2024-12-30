@@ -1,6 +1,7 @@
 interface BotDetectionData {
   username: string;
   interactionTimes: number[];
+  interactionTypes: ('like' | 'reply' | 'repost' | 'follow')[];
   lastInteraction: number;
   botProbability: number;
   detectionReasons: string[];
@@ -27,15 +28,20 @@ export class StorageService {
     const profile = data[username] || {
       username,
       interactionTimes: [],
+      interactionTypes: [],
       lastInteraction: 0,
       botProbability: 0,
       detectionReasons: []
     };
 
-    // Add new interaction time
+    // Add new interaction time and type
     profile.interactionTimes.push(timestamp);
+    profile.interactionTypes.push(interactionType);
+
+    // Keep arrays in sync when trimming
     if (profile.interactionTimes.length > StorageService.MAX_INTERACTIONS) {
-      profile.interactionTimes.shift(); // Remove oldest
+      profile.interactionTimes.shift();
+      profile.interactionTypes.shift();
     }
 
     // Update profile data
@@ -74,6 +80,13 @@ export class StorageService {
     if (stdDev < 100) { // Very consistent timing
       botProbability += 0.3;
       reasons.push('Unnaturally consistent response pattern');
+    }
+
+    // New: Check interaction type patterns
+    const typePatterns = this.analyzeInteractionTypes(data.interactionTypes);
+    if (typePatterns.isSuspicious) {
+      botProbability += typePatterns.probability;
+      reasons.push(...typePatterns.reasons);
     }
 
     // Check for round-the-clock activity
@@ -140,5 +153,35 @@ export class StorageService {
   private calculateOverallProbability(historical: number, current: number): number {
     // Weighted average favoring recent detection
     return historical * 0.7 + current * 0.3;
+  }
+
+  private analyzeInteractionTypes(types: ('like' | 'reply' | 'repost' | 'follow')[]): {
+    isSuspicious: boolean;
+    probability: number;
+    reasons: string[];
+  } {
+    const reasons: string[] = [];
+    let probability = 0;
+
+    // Check if all interactions are of the same type
+    const uniqueTypes = new Set(types);
+    if (types.length >= 5 && uniqueTypes.size === 1) {
+      probability += 0.2;
+      reasons.push(`Suspicious pattern: Only ${types[0]} interactions`);
+    }
+
+    // Check for spam-like behavior (lots of likes/reposts with no replies)
+    const hasReplies = types.includes('reply');
+    const likeRepostRatio = types.filter(t => t === 'like' || t === 'repost').length / types.length;
+    if (!hasReplies && likeRepostRatio > 0.9 && types.length >= 5) {
+      probability += 0.3;
+      reasons.push('Suspicious pattern: No replies, only likes/reposts');
+    }
+
+    return {
+      isSuspicious: probability > 0,
+      probability,
+      reasons
+    };
   }
 } 
