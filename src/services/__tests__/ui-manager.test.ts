@@ -57,7 +57,7 @@ describe('UIManager', () => {
       expect(warning).toBeNull();
     });
 
-    it('should include detection reasons in tooltip', () => {
+    it('should include detection reasons in warning', () => {
       const analysis: BotAnalysis = {
         probability: 0.8,
         reasons: ['Suspicious username pattern', 'No followers']
@@ -65,10 +65,10 @@ describe('UIManager', () => {
 
       uiManager.addWarningIndicator(container, analysis);
 
-      const tooltip = container.querySelector('.xbd-tooltip');
-      expect(tooltip).not.toBeNull();
-      expect(tooltip?.textContent).toContain('Suspicious username pattern');
-      expect(tooltip?.textContent).toContain('No followers');
+      const reasons = container.querySelector('.xbd-warning-reasons');
+      expect(reasons).not.toBeNull();
+      expect(reasons?.textContent).toContain('Suspicious username pattern');
+      expect(reasons?.textContent).toContain('No followers');
     });
 
     it('should not add duplicate warnings', () => {
@@ -130,7 +130,8 @@ describe('UIManager', () => {
       expect(cssText).toContain('.xbd-warning');
       expect(cssText).toContain('.high-probability');
       expect(cssText).toContain('.medium-probability');
-      expect(cssText).toContain('.xbd-tooltip');
+      expect(cssText).toContain('.xbd-warning-reasons');
+      expect(cssText).toContain('.xbd-reason');
     });
   });
 }); 
