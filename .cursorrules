@@ -1,0 +1,143 @@
+Project: X Spot The Bot Edge Extension
+Description: A browser extension that identifies potential bot accounts in X (Twitter) notifications using behavioral analysis.
+
+IMPORTANT NOTES:
+- TypeScript module system: Use 'es2022' for module and target
+- TypeScript version: Using ~5.5.3 (latest version supported by @typescript-eslint)
+- Node.js compatibility: Tested with Node.js v22.12.0
+
+Source Code Requirements:
+1. TypeScript Standards:
+   - All source files must be TypeScript (.ts)
+   - No JavaScript (.js) files in src directory (generated during build)
+   - Use type-only imports for interfaces and types
+   - For string literal unions that need runtime checks:
+     * Use direct exports with 'as const'
+     * Add 'satisfies' for type validation
+     * Export standalone type guard functions
+     * Keep type imports separate from value imports
+   - Use private class fields (#) over private keyword
+   - Avoid enums in favor of const objects with 'as const'
+
+2. Modern JavaScript Features:
+   - Use modern array methods (map/filter/reduce)
+   - Use optional chaining and nullish coalescing
+   - Use template literal types where applicable
+   - Use ESM imports with .js extensions
+
+3. Type Safety Guidelines:
+   - Use type inference when types are clear
+   - Use type predicates for runtime type narrowing
+   - Use discriminated unions for pattern matching
+   - Use branded types for nominal typing
+   - Use readonly arrays and tuples where appropriate
+   - Use const assertions for object literals
+   - Use satisfies for object literal validation
+   - Ensure type safety across:
+     * Event handlers and DOM manipulation
+     * Chrome API calls and storage operations
+     * Message passing and configuration
+     * Testing and mocking
+     * Async operations and error handling
+
+Known Deprecation Warnings:
+- [DEP0180] fs.Stats constructor: Ignore (ts-node internal)
+- [DEP0040] punycode module: Ignore (Jest internal)
+
+Testing Configuration:
+- Jest with ESM support (--experimental-vm-modules)
+- Test environment: jsdom
+- File naming: *.test.ts in __tests__ directories
+- Mock implementations:
+  * Chrome storage API mocked globally
+  * Type-safe mock implementations for callbacks
+  * Avoid returning Promises in mocks when using callbacks
+  * Use helper functions to reduce test setup boilerplate
+- Coverage requirements:
+  * Unit tests for all services
+  * Integration tests for DOM operations
+  * Mock Chrome API calls
+  * Visual regression tests for UI
+  * Edge case coverage for data extraction
+
+Bot Detection Rules:
+- Probability threshold: >= 0.6 for high probability bots
+- Score components:
+  * No followers/following: 0.3
+  * Username patterns: up to 0.5 combined
+  * Display name similarity: 0.2
+- Maximum total score: 0.9
+- Suspicious patterns:
+  * Random alphanumeric (0.3): ^[a-z0-9]{8,}$
+  * Many numbers (0.2): [0-9]{4,}
+  * Bot keywords (0.3): bot|spam|[0-9]+[a-z]+[0-9]+
+  * Random suffix (0.2): [a-z]+[0-9]{4,}$
+  * Numeric suffix (0.2): [0-9]{4,}$
+  * Random letters (0.2): [A-Z]{2,}[0-9]+
+
+Project Structure:
+src/
+  ├── content/
+  │   └── index.ts           # Main content script with BotDetector
+  ├── services/
+  │   ├── dom-extractor.ts   # DOM operations and data extraction
+  │   ├── profile-analyzer.ts # Bot behavior analysis
+  │   ├── storage.ts         # Local storage management
+  │   └── ui-manager.ts      # UI elements and styling
+  ├── types/
+  │   └── profile.ts         # TypeScript interfaces and types
+  ├── icons/
+  │   └── generate-icons.ts  # Icon generation utilities
+  └── __tests__/            # Test files for each service
+
+Technical Requirements:
+- TypeScript with strict type checking
+- ESM modules with proper extensions
+- Vite for bundling
+- Edge extension APIs (chrome.* namespace)
+- MutationObserver for notifications
+- Rate limiting for API calls
+- Error boundaries for UI
+- Accessibility compliance (ARIA)
+
+Build Configuration:
+- tsconfig.json: ES2022, bundler moduleResolution
+- vite.config.ts: Content script bundling
+- package.json: ESM module type
+- jest.config.ts: ESM and TypeScript
+- jest.setup.ts: Global test setup
+
+Current Focus:
+- Profile analysis
+- DOM structure parsing
+- Local storage management
+- Real-time monitoring
+- Duplicate detection
+- Test coverage
+- UI consistency
+- Accessibility
+
+Coding Standards:
+- Use TypeScript interfaces
+- Follow SRP (Single Responsibility)
+- Debug logging: [XBot:Category]
+- Safe DOM operations
+- Edge extension best practices
+- Comprehensive testing
+- Error handling
+- Accessibility guidelines
+
+Dependencies:
+- typescript: ~5.5.3
+- vite: ^6.0.6
+- @types/chrome: ^0.0.287
+- @types/node: ^22.10.2
+- ts-node: ^10.9.2
+- @rollup/wasm-node: ^4.29.1
+- prettier: ^3.1.1
+- prettier-plugin-organize-imports: ^3.2.4
+- jest: ^29.7.0
+- jest-environment-jsdom: ^29.7.0
+- ts-jest: ^29.2.5
+- @types/jest: ^29.5.14
+- @testing-library/jest-dom: ^6.4.2 
