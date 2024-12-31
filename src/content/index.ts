@@ -132,7 +132,10 @@ export class BotDetector {
         reasons: analysis.reasons
       });
 
-      this.uiManager.addWarningIndicator(notification, analysis);
+      this.uiManager.addWarningIndicator(notification, {
+        probability: analysis.probability,
+        reasons: analysis.reasons
+      });
       await this.storageService.saveProfile(profileData);
     } else if (analysis.probability > 0) {
       console.debug('[XBot:Core] Low probability bot ignored', {

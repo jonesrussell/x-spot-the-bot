@@ -1,5 +1,5 @@
 export class UIManager {
-  addBotWarningUI(notification, probability, reasons) {
+  addWarningIndicator(notification, probability, reasons) {
     this.ensureStyles();
     const warning = document.createElement('div');
     warning.className = 'xbd-warning';
