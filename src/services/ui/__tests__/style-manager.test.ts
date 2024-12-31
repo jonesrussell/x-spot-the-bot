@@ -4,8 +4,16 @@ import { jest } from '@jest/globals';
 const mockPanelStyles = '.xbd-summary-panel { color: red; }';
 const mockIndicatorStyles = '.xbd-warning { color: blue; }';
 
-jest.mock('../styles/panel.css?inline', () => mockPanelStyles, { virtual: true });
-jest.mock('../styles/indicators.css?inline', () => mockIndicatorStyles, { virtual: true });
+// Mock the CSS imports before importing the StyleManager
+jest.mock('../styles/panel.css?inline', () => ({
+  __esModule: true,
+  default: mockPanelStyles
+}), { virtual: true });
+
+jest.mock('../styles/indicators.css?inline', () => ({
+  __esModule: true,
+  default: mockIndicatorStyles
+}), { virtual: true });
 
 import { StyleManager } from '../style-manager.js';
 
