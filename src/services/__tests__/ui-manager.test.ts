@@ -1,44 +1,44 @@
-import { jest } from '@jest/globals';
-import type { BotAnalysis } from '../../types/profile.js';
-import { UIManager } from '../ui-manager.js';
-
-// Mock components with virtual modules
+// Mock all the components and their methods
 jest.mock('../ui/components/summary-panel', () => ({
-  SummaryPanel: jest.fn().mockImplementation(() => ({
+  SummaryPanel: jest.fn(() => ({
     updateStats: jest.fn(),
     create: jest.fn(),
     updateTheme: jest.fn(),
     getElement: jest.fn()
   }))
-}), { virtual: true });
+}));
 
 jest.mock('../ui/components/warning-indicator', () => ({
-  WarningIndicator: jest.fn().mockImplementation(() => ({
+  WarningIndicator: jest.fn(() => ({
     add: jest.fn(),
     remove: jest.fn()
   }))
-}), { virtual: true });
+}));
 
-// Mock managers with virtual modules
 jest.mock('../ui/theme-manager', () => ({
-  ThemeManager: jest.fn().mockImplementation(() => ({
+  ThemeManager: jest.fn(() => ({
     onThemeChange: jest.fn(),
     isDarkMode: jest.fn()
   }))
-}), { virtual: true });
+}));
 
 jest.mock('../ui/style-manager', () => ({
-  StyleManager: jest.fn().mockImplementation(() => ({
+  StyleManager: jest.fn(() => ({
     injectStyles: jest.fn(),
     updateThemeVariables: jest.fn()
   }))
-}), { virtual: true });
+}));
+
+import { jest } from '@jest/globals';
+import type { BotAnalysis } from '../../types/profile.js';
+import { UIManager } from '../ui-manager.js';
 
 describe('UIManager', () => {
   let uiManager: UIManager;
   let container: HTMLElement;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     uiManager = new UIManager();
     container = document.createElement('div');
     container.setAttribute('data-testid', 'cellInnerDiv');
@@ -47,7 +47,6 @@ describe('UIManager', () => {
 
   afterEach(() => {
     document.body.innerHTML = '';
-    jest.clearAllMocks();
   });
 
   describe('addWarningIndicator', () => {
@@ -60,8 +59,9 @@ describe('UIManager', () => {
 
       uiManager.addWarningIndicator(container, analysis);
 
-      // Verify WarningIndicator.add was called with correct params
-      expect(uiManager['warningIndicator'].add).toHaveBeenCalledWith(container, analysis);
+      // Get the mock instance and verify the call
+      const warningIndicator = uiManager['warningIndicator'];
+      expect(warningIndicator.add).toHaveBeenCalledWith(container, analysis);
     });
   });
 
@@ -69,8 +69,9 @@ describe('UIManager', () => {
     it('should delegate to WarningIndicator', () => {
       uiManager.removeWarningIndicator(container);
 
-      // Verify WarningIndicator.remove was called with correct params
-      expect(uiManager['warningIndicator'].remove).toHaveBeenCalledWith(container);
+      // Get the mock instance and verify the call
+      const warningIndicator = uiManager['warningIndicator'];
+      expect(warningIndicator.remove).toHaveBeenCalledWith(container);
     });
   });
 
@@ -84,18 +85,19 @@ describe('UIManager', () => {
 
       uiManager.updatePanelStats(stats);
 
-      // Verify SummaryPanel.updateStats was called with correct params
-      expect(uiManager['summaryPanel'].updateStats).toHaveBeenCalledWith(stats);
+      // Get the mock instance and verify the call
+      const summaryPanel = uiManager['summaryPanel'];
+      expect(summaryPanel.updateStats).toHaveBeenCalledWith(stats);
     });
   });
 
   describe('initialization', () => {
     it('should set up theme handling', () => {
-      // Verify ThemeManager.onThemeChange was called
-      expect(uiManager['themeManager'].onThemeChange).toHaveBeenCalled();
-
-      // Verify StyleManager.injectStyles was called
-      expect(uiManager['styleManager'].injectStyles).toHaveBeenCalled();
+      // Get the mock instances and verify the calls
+      const themeManager = uiManager['themeManager'];
+      const styleManager = uiManager['styleManager'];
+      expect(themeManager.onThemeChange).toHaveBeenCalled();
+      expect(styleManager.injectStyles).toHaveBeenCalled();
     });
   });
 }); 
