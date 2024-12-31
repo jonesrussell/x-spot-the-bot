@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs';
 import { resolve } from 'path';
 
-const generateIcon = (size: number) => {
+const generateIcon = (size: number): string | undefined => {
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;

@@ -1,12 +1,13 @@
 import { jest } from '@jest/globals';
-import { StorageService } from '../storage.js';
-import { InteractionTypes, NotificationTypes } from '../../types/profile.js';
 import type { ProfileData } from '../../types/profile.js';
+import { InteractionTypes, NotificationTypes } from '../../types/profile.js';
+import { StorageService } from '../storage.js';
 
 interface StorageData {
   profiles: { [key: string]: ProfileData };
 }
 
+// eslint-disable-next-line no-unused-vars
 type StorageCallback = (data: StorageData) => void;
 type StorageSetCallback = () => void;
 

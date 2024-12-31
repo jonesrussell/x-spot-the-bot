@@ -1,7 +1,8 @@
-import { UIManager } from '../ui-manager.js';
+import { jest } from '@jest/globals';
 import type { BotAnalysis } from '../../types/profile.js';
+import { UIManager } from '../ui-manager.js';
 
-jest.mock('../ui/components/summary-panel.js', () => ({
+jest.mock('../ui/components/summary-panel', () => ({
   SummaryPanel: jest.fn().mockImplementation(() => ({
     updateStats: jest.fn(),
     create: jest.fn(),

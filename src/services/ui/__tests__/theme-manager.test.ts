@@ -3,12 +3,14 @@ import { ThemeManager } from '../theme-manager.js';
 
 describe('ThemeManager', () => {
   let themeManager: ThemeManager;
-  let mutationCallback: ((mutations: MutationRecord[]) => void) | null = null;
+  // eslint-disable-next-line no-unused-vars
+  let triggerMutation: (mutations: MutationRecord[]) => void;
 
   beforeEach(() => {
     // Mock MutationObserver
+    // eslint-disable-next-line no-unused-vars
     const mockObserver = jest.fn((callback: (mutations: MutationRecord[]) => void) => {
-      mutationCallback = callback;
+      triggerMutation = callback;
       return {
         observe: jest.fn(),
         disconnect: jest.fn()
@@ -43,7 +45,7 @@ describe('ThemeManager', () => {
 
       // Change to dark mode
       document.documentElement.setAttribute('data-color-mode', 'dark');
-      mutationCallback?.([{
+      triggerMutation?.([{
         type: 'attributes',
         attributeName: 'data-color-mode',
         target: document.documentElement
@@ -52,7 +54,7 @@ describe('ThemeManager', () => {
 
       // Change to light mode
       document.documentElement.setAttribute('data-color-mode', 'light');
-      mutationCallback?.([{
+      triggerMutation?.([{
         type: 'attributes',
         attributeName: 'data-color-mode',
         target: document.documentElement
@@ -74,7 +76,7 @@ describe('ThemeManager', () => {
       themeManager.onThemeChange(callback2);
 
       document.documentElement.setAttribute('data-color-mode', 'dark');
-      mutationCallback?.([{
+      triggerMutation?.([{
         type: 'attributes',
         attributeName: 'data-color-mode',
         target: document.documentElement
@@ -89,7 +91,7 @@ describe('ThemeManager', () => {
       callback.mockClear(); // Clear initial call
 
       document.documentElement.setAttribute('some-other-attr', 'value');
-      mutationCallback?.([{
+      triggerMutation?.([{
         type: 'attributes',
         attributeName: 'some-other-attr',
         target: document.documentElement

@@ -41,7 +41,9 @@ export class StorageService {
     return new Promise((resolve) => {
       chrome.storage.local.get([this.STORAGE_KEY], (result) => {
         resolve({
-          profiles: result[this.STORAGE_KEY] || {}
+          profiles: (typeof result === 'object' && result !== null && this.STORAGE_KEY in result) 
+            ? result[this.STORAGE_KEY] 
+            : {}
         });
       });
     });

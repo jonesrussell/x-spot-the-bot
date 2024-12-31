@@ -1,5 +1,5 @@
-import panelStyles from './styles/panel.css';
-import indicatorStyles from './styles/indicators.css';
+import indicatorStyles from './styles/indicators.css?inline';
+import panelStyles from './styles/panel.css?inline';
 
 export class StyleManager {
   private readonly CSS_ID = 'xbot-styles';
@@ -11,10 +11,10 @@ export class StyleManager {
     const styles = document.createElement('style');
     styles.id = this.CSS_ID;
     styles.setAttribute('data-xbot', 'true');
-    styles.textContent = `
-      ${panelStyles}
-      ${indicatorStyles}
-    `;
+    styles.textContent = [
+      panelStyles,
+      indicatorStyles
+    ].join('\n');
 
     document.head.appendChild(styles);
     this.stylesInjected = true;

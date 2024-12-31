@@ -1,7 +1,7 @@
-import { DOMExtractor } from '../dom-extractor.js';
 import { InteractionTypes } from '../../types/profile.js';
+import { DOMExtractor } from '../dom-extractor.js';
 
-describe('DOMExtractor', () => {
+describe('DOMExtractor', (): void => {
   let domExtractor: DOMExtractor;
 
   beforeEach(() => {
@@ -13,7 +13,7 @@ describe('DOMExtractor', () => {
     username?: string;
     text?: string;
     hasAvatar?: boolean;
-  }) {
+  }): HTMLElement {
     const cell = document.createElement('div');
     cell.setAttribute('data-testid', 'cellInnerDiv');
 

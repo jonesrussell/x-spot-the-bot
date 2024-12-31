@@ -22,7 +22,7 @@ export class BotDetector {
     this.init();
   }
 
-  private async init() {
+  private async init(): Promise<void> {
     const feed = await this.waitForNotificationsFeed();
     if (!feed) {
       console.debug('[XBot:Core] Could not find notifications feed after retries');
@@ -60,7 +60,7 @@ export class BotDetector {
     return this.waitForNotificationsFeed();
   }
 
-  private setupObserver(feed: HTMLElement) {
+  private setupObserver(feed: HTMLElement): void {
     this.observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
@@ -85,7 +85,7 @@ export class BotDetector {
     });
   }
 
-  private scanExistingNotifications(feed: HTMLElement) {
+  private scanExistingNotifications(feed: HTMLElement): void {
     console.debug('[XBot:Core] Scanning existing notifications...');
     const notifications = feed.querySelectorAll('[data-testid="cellInnerDiv"]');
     console.debug(`[XBot:Core] Found ${notifications.length} existing notifications`);
@@ -102,7 +102,7 @@ export class BotDetector {
     });
   }
 
-  private async processNotification(notification: HTMLElement) {
+  private async processNotification(notification: HTMLElement): Promise<void> {
     // Skip if already processed
     if (notification.hasAttribute('data-xbot-processed')) {
       return;

@@ -1,9 +1,10 @@
 import { jest } from '@jest/globals';
-import { StyleManager } from '../style-manager.js';
 
 // Mock CSS imports
-jest.mock('../styles/panel.css', () => '.xbd-summary-panel { color: red; }');
-jest.mock('../styles/indicators.css', () => '.xbd-warning { color: blue; }');
+jest.mock('../styles/panel.css', () => '.panel { color: red; }');
+jest.mock('../styles/indicators.css', () => '.indicator { color: blue; }');
+
+import { StyleManager } from '../style-manager.js';
 
 describe('StyleManager', () => {
   let styleManager: StyleManager;

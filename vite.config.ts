@@ -27,12 +27,21 @@ export default defineConfig({
         },
         generatedCode: {
           constBindings: true
+        },
+        assetFileNames: (assetInfo) => {
+          return assetInfo.name === 'style.css' ? 'content.css' : assetInfo.name ?? '[name][extname]';
         }
       }
     }
   },
   resolve: {
-    extensions: ['.ts', '.js']
+    extensions: ['.ts', '.js', '.css']
+  },
+  css: {
+    modules: {
+      localsConvention: 'camelCase',
+      generateScopedName: '[name]__[local]__[hash:base64:5]'
+    }
   },
   esbuild: {
     target: 'es2022',

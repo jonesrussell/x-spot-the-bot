@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 type ThemeChangeCallback = (isDarkMode: boolean) => void;
 
 export class ThemeManager {
@@ -13,6 +14,8 @@ export class ThemeManager {
 
   public onThemeChange(callback: ThemeChangeCallback): void {
     this.callbacks.push(callback);
+    // Call immediately with current theme
+    callback(this.isDarkMode());
   }
 
   private watchThemeChanges(): void {
