@@ -1,50 +1,84 @@
-import type { ProfileData } from '../types/profile.ts';
+import type { ProfileData } from '../types/profile.js';
 
 export class DOMExtractor {
   public extractProfileData(element: HTMLElement): ProfileData | null {
     try {
       if (!element || !(element instanceof HTMLElement)) {
         console.debug('DOMExtractor: Invalid element passed');
+        console.debug('Element:', element);
         return null;
       }
 
-      // Find the notification article inside the cell
-      const notificationEl = element.querySelector('article[data-testid="notification"]');
-      if (!notificationEl || !(notificationEl instanceof HTMLElement)) {
-        console.debug('DOMExtractor: No notification article found');
+      // Debug the notification cell structure
+      console.debug('DOMExtractor: Notification cell HTML:', element.outerHTML);
+
+      // Find the user cell - it's a div with data-testid="cellInnerDiv"
+      const cellInnerDiv = element.querySelector('div[data-testid="cellInnerDiv"]');
+      if (!cellInnerDiv || !(cellInnerDiv instanceof HTMLElement)) {
+        console.debug('DOMExtractor: No cell inner div found');
+        console.debug('Available data-testids:', 
+          Array.from(element.querySelectorAll('[data-testid]'))
+            .map(el => el.getAttribute('data-testid'))
+        );
         return null;
       }
 
-      // Find user avatars - they're in containers with data-testid="UserAvatar-Container-*"
-      const avatarContainers = element.querySelectorAll('div[data-testid^="UserAvatar-Container-"]');
-      if (!avatarContainers.length) {
-        console.debug('DOMExtractor: No avatar containers found');
+      console.debug('DOMExtractor: Cell inner div HTML:', cellInnerDiv.outerHTML);
+
+      // Find the user link - it's an anchor with dir="ltr" containing the username
+      const userLink = cellInnerDiv.querySelector('a[dir="ltr"]');
+      if (!userLink || !(userLink instanceof HTMLElement)) {
+        console.debug('DOMExtractor: No user link found');
+        console.debug('Available links:', 
+          Array.from(cellInnerDiv.querySelectorAll('a'))
+            .map(a => ({
+              href: a.getAttribute('href'),
+              dir: a.getAttribute('dir'),
+              text: a.textContent
+            }))
+        );
         return null;
       }
 
-      // Get the first avatar container's data-testid to extract username
-      const firstAvatarContainer = avatarContainers[0];
-      const username = firstAvatarContainer.getAttribute('data-testid')?.replace('UserAvatar-Container-', '');
+      console.debug('DOMExtractor: User link HTML:', userLink.outerHTML);
+
+      // Extract username from the link href
+      const username = userLink.getAttribute('href')?.replace('/', '') || '';
       if (!username) {
-        console.debug('DOMExtractor: Could not extract username from avatar container');
+        console.debug('DOMExtractor: Could not extract username from link');
+        console.debug('Link href:', userLink.getAttribute('href'));
         return null;
       }
 
-      // Find profile image inside the avatar container
-      const profileImg = firstAvatarContainer.querySelector('img[draggable="true"]');
+      // Get display name from the link text
+      const displayName = userLink.textContent?.trim() || username;
+
+      // Find profile image - it's an img inside a div[data-testid="UserAvatar"]
+      const avatarDiv = cellInnerDiv.querySelector('div[data-testid="UserAvatar"]');
+      if (!avatarDiv) {
+        console.debug('DOMExtractor: No avatar div found');
+        console.debug('Available data-testids in cell:', 
+          Array.from(cellInnerDiv.querySelectorAll('[data-testid]'))
+            .map(el => el.getAttribute('data-testid'))
+        );
+      }
+
+      const profileImg = avatarDiv?.querySelector('img');
       if (!profileImg || !(profileImg instanceof HTMLImageElement)) {
-        console.debug('DOMExtractor: No profile image found in avatar container');
+        console.debug('DOMExtractor: No profile image found');
+        if (avatarDiv) {
+          console.debug('Avatar div HTML:', avatarDiv.outerHTML);
+        }
         return null;
       }
+
+      console.debug('DOMExtractor: Profile image HTML:', profileImg.outerHTML);
       const profileImageUrl = profileImg.src;
 
-      // Find display name in the notification text
-      const userLinks = notificationEl.querySelectorAll('a[href^="/' + username + '"]');
-      const userLink = Array.from(userLinks).find(link => link.textContent?.includes(username));
-      const displayName = userLink?.textContent?.split('@')[0].trim() || username;
-
-      // Get interaction type
-      const interactionType = this.determineInteractionType(notificationEl);
+      // Get interaction type from notification text
+      const notificationText = cellInnerDiv.textContent?.toLowerCase() || '';
+      console.debug('DOMExtractor: Notification text:', notificationText);
+      const interactionType = this.determineInteractionType(notificationText);
 
       console.debug('DOMExtractor: Successfully extracted profile data', {
         username,
@@ -64,12 +98,12 @@ export class DOMExtractor {
       };
     } catch (error) {
       console.error('DOMExtractor: Error extracting profile data:', error);
+      console.error('Element that caused error:', element.outerHTML);
       return null;
     }
   }
 
-  private determineInteractionType(notification: HTMLElement): ProfileData['interactionType'] {
-    const text = notification.textContent?.toLowerCase() || '';
+  private determineInteractionType(text: string): ProfileData['interactionType'] {
     if (text.includes('liked')) return 'like';
     if (text.includes('replied')) return 'reply';
     if (text.includes('reposted')) return 'repost';

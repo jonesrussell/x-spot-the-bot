@@ -57,4 +57,13 @@ export class UIManager {
     document.head.appendChild(style);
     UIManager.styleAdded = true;
   }
+
+  public showWarning(element: HTMLElement, analysis: { probability: number; reasons: string[] }): void {
+    // TODO: Implement warning UI
+    console.debug('UIManager: Would show warning for element', {
+      element,
+      probability: analysis.probability,
+      reasons: analysis.reasons
+    });
+  }
 }

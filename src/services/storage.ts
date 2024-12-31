@@ -1,3 +1,5 @@
+import type { ProfileData } from '../types/profile.js';
+
 interface BotDetectionData {
   username: string;
   interactionTimes: number[];
@@ -187,5 +189,10 @@ export class StorageService {
       probability,
       reasons,
     };
+  }
+
+  public async recordSuspiciousProfile(profile: ProfileData): Promise<void> {
+    // TODO: Implement storage
+    console.debug('StorageService: Would record suspicious profile', profile);
   }
 }
