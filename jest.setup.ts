@@ -26,6 +26,8 @@ mockChromeStorage.local.get.mockImplementation((keys, callback) => {
 });
 
 mockChromeStorage.local.set.mockImplementation((items, callback) => {
+  // Store the items in memory for testing
+  Object.assign(mockChromeStorage.local, items);
   if (callback) {
     callback();
   }

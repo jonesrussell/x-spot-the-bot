@@ -28,6 +28,7 @@
   "devDependencies": {
     "@eslint/js": "^8.57.0",
     "@rollup/wasm-node": "^4.29.1",
+    "@testing-library/jest-dom": "^6.6.3",
     "@types/chrome": "^0.0.287",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.2",
