@@ -12,8 +12,15 @@ Source Code Requirements:
    - No JavaScript (.js) files in src directory
    - JavaScript files are generated during build
    - Use type-only imports for interfaces and types
-   - Use const enums for better runtime performance
-   - Prefer satisfies operator over type assertions
+   - Use const enums only for internal flags/states that:
+     * Are truly constant and never need runtime checking
+     * Don't participate in type predicates or type guards
+     * Don't need type assertions or type narrowing
+   - For string literal unions that need runtime checks:
+     * Use a Values namespace object for bundling
+     * Add 'as const' to the namespace object
+     * Include type predicates in Values._internal
+     * Re-export individual constants for convenience
    - Use private class fields (#) over private keyword
 
 2. Modern JavaScript Features:
@@ -23,12 +30,12 @@ Source Code Requirements:
 
 3. Type Safety Guidelines:
    - Use type inference when types are clear
-   - Use type predicates for type narrowing
-   - Use discriminated unions and exhaustive type checking
-   - Use branded types for enhanced type safety
+   - Use type predicates for runtime type narrowing
+   - Use discriminated unions for pattern matching
+   - Use branded types for nominal typing
    - Use readonly arrays and tuples where appropriate
    - Use const assertions for literal types
-   - Implement proper type guards and narrowing
+   - Use satisfies for object literal validation
    - Ensure type safety across:
      * Event handlers and DOM manipulation
      * Chrome API calls and storage operations
