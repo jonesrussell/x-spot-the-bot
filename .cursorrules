@@ -3,11 +3,12 @@ Description: A browser extension that identifies potential bot accounts in X (Tw
 
 IMPORTANT NOTES:
 - TypeScript module system: Use 'es2022' (newest concrete version as of 2024, despite it being 2024) instead of 'esnext' or specific node versions
+- TypeScript version: Using 5.7.2 - check for newer versions
 - Node.js compatibility: Tested with Node.js v22.12.0
 - Known deprecation warnings:
-  - [DEP0180] fs.Stats constructor is deprecated
-  - Use fs.readdir with { withFileTypes: true } to avoid fs.Stats
-  - Handle mkdir EEXIST errors with .catch(() => {})
+  - [DEP0180] fs.Stats constructor is deprecated (from ts-node's ESM resolver)
+  - Not our code - it's in ts-node/dist-raw/node-internal-modules-esm-resolve.js
+  - Can be ignored as it's a ts-node internal issue
 
 Core Project Structure:
 - src/
