@@ -1,22 +1,22 @@
 // Type definitions
-export const enum InteractionTypes {
-  Like = 'like',
-  Reply = 'reply',
-  Repost = 'repost',
-  Follow = 'follow'
-}
+export type InteractionType = 'like' | 'reply' | 'repost' | 'follow';
+export type NotificationType = 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
 
-export const enum NotificationTypes {
-  UserInteraction = 'user_interaction',
-  PinnedPost = 'pinned_post',
-  Trending = 'trending',
-  CommunityPost = 'community_post',
-  MultiUser = 'multi_user'
-}
+// Values
+export const InteractionTypes = {
+  Like: 'like' as InteractionType,
+  Reply: 'reply' as InteractionType,
+  Repost: 'repost' as InteractionType,
+  Follow: 'follow' as InteractionType
+};
 
-// Types
-export type InteractionType = InteractionTypes;
-export type NotificationType = NotificationTypes;
+export const NotificationTypes = {
+  UserInteraction: 'user_interaction' as NotificationType,
+  PinnedPost: 'pinned_post' as NotificationType,
+  Trending: 'trending' as NotificationType,
+  CommunityPost: 'community_post' as NotificationType,
+  MultiUser: 'multi_user' as NotificationType
+};
 
 // Interfaces
 export interface ProfileData {

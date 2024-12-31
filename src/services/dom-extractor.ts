@@ -7,10 +7,14 @@ interface NotificationData {
   users?: ProfileData[];
 }
 
-type UserNotificationType = NotificationTypes.UserInteraction | NotificationTypes.MultiUser;
+type UserNotificationType = Extract<NotificationType, 'user_interaction' | 'multi_user'>;
 
 interface UserProfileData extends Omit<ProfileData, 'notificationType'> {
   notificationType: UserNotificationType;
+}
+
+function isUserNotificationType(type: NotificationType): type is UserNotificationType {
+  return type === 'user_interaction' || type === 'multi_user';
 }
 
 export class DOMExtractor {
@@ -136,6 +140,10 @@ export class DOMExtractor {
         const notificationType = isMultiUser 
           ? NotificationTypes.MultiUser 
           : NotificationTypes.UserInteraction;
+
+        if (!isUserNotificationType(notificationType)) {
+          return null;
+        }
 
         return {
           username,
