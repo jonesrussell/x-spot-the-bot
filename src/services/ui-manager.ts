@@ -1,12 +1,16 @@
 export class UIManager {
   private static styleAdded = false;
 
-  public addBotWarningUI(notification: HTMLElement, probability: number, reasons: string[]): void {
+  public showWarning(element: HTMLElement, analysis: { probability: number; reasons: string[] }): void {
+    this.addBotWarningUI(element, analysis.probability, analysis.reasons);
+  }
+
+  private addBotWarningUI(element: HTMLElement, probability: number, reasons: string[]): void {
     this.ensureStyles();
 
-    const warning = document.createElement('div');
-    warning.className = 'xbd-warning';
-    warning.innerHTML = `
+    const warningDiv = document.createElement('div');
+    warningDiv.className = 'xbd-warning';
+    warningDiv.innerHTML = `
       <div class="xbd-warning-icon">🤖</div>
       <div class="xbd-warning-text">
         Possible Bot (${Math.round(probability * 100)}%)
@@ -16,8 +20,8 @@ export class UIManager {
       </div>
     `;
 
-    notification.style.position = 'relative';
-    notification.appendChild(warning);
+    element.style.position = 'relative';
+    element.appendChild(warningDiv);
   }
 
   private ensureStyles(): void {
@@ -54,16 +58,8 @@ export class UIManager {
         line-height: 1.4;
       }
     `;
+
     document.head.appendChild(style);
     UIManager.styleAdded = true;
-  }
-
-  public showWarning(element: HTMLElement, analysis: { probability: number; reasons: string[] }): void {
-    // TODO: Implement warning UI
-    console.debug('UIManager: Would show warning for element', {
-      element,
-      probability: analysis.probability,
-      reasons: analysis.reasons
-    });
   }
 }
