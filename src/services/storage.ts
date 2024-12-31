@@ -18,7 +18,7 @@ export class StorageService {
   }
 
   async recordInteraction(
-    username: string, 
+    username: string,
     timestamp: number,
     interactionType: 'like' | 'reply' | 'repost' | 'follow',
     botProbability: number,
@@ -31,7 +31,7 @@ export class StorageService {
       interactionTypes: [],
       lastInteraction: 0,
       botProbability: 0,
-      detectionReasons: []
+      detectionReasons: [],
     };
 
     // Add new interaction time and type
@@ -46,7 +46,10 @@ export class StorageService {
 
     // Update profile data
     profile.lastInteraction = timestamp;
-    profile.botProbability = this.calculateOverallProbability(profile.botProbability, botProbability);
+    profile.botProbability = this.calculateOverallProbability(
+      profile.botProbability,
+      botProbability
+    );
     profile.detectionReasons = [...new Set([...profile.detectionReasons, ...reasons])];
 
     data[username] = profile;
@@ -77,7 +80,8 @@ export class StorageService {
     }
 
     // Check for unnaturally consistent intervals
-    if (stdDev < 100) { // Very consistent timing
+    if (stdDev < 100) {
+      // Very consistent timing
       botProbability += 0.3;
       reasons.push('Unnaturally consistent response pattern');
     }
@@ -99,13 +103,13 @@ export class StorageService {
     return {
       isBot: botProbability > 0.7,
       confidence: botProbability,
-      reasons
+      reasons,
     };
   }
 
   private async getAllData(): Promise<Record<string, BotDetectionData>> {
-    return new Promise((resolve) => {
-      chrome.storage.local.get(StorageService.STORAGE_KEY, (result) => {
+    return new Promise(resolve => {
+      chrome.storage.local.get(StorageService.STORAGE_KEY, result => {
         resolve(result[StorageService.STORAGE_KEY] || {});
       });
     });
@@ -118,7 +122,7 @@ export class StorageService {
       const sortedByLastInteraction = usernames
         .sort((a, b) => data[b].lastInteraction - data[a].lastInteraction)
         .slice(0, StorageService.MAX_STORED_PROFILES);
-      
+
       const prunedData: Record<string, BotDetectionData> = {};
       sortedByLastInteraction.forEach(username => {
         prunedData[username] = data[username];
@@ -126,7 +130,7 @@ export class StorageService {
       data = prunedData;
     }
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       chrome.storage.local.set({ [StorageService.STORAGE_KEY]: data }, resolve);
     });
   }
@@ -146,7 +150,7 @@ export class StorageService {
     const hours = new Set(times.map(t => new Date(t).getHours()));
     const activeHours = hours.size;
     return {
-      active24h: activeHours > 20 // Active in more than 20 hours suggests 24/7 operation
+      active24h: activeHours > 20, // Active in more than 20 hours suggests 24/7 operation
     };
   }
 
@@ -181,7 +185,7 @@ export class StorageService {
     return {
       isSuspicious: probability > 0,
       probability,
-      reasons
+      reasons,
     };
   }
-} 
+}

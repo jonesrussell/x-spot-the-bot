@@ -4,35 +4,25 @@ import { dirname, resolve } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const rootDir = resolve(__dirname, '..');
 
-const srcDir = resolve(__dirname, '../src');
-const distDir = resolve(__dirname, '../dist');
-const iconDir = resolve(distDir, 'icons');
-
-async function build() {
-  // Create directories
-  await mkdir(distDir, { recursive: true });
-  await mkdir(iconDir, { recursive: true });
-
-  // Copy manifest
-  await copyFile(
-    resolve(srcDir, 'manifest.json'),
-    resolve(distDir, 'manifest.json')
-  );
-
-  // Copy icons (assuming they exist)
+async function copyFiles() {
   try {
+    // Ensure dist directory exists
+    await mkdir(resolve(rootDir, 'dist'), { recursive: true });
+    await mkdir(resolve(rootDir, 'dist/icons'), { recursive: true });
+
+    // Copy manifest
     await copyFile(
-      resolve(srcDir, 'icons/icon48.png'),
-      resolve(distDir, 'icons/icon48.png')
+      resolve(rootDir, 'src/manifest.json'),
+      resolve(rootDir, 'dist/manifest.json')
     );
-    await copyFile(
-      resolve(srcDir, 'icons/icon128.png'),
-      resolve(distDir, 'icons/icon128.png')
-    );
+
+    console.log('✓ Files copied successfully');
   } catch (error) {
-    console.warn('Icons not found, skipping...');
+    console.error('Error copying files:', error);
+    process.exit(1);
   }
 }
 
-build().catch(console.error); 
+copyFiles(); 

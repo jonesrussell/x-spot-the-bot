@@ -3,28 +3,19 @@
   "name": "X Spot The Bot",
   "version": "1.0.0",
   "description": "Identifies potential bot accounts in X (Twitter) notifications using behavioral analysis",
-  "permissions": [
-    "storage"
-  ],
-  "host_permissions": [
-    "https://x.com/*",
-    "https://twitter.com/*"
-  ],
+  "permissions": ["storage"],
+  "host_permissions": ["https://x.com/*", "https://twitter.com/*"],
   "content_scripts": [
     {
-      "matches": [
-        "https://x.com/notifications*",
-        "https://twitter.com/notifications*"
-      ],
+      "matches": ["https://x.com/notifications*", "https://twitter.com/notifications*"],
       "js": ["content.js"]
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline'",
-    "sandbox": "script-src 'self'; object-src 'self'"
+    "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "icons": {
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   }
-} 
+}

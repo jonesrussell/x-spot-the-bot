@@ -1,216 +1,154 @@
 import { StorageService } from '../services/storage.js';
-
-interface ProfileData {
-  username: string;
-  displayName: string;
-  profileImageUrl: string;
-  followersCount: number;
-  followingCount: number;
-  interactionTimestamp: number;
-  interactionType: 'like' | 'reply' | 'repost' | 'follow';
-}
+import { ProfileAnalyzer } from '../services/profile-analyzer.js';
+import { DOMExtractor } from '../services/dom-extractor.js';
+import { UIManager } from '../services/ui-manager.js';
 
 class BotDetector {
   private observer: MutationObserver;
   private processedProfiles: Set<string> = new Set();
   private storage: StorageService;
+  private analyzer: ProfileAnalyzer;
+  private extractor: DOMExtractor;
+  private uiManager: UIManager;
 
   constructor() {
     this.observer = new MutationObserver(this.handleMutations.bind(this));
     this.storage = new StorageService();
+    this.analyzer = new ProfileAnalyzer();
+    this.extractor = new DOMExtractor();
+    this.uiManager = new UIManager();
     this.init();
   }
 
   private init(): void {
-    // Start observing the notifications feed
-    const feed = document.querySelector('[data-testid="primaryColumn"]');
-    if (feed) {
-      this.observer.observe(feed, {
-        childList: true,
-        subtree: true,
-      });
-    }
+    console.debug('BotDetector: Initializing...');
+    const initObserver = () => {
+      console.debug('BotDetector: Looking for notifications feed...');
+      const feed = document.querySelector('[data-testid="primaryColumn"]');
+      if (feed && feed instanceof HTMLElement) {
+        console.debug('BotDetector: Found notifications feed, starting observer');
+        this.observer.observe(feed, {
+          childList: true,
+          subtree: true,
+        });
+        this.scanExistingNotifications();
+      } else {
+        console.debug('BotDetector: Feed not found, retrying in 1s');
+        setTimeout(initObserver, 1000);
+      }
+    };
 
-    // Initial scan of existing notifications
-    this.scanExistingNotifications();
+    initObserver();
   }
 
   private async handleMutations(mutations: MutationRecord[]): Promise<void> {
-    for (const mutation of mutations) {
-      const nodes = Array.from(mutation.addedNodes);
-      for (const node of nodes) {
-        if (node instanceof HTMLElement) {
-          await this.processNotification(node);
+    try {
+      for (const mutation of mutations) {
+        if (!mutation || !mutation.addedNodes) continue;
+
+        // Process only if we have added nodes
+        const nodes = Array.from(mutation.addedNodes);
+        for (const node of nodes) {
+          if (node instanceof HTMLElement) {
+            // Check if this is a notification cell or contains one
+            const notificationCell = node.matches('div[data-testid="cellInnerDiv"]')
+              ? node
+              : node.querySelector('div[data-testid="cellInnerDiv"]');
+
+            if (notificationCell instanceof HTMLElement) {
+              console.debug('BotDetector: Found new notification cell');
+              await this.processNotification(notificationCell);
+            }
+          }
         }
       }
+    } catch (error) {
+      console.error('BotDetector: Error handling mutations:', error);
     }
   }
 
   private async processNotification(element: HTMLElement): Promise<void> {
-    const notification = element.closest('[data-testid="notification"]');
-    if (!notification || !(notification instanceof HTMLElement)) return;
-
-    const profileData = this.extractProfileData(notification);
-    if (!profileData || this.processedProfiles.has(profileData.username)) return;
-
-    this.processedProfiles.add(profileData.username);
-    
-    // Analyze current interaction
-    const currentAnalysis = await this.analyzeBotProbability(profileData);
-    
-    // Record interaction and get historical analysis
-    await this.storage.recordInteraction(
-      profileData.username,
-      profileData.interactionTimestamp,
-      profileData.interactionType,
-      currentAnalysis.probability,
-      currentAnalysis.reasons
-    );
-
-    const responsePattern = await this.storage.analyzeResponsePattern(profileData.username);
-    
-    // Combine current and historical analysis
-    const finalProbability = (currentAnalysis.probability + responsePattern.confidence) / 2;
-    const allReasons = [...currentAnalysis.reasons, ...responsePattern.reasons];
-
-    if (finalProbability > 0.7) {
-      this.addBotWarningUI(notification, finalProbability, allReasons);
-    }
-  }
-
-  private extractProfileData(notification: HTMLElement): ProfileData | null {
     try {
-      const username = notification.querySelector('[data-testid="User-Name"]')?.textContent?.trim() || '';
-      const profileImg = notification.querySelector('img[draggable="true"]') as HTMLImageElement;
-      const profileImageUrl = profileImg?.src || '';
-      
-      // Extract follower/following counts when available
-      // Note: These might need to be extracted from the hover card when it appears
-      const followersCount = 0; // TODO: Implement extraction
-      const followingCount = 0; // TODO: Implement extraction
+      if (!element || !(element instanceof HTMLElement)) {
+        console.debug('BotDetector: Invalid element passed to processNotification');
+        return;
+      }
 
-      return {
-        username,
-        displayName: username.split('@')[0],
-        profileImageUrl,
-        followersCount,
-        followingCount,
-        interactionTimestamp: Date.now(),
-        interactionType: this.determineInteractionType(notification)
-      };
+      // We already have the notification cell, no need to search for it again
+      const profileData = this.extractor.extractProfileData(element);
+      if (!profileData) {
+        console.debug('BotDetector: Could not extract profile data');
+        return;
+      }
+
+      if (this.processedProfiles.has(profileData.username)) {
+        console.debug('BotDetector: Profile already processed:', profileData.username);
+        return;
+      }
+
+      console.debug('BotDetector: Processing new profile:', profileData.username);
+      this.processedProfiles.add(profileData.username);
+
+      // Analyze current interaction
+      const currentAnalysis = await this.analyzer.analyzeBotProbability(profileData);
+
+      // Record interaction and get historical analysis
+      await this.storage.recordInteraction(
+        profileData.username,
+        profileData.interactionTimestamp,
+        profileData.interactionType,
+        currentAnalysis.probability,
+        currentAnalysis.reasons
+      );
+
+      const responsePattern = await this.storage.analyzeResponsePattern(profileData.username);
+
+      // Combine current and historical analysis
+      const finalProbability = (currentAnalysis.probability + responsePattern.confidence) / 2;
+      const allReasons = [...currentAnalysis.reasons, ...responsePattern.reasons];
+
+      if (finalProbability > 0.7) {
+        console.debug('BotDetector: Adding warning UI for:', profileData.username);
+        this.uiManager.addBotWarningUI(element, finalProbability, allReasons);
+      }
     } catch (error) {
-      console.error('Error extracting profile data:', error);
-      return null;
+      console.error('BotDetector: Error processing notification:', error);
     }
-  }
-
-  private determineInteractionType(notification: HTMLElement): ProfileData['interactionType'] {
-    const text = notification.textContent?.toLowerCase() || '';
-    if (text.includes('liked')) return 'like';
-    if (text.includes('replied')) return 'reply';
-    if (text.includes('reposted')) return 'repost';
-    return 'follow';
-  }
-
-  private async analyzeBotProbability(profile: ProfileData): Promise<{
-    probability: number;
-    reasons: string[];
-  }> {
-    let probability = 0;
-    const reasons: string[] = [];
-
-    // Basic heuristics
-    if (profile.followersCount === 0 && profile.followingCount === 0) {
-      probability += 0.4;
-      reasons.push('No followers or following');
-    }
-
-    // Username analysis
-    if (this.isGeneratedUsername(profile.username)) {
-      probability += 0.3;
-      reasons.push('Suspicious username pattern');
-    }
-
-    return { probability, reasons };
-  }
-
-  private isGeneratedUsername(username: string): boolean {
-    // Check for patterns like random characters, numbers, or common bot patterns
-    const botPatterns = [
-      /^[a-z0-9]{8,}$/i, // Random alphanumeric
-      /[0-9]{4,}/, // Too many numbers
-      /(bot|spam|[0-9]+[a-z]+[0-9]+)/i, // Contains bot-like words or patterns
-    ];
-
-    return botPatterns.some(pattern => pattern.test(username));
-  }
-
-  private addBotWarningUI(
-    notification: HTMLElement,
-    probability: number,
-    reasons: string[]
-  ): void {
-    const warning = document.createElement('div');
-    warning.className = 'xbd-warning';
-    warning.innerHTML = `
-      <div class="xbd-warning-icon">🤖</div>
-      <div class="xbd-warning-text">
-        Possible Bot (${Math.round(probability * 100)}%)
-        <div class="xbd-warning-reasons">
-          ${reasons.map(reason => `<div class="xbd-reason">• ${reason}</div>`).join('')}
-        </div>
-      </div>
-    `;
-
-    // Enhanced styles
-    const style = document.createElement('style');
-    style.textContent = `
-      .xbd-warning {
-        position: absolute;
-        top: 0;
-        right: 0;
-        background: rgba(255, 0, 0, 0.1);
-        padding: 4px 8px;
-        border-radius: 4px;
-        display: flex;
-        align-items: start;
-        gap: 4px;
-        font-size: 12px;
-        z-index: 1000;
-      }
-      .xbd-warning-icon {
-        font-size: 14px;
-      }
-      .xbd-warning-reasons {
-        display: none;
-        margin-top: 4px;
-        color: #666;
-      }
-      .xbd-warning:hover .xbd-warning-reasons {
-        display: block;
-      }
-      .xbd-reason {
-        font-size: 11px;
-        line-height: 1.4;
-      }
-    `;
-    document.head.appendChild(style);
-
-    notification.style.position = 'relative';
-    notification.appendChild(warning);
   }
 
   private scanExistingNotifications(): void {
-    const notifications = document.querySelectorAll('[data-testid="notification"]');
+    console.debug('BotDetector: Scanning existing notifications...');
+    const notifications = document.querySelectorAll('div[data-testid="cellInnerDiv"]');
+    if (notifications.length === 0) {
+      console.debug('BotDetector: No existing notifications found');
+      return;
+    }
+    console.debug(`BotDetector: Found ${notifications.length} existing notifications`);
     notifications.forEach(notification => {
       if (notification instanceof HTMLElement) {
         this.processNotification(notification);
       }
     });
   }
+
+  public static initialize(): void {
+    try {
+      console.debug('BotDetector: Starting initialization');
+      if (document.readyState === 'loading') {
+        console.debug('BotDetector: Document still loading, waiting for DOMContentLoaded');
+        document.addEventListener('DOMContentLoaded', () => {
+          console.debug('BotDetector: DOMContentLoaded fired, creating instance');
+          new BotDetector();
+        });
+      } else {
+        console.debug('BotDetector: Document already loaded, creating instance');
+        new BotDetector();
+      }
+    } catch (error) {
+      console.error('BotDetector: Error during initialization:', error);
+    }
+  }
 }
 
-// Initialize the bot detector when the page loads
-window.addEventListener('load', () => {
-  new BotDetector();
-}); 
+// Start the bot detector
+BotDetector.initialize();

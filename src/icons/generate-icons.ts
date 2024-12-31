@@ -15,7 +15,7 @@ const generateIcon = (size: number) => {
   ctx.font = `${size * 0.6}px Arial`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('🤖', size/2, size/2);
+  ctx.fillText('🤖', size / 2, size / 2);
 
   return canvas.toDataURL().split(',')[1];
 };
@@ -24,9 +24,6 @@ const sizes = [48, 128];
 sizes.forEach(size => {
   const iconData = generateIcon(size);
   if (iconData) {
-    writeFileSync(
-      resolve(__dirname, `icon${size}.png`),
-      Buffer.from(iconData, 'base64')
-    );
+    writeFileSync(resolve(__dirname, `icon${size}.png`), Buffer.from(iconData, 'base64'));
   }
-}); 
+});

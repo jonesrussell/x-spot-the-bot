@@ -1,84 +1,51 @@
-You are assisting with the X Spot The Bot Edge Extension project. Keep in mind:
+Project: X Spot The Bot Edge Extension
+Description: A browser extension that identifies potential bot accounts in X (Twitter) notifications using behavioral analysis.
 
-Core Project Requirements:
-- TypeScript project focusing on type safety and developer experience
-- Vite-based build system and development server
-- Edge browser extension following Manifest V3 specifications
-- Use modern TypeScript/JavaScript features supported by Edge browser
-- Cross-browser compatibility considerations for future expansion
+Core Project Structure:
+- src/
+  - content/index.ts: Main content script
+  - services/
+    - dom-extractor.ts: Handles DOM operations and data extraction
+    - profile-analyzer.ts: Analyzes profiles for bot-like behavior
+    - storage.ts: Manages local storage and interaction history
+    - ui-manager.ts: Handles UI elements and styling
+  - types/profile.ts: TypeScript interfaces
+  - icons/generate-icons.ts: Icon generation utilities
+  - manifest.json: Extension manifest
+- scripts/
+  - build.ts: Build script for copying files
+  - generate-icons.ts: Icon generation script
 
-Technical Implementation (Current):
-- Uses MutationObserver for real-time notification monitoring
-- Implements DOM parsing for data extraction
-- Uses async/await patterns for all asynchronous operations
-- Follows strict TypeScript practices with full type checking
+Technical Requirements:
+- TypeScript with strict type checking
+- ESM modules with proper extensions (.js for imports)
+- Vite for bundling
+- Edge extension APIs (chrome.* namespace)
+- MutationObserver for real-time notification monitoring
 
-Technical Implementation (Planned):
-- Local storage for pattern tracking and history
-- Security practices and CSP requirements
-- Response time analysis system
-- Hot reload configuration for development
-- Performance and bundle size optimization
+Build Configuration:
+- tsconfig.json: ESNext, bundler moduleResolution
+- vite.config.ts: Content script bundling
+- package.json: ESM module type
 
 Current Focus:
-- Profile analysis (followers/following counts)
-- Username characteristics detection
-- Profile image analysis
-- Response time patterns (to be implemented)
+- Profile analysis (username patterns, follower counts)
+- DOM structure parsing for X's notification page
+- Local storage for interaction history
+- Real-time notification monitoring
 
-IMPORTANT LESSONS & MISTAKES TO AVOID:
-1. TypeScript Configuration:
-   - Never use non-existent compiler options (like 'allowImports')
-   - Double-check tsconfig options against official docs
-   - Keep compiler options minimal and purposeful
-   - Maintain strict type checking throughout
+Coding Standards:
+- Use TypeScript interfaces for type definitions
+- Maintain single responsibility principle (SRP)
+- Add debug logging for development
+- Handle DOM operations safely with null checks
+- Follow Edge extension best practices
 
-2. Code Style:
-   - Remove unused parameters entirely instead of prefixing with underscore
-   - If a parameter isn't used in a method, remove it from the signature
-   - Keep interfaces minimal, only including what's actually used
-   - Use modern JavaScript/TypeScript features appropriately
-
-3. Dependencies:
-   - Don't assume specific package managers (npm vs pnpm)
-   - Let the user choose their package manager
-   - When installing dependencies, document significant version changes
-   - Be aware of major version jumps in dependencies
-
-4. Build Configuration:
-   - Verify Node.js type definitions are properly configured
-   - Ensure build scripts have correct module resolution
-   - Test build scripts in isolation before suggesting them
-   - Optimize for minimal bundle size
-
-5. Security:
-   - Follow browser extension security best practices
-   - Implement proper Content Security Policy (CSP)
-   - Use minimal required permissions
-   - Ensure secure communication between extension components
-
-When suggesting code:
-- Provide TypeScript solutions with proper type definitions
-- Consider browser extension security best practices and CSP
-- Focus on performance and minimal resource usage
-- Use async/await for asynchronous operations
-- Follow Edge extension API conventions
-- Remove unused code instead of marking as unused
-- Keep interfaces minimal and focused
-- Ensure strict type checking is maintained
-- Consider cross-browser compatibility implications
-- Optimize bundle size and performance
-- Use modern TypeScript/JavaScript features supported by Edge
-
-Immediate TODOs:
-- Add CSP headers to manifest.json
-- Implement local storage for pattern tracking
-- Add response time analysis
-- Configure hot reload for development
-- Set up proper build optimization
-
-Current challenges:
-- Node.js type definitions in build scripts
-- Icon generation implementation
-- Hover card data extraction
-- Build configuration optimization 
+Dependencies:
+- typescript
+- vite
+- @types/chrome
+- @types/node
+- ts-node
+- canvas (for icon generation)
+- @rollup/wasm-node (for Vite 6) 
