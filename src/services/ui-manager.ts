@@ -10,11 +10,6 @@ export class UIManager {
   }
 
   public addWarningIndicator(element: HTMLElement, analysis: BotAnalysis): void {
-    // Don't add warning for low probability
-    if (analysis.probability < this.MEDIUM_PROBABILITY_THRESHOLD) {
-      return;
-    }
-
     // Remove existing warning if any
     this.removeWarningIndicator(element);
 
@@ -24,16 +19,33 @@ export class UIManager {
     warning.classList.add(
       analysis.probability >= this.HIGH_PROBABILITY_THRESHOLD
         ? 'high-probability'
-        : 'medium-probability'
+        : analysis.probability >= this.MEDIUM_PROBABILITY_THRESHOLD
+        ? 'medium-probability'
+        : 'low-probability'
     );
 
     // Add warning content
+    const icon = analysis.probability >= this.HIGH_PROBABILITY_THRESHOLD
+      ? '🤖'
+      : analysis.probability >= this.MEDIUM_PROBABILITY_THRESHOLD
+      ? '⚠️'
+      : '✓';
+
+    const text = analysis.probability >= this.HIGH_PROBABILITY_THRESHOLD
+      ? 'Bot Account'
+      : analysis.probability >= this.MEDIUM_PROBABILITY_THRESHOLD
+      ? 'Possible Bot'
+      : 'Likely Real';
+
     warning.innerHTML = `
-      <div class="xbd-warning-icon">${analysis.probability >= this.HIGH_PROBABILITY_THRESHOLD ? '🤖' : '⚠️'}</div>
+      <div class="xbd-warning-icon">${icon}</div>
       <div class="xbd-warning-text">
-        ${analysis.probability >= this.HIGH_PROBABILITY_THRESHOLD ? 'Bot Account' : 'Possible Bot'}
+        ${text}
         <div class="xbd-warning-reasons">
-          ${analysis.reasons.map(reason => `<div class="xbd-reason">• ${reason}</div>`).join('')}
+          ${analysis.reasons.length > 0 
+            ? analysis.reasons.map(reason => `<div class="xbd-reason">• ${reason}</div>`).join('')
+            : '<div class="xbd-reason">• No suspicious patterns detected</div>'
+          }
         </div>
       </div>
     `;
@@ -61,48 +73,73 @@ export class UIManager {
     styles.setAttribute('data-xbot', 'true');
     styles.textContent = `
       .xbd-warning {
-        position: absolute;
-        top: 0;
-        right: 0;
-        padding: 4px 8px;
-        margin: 4px;
-        border-radius: 4px;
-        display: flex;
-        align-items: start;
-        gap: 4px;
-        font-size: 12px;
-        z-index: 1000;
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
+        padding: 4px 8px !important;
+        margin: 4px !important;
+        border-radius: 4px !important;
+        display: flex !important;
+        align-items: start !important;
+        gap: 4px !important;
+        font-size: 12px !important;
+        z-index: 9999999 !important;
+        background: var(--background-color, #fff) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
       }
 
       .xbd-warning.high-probability {
-        background-color: rgba(255, 0, 0, 0.1);
-        color: #ff0000;
-        border: 1px solid #ff0000;
+        background-color: rgba(255, 0, 0, 0.1) !important;
+        color: var(--high-probability-color, #ff0000) !important;
+        border: 1px solid currentColor !important;
       }
 
       .xbd-warning.medium-probability {
-        background-color: rgba(255, 165, 0, 0.1);
-        color: #ff8c00;
-        border: 1px solid #ff8c00;
+        background-color: rgba(255, 165, 0, 0.1) !important;
+        color: var(--medium-probability-color, #ff8c00) !important;
+        border: 1px solid currentColor !important;
+      }
+
+      .xbd-warning.low-probability {
+        background-color: rgba(0, 255, 0, 0.1) !important;
+        color: var(--low-probability-color, #00aa00) !important;
+        border: 1px solid currentColor !important;
+        opacity: 0.7 !important;
       }
 
       .xbd-warning-icon {
-        font-size: 14px;
+        font-size: 14px !important;
+        line-height: 1 !important;
+      }
+
+      .xbd-warning-text {
+        font-weight: 500 !important;
       }
 
       .xbd-warning-reasons {
         display: none;
-        margin-top: 4px;
-        color: #666;
+        margin-top: 4px !important;
+        color: var(--text-color, #666) !important;
+        font-size: 11px !important;
+        line-height: 1.4 !important;
       }
 
       .xbd-warning:hover .xbd-warning-reasons {
-        display: block;
+        display: block !important;
       }
 
       .xbd-reason {
-        font-size: 11px;
-        line-height: 1.4;
+        white-space: nowrap !important;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .xbd-warning {
+          --background-color: #000;
+          --text-color: #999;
+          --high-probability-color: #ff4444;
+          --medium-probability-color: #ffaa44;
+          --low-probability-color: #44cc44;
+        }
       }
     `;
 
