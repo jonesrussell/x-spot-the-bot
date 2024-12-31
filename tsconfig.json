@@ -21,7 +21,7 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Node.js types */
-    "types": ["node", "chrome"],
+    "types": ["node", "chrome", "jest"],
     
     /* Path aliases */
     "baseUrl": ".",

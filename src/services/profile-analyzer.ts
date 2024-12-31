@@ -1,104 +1,56 @@
-import type { ProfileData } from '../types/profile.ts';
+import { Profile } from '../types/profile.js';
 
 export class ProfileAnalyzer {
-  private readonly SUSPICIOUS_PATTERNS = {
-    RANDOM_ALPHANUMERIC: /^[a-z0-9]{8,}$/i,
-    MANY_NUMBERS: /[0-9]{4,}/,
-    BOT_KEYWORDS: /(bot|spam|[0-9]+[a-z]+[0-9]+)/i,
-    RANDOM_SUFFIX: /[a-z]+[0-9]{4,}$/i,
-    COMMUNITY: /^i\/communities\//,
-    NUMERIC_SUFFIX: /[0-9]{4,}$/,
-    RANDOM_LETTERS: /[A-Z]{2,}[0-9]+/i
-  } as const;
+  private readonly PATTERNS = {
+    randomAlphanumeric: /^[a-z0-9]{8,}$/,
+    manyNumbers: /[0-9]{4,}/,
+    botKeywords: /bot|spam|[0-9]+[a-z]+[0-9]+/,
+    randomSuffix: /[a-z]+[0-9]{4,}$/,
+    numericSuffix: /[0-9]{4,}$/,
+    randomLetters: /[A-Z]{2,}[0-9]+/
+  };
 
-  public async analyzeBotProbability(profile: ProfileData): Promise<{
-    probability: number;
-    reasons: string[];
-  }> {
-    // Skip community posts
-    if (this.SUSPICIOUS_PATTERNS.COMMUNITY.test(profile.username)) {
-      console.debug('[XBot:Analysis] Skipping community post:', profile.username);
-      return { probability: 0, reasons: [] };
-    }
+  private readonly SCORES = {
+    noFollowers: 0.3,
+    randomAlphanumeric: 0.3,
+    manyNumbers: 0.2,
+    botKeywords: 0.3,
+    randomSuffix: 0.2,
+    numericSuffix: 0.2,
+    randomLetters: 0.2
+  };
 
-    let probability = 0;
-    const reasons: string[] = [];
-    const scores: Record<string, number> = {};
+  public calculateBotProbability(profile: Profile): number {
+    let score = 0;
 
-    // Check follower/following ratio
+    // Check followers/following
     if (profile.followersCount === 0 && profile.followingCount === 0) {
-      const score = 0.3;
-      probability += score;
-      scores.noFollowers = score;
-      reasons.push('No followers or following');
+      score += this.SCORES.noFollowers;
     }
 
     // Check username patterns
-    const { score: usernameScore, matchedPatterns } = this.analyzeUsername(profile.username);
-    if (usernameScore > 0) {
-      probability += usernameScore;
-      scores.username = usernameScore;
-      reasons.push(`Suspicious username pattern (${matchedPatterns.join(', ')})`);
-    }
-
-    // Check display name similarity to username
-    if (this.isSimilar(profile.displayName, profile.username)) {
-      const score = 0.2;
-      probability += score;
-      scores.similarName = score;
-      reasons.push('Display name similar to username');
-    }
-
-    // Cap total probability at 0.9
-    probability = Math.min(probability, 0.9);
-
-    console.debug('[XBot:Analysis] Score details:', {
-      username: profile.username,
-      displayName: profile.displayName,
-      totalProbability: probability,
-      individualScores: scores,
-      reasons,
-      matchedPatterns
-    });
-
-    return { probability, reasons };
-  }
-
-  private analyzeUsername(username: string): { score: number; matchedPatterns: string[] } {
-    let score = 0;
-    const matchedPatterns: string[] = [];
-
-    const patterns: [keyof typeof this.SUSPICIOUS_PATTERNS, number, string][] = [
-      ['RANDOM_ALPHANUMERIC', 0.3, 'random alphanumeric'],
-      ['MANY_NUMBERS', 0.2, 'many numbers'],
-      ['BOT_KEYWORDS', 0.3, 'bot keywords'],
-      ['RANDOM_SUFFIX', 0.2, 'random suffix'],
-      ['NUMERIC_SUFFIX', 0.2, 'numeric suffix'],
-      ['RANDOM_LETTERS', 0.2, 'random letters']
-    ];
-
-    for (const [pattern, patternScore, description] of patterns) {
-      if (this.SUSPICIOUS_PATTERNS[pattern].test(username)) {
-        score += patternScore;
-        matchedPatterns.push(description);
-      }
-    }
-
-    // Cap username-based score at 0.5
-    return { 
-      score: Math.min(score, 0.5),
-      matchedPatterns
-    };
-  }
-
-  private isSimilar(str1: string, str2: string): boolean {
-    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const s1 = normalize(str1);
-    const s2 = normalize(str2);
+    const username = profile.username.toLowerCase();
     
-    // Skip short strings
-    if (s1.length < 4 || s2.length < 4) return false;
-    
-    return s1.includes(s2) || s2.includes(s1);
+    if (this.PATTERNS.randomAlphanumeric.test(username)) {
+      score += this.SCORES.randomAlphanumeric;
+    }
+    if (this.PATTERNS.manyNumbers.test(username)) {
+      score += this.SCORES.manyNumbers;
+    }
+    if (this.PATTERNS.botKeywords.test(username)) {
+      score += this.SCORES.botKeywords;
+    }
+    if (this.PATTERNS.randomSuffix.test(username)) {
+      score += this.SCORES.randomSuffix;
+    }
+    if (this.PATTERNS.numericSuffix.test(username)) {
+      score += this.SCORES.numericSuffix;
+    }
+    if (this.PATTERNS.randomLetters.test(username)) {
+      score += this.SCORES.randomLetters;
+    }
+
+    // Cap the maximum score at 0.9
+    return Math.min(score, 0.9);
   }
 }

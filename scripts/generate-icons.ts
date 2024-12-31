@@ -1,6 +1,5 @@
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { createCanvas } from 'canvas';
 
 async function generateIcons() {
   try {
@@ -10,23 +9,18 @@ async function generateIcons() {
     // Ensure icons directory exists
     await fs.mkdir(iconDir, { recursive: true }).catch(() => {});
 
+    // Create a simple robot icon SVG
+    const createSVG = (size: number) => `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+  <rect width="${size}" height="${size}" fill="#1DA1F2"/>
+  <text x="${size/2}" y="${size/2}" font-family="Arial" font-size="${size * 0.6}" 
+    fill="white" text-anchor="middle" dominant-baseline="middle">🤖</text>
+</svg>`;
+
     for (const size of sizes) {
-      const canvas = createCanvas(size, size);
-      const ctx = canvas.getContext('2d');
-
-      // Draw icon (simple placeholder)
-      ctx.fillStyle = '#1DA1F2'; // Twitter blue
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillStyle = 'white';
-      ctx.font = `${size * 0.6}px Arial`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('🤖', size/2, size/2);
-
-      // Save as PNG
-      const buffer = canvas.toBuffer('image/png');
-      const iconPath = join(iconDir, `icon${size}.png`);
-      await fs.writeFile(iconPath, buffer);
+      const svgContent = createSVG(size);
+      const iconPath = join(iconDir, `icon${size}.svg`);
+      await fs.writeFile(iconPath, svgContent, 'utf8');
     }
 
     console.log('✓ Icons generated successfully');
