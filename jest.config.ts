@@ -1,25 +1,19 @@
-import type { JestConfigWithTsJest } from 'ts-jest';
-
-const mockFn = () => Promise.resolve();
-
-const config: JestConfigWithTsJest = {
+/** @type {import('ts-jest').JestConfigWithTsJest} */
+module.exports = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1'
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '\\.css$': 'identity-obj-proxy'
   },
   transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        useESM: true,
-        tsconfig: {
-          ...require('./tsconfig.json').compilerOptions,
-          verbatimModuleSyntax: false
-        }
+    '^.+\\.ts$': ['ts-jest', {
+      useESM: true,
+      tsconfig: {
+        verbatimModuleSyntax: false
       }
-    ]
+    }]
   },
   testMatch: ['**/__tests__/**/*.test.ts'],
   collectCoverageFrom: [
@@ -40,17 +34,16 @@ const config: JestConfigWithTsJest = {
   errorOnDeprecated: true,
   testTimeout: 10000,
   verbose: true,
+  injectGlobals: true,
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   globals: {
     chrome: {
       storage: {
         local: {
-          get: mockFn,
-          set: mockFn
+          get: () => Promise.resolve({}),
+          set: () => Promise.resolve()
         }
       }
     }
   }
-} as const;
-
-module.exports = config; 
+}; 

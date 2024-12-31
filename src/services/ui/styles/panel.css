@@ -1,0 +1,47 @@
+.xbd-summary-panel {
+  position: sticky !important;
+  top: 0 !important;
+  background: #16181c !important;
+  border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+  padding: 16px !important;
+  margin-bottom: 8px !important;
+  z-index: 9999999 !important;
+  font-size: 14px !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+.xbd-summary-title {
+  font-weight: bold !important;
+  margin-bottom: 12px !important;
+  font-size: 16px !important;
+  color: #1d9bf0 !important;
+}
+
+.xbd-summary-stats {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.xbd-stat {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.xbd-stat.high {
+  color: #ff4444 !important;
+}
+
+.xbd-stat.medium {
+  color: #ffaa44 !important;
+}
+
+.xbd-stat.low {
+  color: #44cc44 !important;
+}
+
+.xbd-stat-icon {
+  font-size: 16px !important;
+} 
