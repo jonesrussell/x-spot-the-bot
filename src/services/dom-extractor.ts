@@ -1,4 +1,3 @@
-import { InteractionTypes, NotificationTypes } from '../types/profile.js';
 import type { ProfileData, InteractionType, NotificationType } from '../types/profile.js';
 
 interface NotificationData {
@@ -7,14 +6,14 @@ interface NotificationData {
   users?: ProfileData[];
 }
 
-type UserNotificationType = Extract<NotificationType, 'user_interaction' | 'multi_user'>;
+type UserNotificationType = 'user_interaction' | 'multi_user';
 
 interface UserProfileData extends Omit<ProfileData, 'notificationType'> {
   notificationType: UserNotificationType;
 }
 
 function isUserNotificationType(type: NotificationType): type is UserNotificationType {
-  return type === NotificationTypes.UserInteraction || type === NotificationTypes.MultiUser;
+  return type === 'user_interaction' || type === 'multi_user';
 }
 
 export class DOMExtractor {
@@ -64,8 +63,8 @@ export class DOMExtractor {
       }
 
       // Skip non-user notifications
-      if (notificationData.type !== NotificationTypes.UserInteraction && 
-          notificationData.type !== NotificationTypes.MultiUser) {
+      if (notificationData.type !== 'user_interaction' && 
+          notificationData.type !== 'multi_user') {
         console.debug('[XBot:DOM] Skipping non-user notification:', notificationData.type);
         return null;
       }
@@ -85,9 +84,9 @@ export class DOMExtractor {
         followingCount: userProfile.followingCount,
         interactionTimestamp: userProfile.interactionTimestamp,
         interactionType: userProfile.interactionType,
-        notificationType: userProfile.notificationType === NotificationTypes.MultiUser
-          ? NotificationTypes.MultiUser
-          : NotificationTypes.UserInteraction
+        notificationType: userProfile.notificationType === 'multi_user'
+          ? 'multi_user'
+          : 'user_interaction'
       };
 
     } catch (error) {
@@ -101,13 +100,13 @@ export class DOMExtractor {
 
     // Check notification type
     if (DOMExtractor.#PATTERNS.PINNED_POST.test(text)) {
-      return { type: NotificationTypes.PinnedPost, text };
+      return { type: 'pinned_post', text };
     }
     if (DOMExtractor.#PATTERNS.TRENDING.test(text)) {
-      return { type: NotificationTypes.Trending, text };
+      return { type: 'trending', text };
     }
     if (DOMExtractor.#PATTERNS.COMMUNITY_POST.test(text)) {
-      return { type: NotificationTypes.CommunityPost, text };
+      return { type: 'community_post', text };
     }
 
     // Find all user links
@@ -137,9 +136,7 @@ export class DOMExtractor {
         const displayName = link.textContent?.trim() || username;
         const interactionType = this.#determineInteractionType(text);
         const isMultiUser = DOMExtractor.#PATTERNS.MULTI_USER.test(text);
-        const notificationType = isMultiUser 
-          ? NotificationTypes.MultiUser 
-          : NotificationTypes.UserInteraction;
+        const notificationType = isMultiUser ? 'multi_user' : 'user_interaction';
 
         if (!isUserNotificationType(notificationType)) {
           return null;
@@ -156,7 +153,13 @@ export class DOMExtractor {
           notificationType
         } satisfies UserProfileData;
       })
-      .filter((user): user is UserProfileData => user !== null);
+      .filter((user): user is ProfileData => {
+        if (!user) return false;
+        user.notificationType = DOMExtractor.#PATTERNS.MULTI_USER.test(text)
+          ? 'multi_user'
+          : 'user_interaction';
+        return true;
+      });
 
     if (!users.length) {
       return null;
@@ -164,8 +167,8 @@ export class DOMExtractor {
 
     return {
       type: DOMExtractor.#PATTERNS.MULTI_USER.test(text)
-        ? NotificationTypes.MultiUser
-        : NotificationTypes.UserInteraction,
+        ? 'multi_user'
+        : 'user_interaction',
       text,
       users
     };
@@ -173,10 +176,10 @@ export class DOMExtractor {
 
   #determineInteractionType(text: string): InteractionType {
     const { LIKE, REPLY, REPOST } = DOMExtractor.#PATTERNS;
-    if (LIKE.test(text)) return InteractionTypes.Like;
-    if (REPLY.test(text)) return InteractionTypes.Reply;
-    if (REPOST.test(text)) return InteractionTypes.Repost;
-    return InteractionTypes.Follow;
+    if (LIKE.test(text)) return 'like';
+    if (REPLY.test(text)) return 'reply';
+    if (REPOST.test(text)) return 'repost';
+    return 'follow';
   }
 
   #extractProfileImage(container: Element): string | null {

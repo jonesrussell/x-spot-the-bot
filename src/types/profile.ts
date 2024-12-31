@@ -2,21 +2,21 @@
 export type InteractionType = 'like' | 'reply' | 'repost' | 'follow';
 export type NotificationType = 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
 
-// Use const enums for better inlining
-export const enum InteractionTypes {
-  Like = 'like',
-  Reply = 'reply',
-  Repost = 'repost',
-  Follow = 'follow'
-}
+// Constants used in tests
+export const InteractionTypes = {
+  Like: 'like' as const,
+  Reply: 'reply' as const,
+  Repost: 'repost' as const,
+  Follow: 'follow' as const
+};
 
-export const enum NotificationTypes {
-  UserInteraction = 'user_interaction',
-  PinnedPost = 'pinned_post',
-  Trending = 'trending',
-  CommunityPost = 'community_post',
-  MultiUser = 'multi_user'
-}
+export const NotificationTypes = {
+  UserInteraction: 'user_interaction' as const,
+  PinnedPost: 'pinned_post' as const,
+  Trending: 'trending' as const,
+  CommunityPost: 'community_post' as const,
+  MultiUser: 'multi_user' as const
+};
 
 // Interfaces
 export interface ProfileData {
@@ -27,7 +27,7 @@ export interface ProfileData {
   followingCount: number;
   interactionTimestamp: number;
   interactionType: InteractionType;
-  notificationType: NotificationType;
+  notificationType: 'user_interaction' | 'multi_user';
 }
 
 export interface BotAnalysis {
