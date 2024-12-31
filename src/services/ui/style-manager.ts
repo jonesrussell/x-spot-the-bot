@@ -13,7 +13,7 @@ export class StyleManager {
     styles.setAttribute('data-xbot', 'true');
     
     // In test environment, use mock styles
-    const isTestEnv = process.env['NODE_ENV'] === 'test';
+    const isTestEnv = import.meta.env.MODE === 'test';
     const panelCss = isTestEnv ? '.xbd-summary-panel { color: red; }' : panelStyles;
     const indicatorCss = isTestEnv ? '.xbd-warning { color: blue; }' : indicatorStyles;
     
@@ -26,17 +26,17 @@ export class StyleManager {
   public updateThemeVariables(isDarkMode: boolean): void {
     const root = document.documentElement;
     if (isDarkMode) {
-      root.style.setProperty('--background-color', '#000');
-      root.style.setProperty('--text-color', '#999');
-      root.style.setProperty('--high-probability-color', '#ff4444');
-      root.style.setProperty('--medium-probability-color', '#ffaa44');
-      root.style.setProperty('--low-probability-color', '#44cc44');
+      root.style.setProperty('--background-color', '#15202b');
+      root.style.setProperty('--text-color', '#ffffff');
+      root.style.setProperty('--high-probability-color', '#ff3333');
+      root.style.setProperty('--medium-probability-color', '#ffa500');
+      root.style.setProperty('--low-probability-color', '#33cc33');
     } else {
-      root.style.setProperty('--background-color', '#fff');
-      root.style.setProperty('--text-color', '#666');
-      root.style.setProperty('--high-probability-color', '#ff0000');
+      root.style.setProperty('--background-color', '#ffffff');
+      root.style.setProperty('--text-color', '#000000');
+      root.style.setProperty('--high-probability-color', '#cc0000');
       root.style.setProperty('--medium-probability-color', '#ff8c00');
-      root.style.setProperty('--low-probability-color', '#00aa00');
+      root.style.setProperty('--low-probability-color', '#008800');
     }
   }
 } 

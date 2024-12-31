@@ -1,4 +1,4 @@
-import type { ProfileData, InteractionType, NotificationType } from '../types/profile.js';
+import type { InteractionType, NotificationType, ProfileData } from '../types/profile.js';
 
 interface NotificationData {
   type: NotificationType;
@@ -19,10 +19,9 @@ function isUserNotificationType(type: NotificationType): type is UserNotificatio
 export class DOMExtractor {
   static readonly #SELECTORS = {
     CELL: '[data-testid="cellInnerDiv"]',
-    NOTIFICATION: '[data-testid="notification"]',
-    USER_NAME: '[data-testid="UserName"]',
-    USER_AVATAR: '[data-testid="UserAvatar"]',
-    TWEET_TEXT: '[data-testid="tweetText"]'
+    NOTIFICATION: 'article[data-testid="notification"]',
+    USER_LINK: 'a[href^="/"]',
+    NOTIFICATION_TEXT: '[data-testid="notificationText"]'
   } as const;
 
   static readonly #PATTERNS = {
@@ -96,25 +95,39 @@ export class DOMExtractor {
   }
 
   #parseNotification(cell: HTMLElement): NotificationData | null {
-    const text = cell.textContent?.toLowerCase() ?? '';
+    console.debug('[XBot:DOM] Cell content:', {
+      html: cell.outerHTML,
+      text: cell.textContent
+    });
 
-    // Check notification type
-    if (DOMExtractor.#PATTERNS.PINNED_POST.test(text)) {
-      return { type: 'pinned_post', text };
-    }
-    if (DOMExtractor.#PATTERNS.TRENDING.test(text)) {
-      return { type: 'trending', text };
-    }
-    if (DOMExtractor.#PATTERNS.COMMUNITY_POST.test(text)) {
-      return { type: 'community_post', text };
-    }
+    const notificationText = cell.querySelector(DOMExtractor.#SELECTORS.NOTIFICATION_TEXT);
+    console.debug('[XBot:DOM] Notification text element:', {
+      found: !!notificationText,
+      text: notificationText?.textContent
+    });
+
+    const text = notificationText?.textContent?.toLowerCase() ?? cell.textContent?.toLowerCase() ?? '';
+    console.debug('[XBot:DOM] Parsed text:', text);
 
     // Find all user links
-    const userLinks = [...cell.querySelectorAll('a[role="link"]')]
+    const allLinks = [...cell.querySelectorAll('a')];
+    console.debug('[XBot:DOM] All links found:', allLinks.map(l => ({
+      href: l.getAttribute('href'),
+      text: l.textContent,
+      html: l.outerHTML
+    })));
+
+    const userLinks = [...cell.querySelectorAll(DOMExtractor.#SELECTORS.USER_LINK)]
       .filter(link => {
         const href = link.getAttribute('href');
         return href?.startsWith('/') && !href.includes('/i/');
       });
+
+    console.debug('[XBot:DOM] Filtered user links:', userLinks.map(l => ({
+      href: l.getAttribute('href'),
+      text: l.textContent,
+      html: l.outerHTML
+    })));
 
     if (!userLinks.length) {
       console.debug('[XBot:DOM] No user links found');
@@ -125,18 +138,36 @@ export class DOMExtractor {
     const users = userLinks
       .map(link => {
         const username = link.getAttribute('href')?.slice(1);
+        console.debug('[XBot:DOM] Processing username:', username);
         if (!username) return null;
 
         const avatarContainer = cell.querySelector(`[data-testid="UserAvatar-Container-${username}"]`);
+        console.debug('[XBot:DOM] Avatar container:', {
+          username,
+          found: !!avatarContainer,
+          html: avatarContainer?.outerHTML
+        });
         if (!avatarContainer) return null;
 
         const profileImageUrl = this.#extractProfileImage(avatarContainer);
+        console.debug('[XBot:DOM] Profile image:', {
+          username,
+          found: !!profileImageUrl,
+          url: profileImageUrl
+        });
         if (!profileImageUrl) return null;
 
         const displayName = link.textContent?.trim() || username;
         const interactionType = this.#determineInteractionType(text);
         const isMultiUser = DOMExtractor.#PATTERNS.MULTI_USER.test(text);
         const notificationType = isMultiUser ? 'multi_user' : 'user_interaction';
+
+        console.debug('[XBot:DOM] User data:', {
+          username,
+          displayName,
+          interactionType,
+          notificationType
+        });
 
         if (!isUserNotificationType(notificationType)) {
           return null;
@@ -160,6 +191,8 @@ export class DOMExtractor {
           : 'user_interaction';
         return true;
       });
+
+    console.debug('[XBot:DOM] Final users:', users);
 
     if (!users.length) {
       return null;
