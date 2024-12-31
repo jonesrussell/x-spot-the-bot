@@ -1,5 +1,9 @@
+import { jest } from '@jest/globals';
+import type { BotAnalysis } from '../../types/profile.js';
+import { UIManager } from '../ui-manager.js';
+
 // Mock all the components and their methods
-jest.mock('../ui/components/summary-panel', () => ({
+jest.mock('../ui/components/summary-panel.js', () => ({
   SummaryPanel: jest.fn(() => ({
     updateStats: jest.fn(),
     create: jest.fn(),
@@ -8,30 +12,26 @@ jest.mock('../ui/components/summary-panel', () => ({
   }))
 }));
 
-jest.mock('../ui/components/warning-indicator', () => ({
+jest.mock('../ui/components/warning-indicator.js', () => ({
   WarningIndicator: jest.fn(() => ({
     add: jest.fn(),
     remove: jest.fn()
   }))
 }));
 
-jest.mock('../ui/theme-manager', () => ({
+jest.mock('../ui/theme-manager.js', () => ({
   ThemeManager: jest.fn(() => ({
     onThemeChange: jest.fn(),
     isDarkMode: jest.fn()
   }))
 }));
 
-jest.mock('../ui/style-manager', () => ({
+jest.mock('../ui/style-manager.js', () => ({
   StyleManager: jest.fn(() => ({
     injectStyles: jest.fn(),
     updateThemeVariables: jest.fn()
   }))
 }));
-
-import { jest } from '@jest/globals';
-import type { BotAnalysis } from '../../types/profile.js';
-import { UIManager } from '../ui-manager.js';
 
 describe('UIManager', () => {
   let uiManager: UIManager;
