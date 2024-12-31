@@ -1,22 +1,22 @@
 // Type definitions
-export const InteractionTypes = {
-  Like: 'like',
-  Reply: 'reply',
-  Repost: 'repost',
-  Follow: 'follow'
-} as const;
+export const enum InteractionTypes {
+  Like = 'like',
+  Reply = 'reply',
+  Repost = 'repost',
+  Follow = 'follow'
+}
 
-export const NotificationTypes = {
-  UserInteraction: 'user_interaction',
-  PinnedPost: 'pinned_post',
-  Trending: 'trending',
-  CommunityPost: 'community_post',
-  MultiUser: 'multi_user'
-} as const;
+export const enum NotificationTypes {
+  UserInteraction = 'user_interaction',
+  PinnedPost = 'pinned_post',
+  Trending = 'trending',
+  CommunityPost = 'community_post',
+  MultiUser = 'multi_user'
+}
 
-// Infer types from const objects
-export type InteractionType = typeof InteractionTypes[keyof typeof InteractionTypes];
-export type NotificationType = typeof NotificationTypes[keyof typeof NotificationTypes];
+// Types
+export type InteractionType = InteractionTypes;
+export type NotificationType = NotificationTypes;
 
 // Interfaces
 export interface ProfileData {
