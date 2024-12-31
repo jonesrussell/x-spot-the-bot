@@ -50,11 +50,13 @@ Coding Standards:
 - Handle DOM operations safely with null checks
 - Follow Edge extension best practices
 
-Dependencies:
-- typescript
-- vite
-- @types/chrome
-- @types/node
-- ts-node
-- canvas (for icon generation)
-- @rollup/wasm-node (for Vite 6) 
+Dependencies (current versions):
+- typescript: 5.7.2
+- vite: 6.0.6
+- @types/chrome: 0.0.287
+- @types/node: 22.10.2
+- ts-node: 10.9.2
+- canvas: 3.0.0
+- @rollup/wasm-node: 4.29.1
+- prettier: 3.4.2
+- prettier-plugin-organize-imports: 3.2.4 (4.1.0 available) 
