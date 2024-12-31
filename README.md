@@ -1,95 +1,58 @@
-# X Spot The Bot - Edge Extension
+# X Spot The Bot
 
-A browser extension that helps identify potential bot accounts in X (Twitter) notifications by analyzing behavioral patterns, response times, and profile characteristics.
+A browser extension that helps identify potential bot accounts in X (Twitter) notifications using behavioral analysis.
 
 ## Features
 
-- 🚀 Built with TypeScript and Vite for optimal development experience
-- ⚡️ Fast development and build times
-- 🔒 Follows Manifest V3 specifications
-- 🎯 Edge browser extension APIs support
-- 📦 Modern build tooling and optimization
+- Real-time bot detection in notifications
+- Profile analysis based on behavioral patterns
+- Local history tracking of suspicious accounts
+- Non-intrusive UI indicators
+- Privacy-focused design
 
-## Prerequisites
+## Development Setup
 
-- Node.js (v16 or higher)
-- Microsoft Edge browser
-- npm
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone <your-repo-url>
-cd <your-repo-name>
-```
-
+1. Clone the repository
 2. Install dependencies:
 ```bash
 npm install
 ```
 
-## Development
-
-Start the development server:
+3. Build the extension:
 ```bash
-npm dev
+npm run build
 ```
 
-### Loading the extension in Edge
-
-1. Open Edge and navigate to `edge://extensions`
-2. Enable "Developer mode" in the top right
-3. Click "Load unpacked"
-4. Select the `dist` folder from this project
-
-The extension will automatically reload when you make changes.
-
-## Building for Production
-
-Build the extension:
-```bash
-npm build
-```
-
-The built extension will be in the `dist` folder.
+4. Load the extension in Edge:
+   - Navigate to `edge://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select the `dist` directory
 
 ## Project Structure
 
 ```
-├── src/
-│   ├── background/     # Background scripts
-│   ├── content/        # Content scripts
-│   ├── popup/         # Popup UI
-│   └── types/         # TypeScript type definitions
-├── public/            # Static assets
-├── manifest.json      # Extension manifest
-├── vite.config.ts     # Vite configuration
-└── tsconfig.json      # TypeScript configuration
+src/
+  content/         # Content scripts
+  services/        # Core functionality
+  types/           # TypeScript definitions
+  icons/           # Extension icons
+scripts/           # Build utilities
 ```
 
-## Development Notes
+## Technical Details
 
-- Background scripts run persistently in the extension context
-- Content scripts are injected into web pages
-- Popup scripts handle the extension's UI
-- Use the `.cursorrules` file for AI-assisted development
-
-## Security
-
-This extension follows security best practices:
-- Content Security Policy (CSP) implementation
-- Minimal required permissions
-- Secure communication between extension components
+- TypeScript (es2022 modules)
+- Edge extension APIs
+- Vite for bundling
+- MutationObserver for DOM monitoring
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT
