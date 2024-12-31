@@ -1,27 +1,23 @@
 import { defineConfig } from 'vite';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 export default defineConfig({
   build: {
-    emptyOutDir: false,
+    target: 'es2022',
     outDir: 'dist',
+    emptyOutDir: true,
+    lib: {
+      entry: 'src/content/index.ts',
+      formats: ['es']
+    },
     rollupOptions: {
-      input: {
-        content: resolve(__dirname, 'src/content/index.ts'),
-      },
       output: {
-        entryFileNames: '[name].js',
-        dir: 'dist',
-      },
-    },
+        preserveModules: true,
+        entryFileNames: '[name].js'
+      }
+    }
   },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    },
-  },
+  esbuild: {
+    keepNames: true,
+    treeShaking: true
+  }
 }); 

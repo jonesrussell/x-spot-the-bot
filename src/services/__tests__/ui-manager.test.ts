@@ -19,6 +19,7 @@ describe('UIManager', () => {
   describe('addWarningIndicator', () => {
     it('should add warning indicator for high probability bots', () => {
       const analysis: BotAnalysis = {
+        username: 'testuser',
         probability: 0.8,
         reasons: ['Suspicious username pattern', 'No followers']
       };
@@ -33,6 +34,7 @@ describe('UIManager', () => {
 
     it('should add warning indicator for medium probability bots', () => {
       const analysis: BotAnalysis = {
+        username: 'testuser',
         probability: 0.4,
         reasons: ['Suspicious username pattern']
       };
@@ -47,6 +49,7 @@ describe('UIManager', () => {
 
     it('should not add warning for low probability', () => {
       const analysis: BotAnalysis = {
+        username: 'testuser',
         probability: 0.1,
         reasons: []
       };
@@ -59,6 +62,7 @@ describe('UIManager', () => {
 
     it('should include detection reasons in warning', () => {
       const analysis: BotAnalysis = {
+        username: 'testuser',
         probability: 0.8,
         reasons: ['Suspicious username pattern', 'No followers']
       };
@@ -73,6 +77,7 @@ describe('UIManager', () => {
 
     it('should not add duplicate warnings', () => {
       const analysis: BotAnalysis = {
+        username: 'testuser',
         probability: 0.8,
         reasons: ['Suspicious username pattern']
       };
@@ -90,6 +95,7 @@ describe('UIManager', () => {
     it('should remove existing warning indicator', () => {
       // First add a warning
       const analysis: BotAnalysis = {
+        username: 'testuser',
         probability: 0.8,
         reasons: ['Suspicious username pattern']
       };

@@ -1,17 +1,20 @@
-export enum InteractionType {
-  Like = 'like',
-  Reply = 'reply',
-  Repost = 'repost',
-  Follow = 'follow'
-}
+export type InteractionType = 'like' | 'reply' | 'repost' | 'follow';
+export type NotificationType = 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
 
-export enum NotificationType {
-  UserInteraction = 'user_interaction',
-  PinnedPost = 'pinned_post',
-  Trending = 'trending',
-  CommunityPost = 'community_post',
-  MultiUser = 'multi_user'
-}
+export const InteractionType = {
+  Like: 'like' as InteractionType,
+  Reply: 'reply' as InteractionType,
+  Repost: 'repost' as InteractionType,
+  Follow: 'follow' as InteractionType
+} as const;
+
+export const NotificationType = {
+  UserInteraction: 'user_interaction' as NotificationType,
+  PinnedPost: 'pinned_post' as NotificationType,
+  Trending: 'trending' as NotificationType,
+  CommunityPost: 'community_post' as NotificationType,
+  MultiUser: 'multi_user' as NotificationType
+} as const;
 
 export interface ProfileData {
   username: string;

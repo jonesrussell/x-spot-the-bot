@@ -1,4 +1,10 @@
-import { ProfileData, InteractionType, NotificationType, NotificationData } from '../types/profile.js';
+import { ProfileData, InteractionType, NotificationType } from '../types/profile.js';
+
+interface NotificationData {
+  type: 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
+  text: string;
+  users?: ProfileData[];
+}
 
 export class DOMExtractor {
   private readonly SELECTORS = {
@@ -47,8 +53,8 @@ export class DOMExtractor {
       }
 
       // Skip non-user notifications
-      if (notificationData.type !== NotificationType.UserInteraction && 
-          notificationData.type !== NotificationType.MultiUser) {
+      if (notificationData.type !== 'user_interaction' && 
+          notificationData.type !== 'multi_user') {
         console.debug('[XBot:DOM] Skipping non-user notification:', notificationData.type);
         return null;
       }
@@ -72,13 +78,13 @@ export class DOMExtractor {
 
     // Check notification type
     if (this.NOTIFICATION_PATTERNS.PINNED_POST.test(text)) {
-      return { type: NotificationType.PinnedPost, text };
+      return { type: 'pinned_post', text };
     }
     if (this.NOTIFICATION_PATTERNS.TRENDING.test(text)) {
-      return { type: NotificationType.Trending, text };
+      return { type: 'trending', text };
     }
     if (this.NOTIFICATION_PATTERNS.COMMUNITY_POST.test(text)) {
-      return { type: NotificationType.CommunityPost, text };
+      return { type: 'community_post', text };
     }
 
     // Find all user links
@@ -106,6 +112,7 @@ export class DOMExtractor {
 
       const displayName = link.textContent?.trim() || username;
       const interactionType = this.determineInteractionType(text);
+      const isMultiUser = this.NOTIFICATION_PATTERNS.MULTI_USER.test(text);
 
       users.push({
         username,
@@ -114,14 +121,15 @@ export class DOMExtractor {
         followersCount: 0,
         followingCount: 0,
         interactionTimestamp: Date.now(),
-        interactionType
+        interactionType,
+        notificationType: isMultiUser ? NotificationType.MultiUser : NotificationType.UserInteraction
       });
     }
 
     return {
-      type: this.NOTIFICATION_PATTERNS.MULTI_USER.test(text) 
-        ? NotificationType.MultiUser 
-        : NotificationType.UserInteraction,
+      type: this.NOTIFICATION_PATTERNS.MULTI_USER.test(text)
+        ? 'multi_user'
+        : 'user_interaction',
       text,
       users
     };
