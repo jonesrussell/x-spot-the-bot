@@ -5,79 +5,87 @@ export class DOMExtractor {
     try {
       if (!element || !(element instanceof HTMLElement)) {
         console.debug('DOMExtractor: Invalid element passed');
-        console.debug('Element:', element);
         return null;
       }
 
-      // Debug the notification cell structure
-      console.debug('DOMExtractor: Notification cell HTML:', element.outerHTML);
-
-      // Find the user cell - it's a div with data-testid="cellInnerDiv"
-      const cellInnerDiv = element.querySelector('div[data-testid="cellInnerDiv"]');
+      // Find the notification cell
+      const cellInnerDiv = element.querySelector('[data-testid="cellInnerDiv"]');
       if (!cellInnerDiv || !(cellInnerDiv instanceof HTMLElement)) {
         console.debug('DOMExtractor: No cell inner div found');
-        console.debug('Available data-testids:', 
-          Array.from(element.querySelectorAll('[data-testid]'))
-            .map(el => el.getAttribute('data-testid'))
-        );
         return null;
       }
 
-      console.debug('DOMExtractor: Cell inner div HTML:', cellInnerDiv.outerHTML);
+      // Find all user links in the notification
+      const userLinks = Array.from(cellInnerDiv.querySelectorAll('a[href^="/"]')).filter(link => {
+        const href = link.getAttribute('href');
+        return href && !href.includes('/') && !href.includes('?');
+      });
 
-      // Find the user link - it's an anchor with dir="ltr" containing the username
-      const userLink = cellInnerDiv.querySelector('a[dir="ltr"]');
-      if (!userLink || !(userLink instanceof HTMLElement)) {
-        console.debug('DOMExtractor: No user link found');
-        console.debug('Available links:', 
-          Array.from(cellInnerDiv.querySelectorAll('a'))
-            .map(a => ({
-              href: a.getAttribute('href'),
-              dir: a.getAttribute('dir'),
-              text: a.textContent
-            }))
-        );
+      if (userLinks.length === 0) {
+        console.debug('DOMExtractor: No user links found');
         return null;
       }
 
-      console.debug('DOMExtractor: User link HTML:', userLink.outerHTML);
-
-      // Extract username from the link href
-      const username = userLink.getAttribute('href')?.replace('/', '') || '';
+      // Get the first user's data (the one performing the action)
+      const firstUserLink = userLinks[0];
+      const username = firstUserLink.getAttribute('href')?.replace('/', '');
       if (!username) {
         console.debug('DOMExtractor: Could not extract username from link');
-        console.debug('Link href:', userLink.getAttribute('href'));
         return null;
       }
 
-      // Get display name from the link text
-      const displayName = userLink.textContent?.trim() || username;
-
-      // Find profile image - it's an img inside a div[data-testid="UserAvatar"]
-      const avatarDiv = cellInnerDiv.querySelector('div[data-testid="UserAvatar"]');
-      if (!avatarDiv) {
-        console.debug('DOMExtractor: No avatar div found');
-        console.debug('Available data-testids in cell:', 
-          Array.from(cellInnerDiv.querySelectorAll('[data-testid]'))
-            .map(el => el.getAttribute('data-testid'))
-        );
+      // Get display name by finding the first text node in the link
+      let displayName = '';
+      const walk = document.createTreeWalker(
+        firstUserLink,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+      const firstTextNode = walk.nextNode();
+      if (firstTextNode) {
+        displayName = firstTextNode.textContent?.trim() || username;
+      } else {
+        displayName = username;
       }
 
-      const profileImg = avatarDiv?.querySelector('img');
-      if (!profileImg || !(profileImg instanceof HTMLImageElement)) {
-        console.debug('DOMExtractor: No profile image found');
-        if (avatarDiv) {
-          console.debug('Avatar div HTML:', avatarDiv.outerHTML);
+      // Find the avatar container for this user
+      const avatarContainer = cellInnerDiv.querySelector(`[data-testid="UserAvatar-Container-${username}"]`);
+      if (!avatarContainer) {
+        console.debug('DOMExtractor: No avatar container found');
+        return null;
+      }
+
+      // Find profile image - it might be a background image or an img tag
+      let profileImageUrl = '';
+      const imgElement = avatarContainer.querySelector('img');
+      if (imgElement) {
+        profileImageUrl = imgElement.src;
+      } else {
+        // Try to find background image
+        const bgElements = avatarContainer.querySelectorAll('[style*="background-image"]');
+        for (const el of bgElements) {
+          const style = window.getComputedStyle(el);
+          const bgImage = style.backgroundImage;
+          if (bgImage && bgImage !== 'none') {
+            profileImageUrl = bgImage.replace(/^url\(['"](.+)['"]\)$/, '$1');
+            break;
+          }
         }
+      }
+
+      if (!profileImageUrl) {
+        console.debug('DOMExtractor: Could not find profile image URL');
+        // Continue anyway since we have the username
+      }
+
+      // Get interaction type from notification article
+      const notificationArticle = cellInnerDiv.querySelector('article[data-testid="notification"]');
+      if (!notificationArticle) {
+        console.debug('DOMExtractor: No notification article found');
         return null;
       }
 
-      console.debug('DOMExtractor: Profile image HTML:', profileImg.outerHTML);
-      const profileImageUrl = profileImg.src;
-
-      // Get interaction type from notification text
-      const notificationText = cellInnerDiv.textContent?.toLowerCase() || '';
-      console.debug('DOMExtractor: Notification text:', notificationText);
+      const notificationText = notificationArticle.textContent?.toLowerCase() || '';
       const interactionType = this.determineInteractionType(notificationText);
 
       console.debug('DOMExtractor: Successfully extracted profile data', {
@@ -98,7 +106,6 @@ export class DOMExtractor {
       };
     } catch (error) {
       console.error('DOMExtractor: Error extracting profile data:', error);
-      console.error('Element that caused error:', element.outerHTML);
       return null;
     }
   }
@@ -107,6 +114,8 @@ export class DOMExtractor {
     if (text.includes('liked')) return 'like';
     if (text.includes('replied')) return 'reply';
     if (text.includes('reposted')) return 'repost';
-    return 'follow';
+    if (text.includes('followed')) return 'follow';
+    if (text.includes('notifications')) return 'notification';
+    return 'other';
   }
 }

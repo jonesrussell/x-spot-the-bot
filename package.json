@@ -13,8 +13,8 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.node.json && npm run generate-icons && tsc && vite build && npm run copy-files",
     "preview": "vite preview",
-    "generate-icons": "node --trace-deprecation --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' scripts/generate-icons.ts",
-    "copy-files": "node --trace-deprecation --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' scripts/build.ts",
+    "generate-icons": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' scripts/generate-icons.ts",
+    "copy-files": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' scripts/build.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,html}\" \"public/**/*.{html,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss,html}\" \"public/**/*.{html,css}\""
   },
