@@ -1,4 +1,4 @@
-import type { ProfileData } from '../types/profile.js';
+import type { ProfileData } from '../types/profile.ts';
 
 export class ProfileAnalyzer {
   public async analyzeBotProbability(profile: ProfileData): Promise<{

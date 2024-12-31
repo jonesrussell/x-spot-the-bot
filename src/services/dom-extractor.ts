@@ -1,4 +1,4 @@
-import type { ProfileData } from '../types/profile.js';
+import type { ProfileData } from '../types/profile.ts';
 
 export class DOMExtractor {
   public extractProfileData(element: HTMLElement): ProfileData | null {

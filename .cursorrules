@@ -1,6 +1,9 @@
 Project: X Spot The Bot Edge Extension
 Description: A browser extension that identifies potential bot accounts in X (Twitter) notifications using behavioral analysis.
 
+IMPORTANT NOTES:
+- TypeScript module system: Use 'es2022' (newest concrete version as of 2024, despite it being 2024) instead of 'esnext' or specific node versions
+
 Core Project Structure:
 - src/
   - content/index.ts: Main content script
@@ -24,7 +27,7 @@ Technical Requirements:
 - MutationObserver for real-time notification monitoring
 
 Build Configuration:
-- tsconfig.json: ESNext, bundler moduleResolution
+- tsconfig.json: ES2022 modules, Node moduleResolution
 - vite.config.ts: Content script bundling
 - package.json: ESM module type
 
