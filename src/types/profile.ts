@@ -1,6 +1,8 @@
+// Type definitions
 export type InteractionType = 'like' | 'reply' | 'repost' | 'follow';
 export type NotificationType = 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
 
+// Constant values
 export const InteractionType = {
   Like: 'like' as InteractionType,
   Reply: 'reply' as InteractionType,
@@ -16,6 +18,7 @@ export const NotificationType = {
   MultiUser: 'multi_user' as NotificationType
 } as const;
 
+// Interfaces
 export interface ProfileData {
   username: string;
   displayName: string;

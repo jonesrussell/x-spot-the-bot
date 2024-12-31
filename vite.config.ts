@@ -12,12 +12,21 @@ export default defineConfig({
     rollupOptions: {
       output: {
         preserveModules: true,
-        entryFileNames: '[name].js'
+        entryFileNames: '[name].js',
+        preserveModulesRoot: 'src'
+      },
+      treeshake: {
+        moduleSideEffects: true,
+        propertyReadSideEffects: true
       }
-    }
+    },
+    sourcemap: true,
+    minify: false
   },
   esbuild: {
     keepNames: true,
-    treeShaking: true
+    treeShaking: false,
+    legalComments: 'inline',
+    target: 'es2022'
   }
 }); 

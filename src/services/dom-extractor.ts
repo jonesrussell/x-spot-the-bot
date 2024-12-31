@@ -1,7 +1,7 @@
 import { ProfileData, InteractionType, NotificationType } from '../types/profile.js';
 
 interface NotificationData {
-  type: 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
+  type: NotificationType;
   text: string;
   users?: ProfileData[];
 }
@@ -53,8 +53,8 @@ export class DOMExtractor {
       }
 
       // Skip non-user notifications
-      if (notificationData.type !== 'user_interaction' && 
-          notificationData.type !== 'multi_user') {
+      if (notificationData.type !== NotificationType.UserInteraction && 
+          notificationData.type !== NotificationType.MultiUser) {
         console.debug('[XBot:DOM] Skipping non-user notification:', notificationData.type);
         return null;
       }
@@ -78,13 +78,13 @@ export class DOMExtractor {
 
     // Check notification type
     if (this.NOTIFICATION_PATTERNS.PINNED_POST.test(text)) {
-      return { type: 'pinned_post', text };
+      return { type: NotificationType.PinnedPost, text };
     }
     if (this.NOTIFICATION_PATTERNS.TRENDING.test(text)) {
-      return { type: 'trending', text };
+      return { type: NotificationType.Trending, text };
     }
     if (this.NOTIFICATION_PATTERNS.COMMUNITY_POST.test(text)) {
-      return { type: 'community_post', text };
+      return { type: NotificationType.CommunityPost, text };
     }
 
     // Find all user links
@@ -128,8 +128,8 @@ export class DOMExtractor {
 
     return {
       type: this.NOTIFICATION_PATTERNS.MULTI_USER.test(text)
-        ? 'multi_user'
-        : 'user_interaction',
+        ? NotificationType.MultiUser
+        : NotificationType.UserInteraction,
       text,
       users
     };
