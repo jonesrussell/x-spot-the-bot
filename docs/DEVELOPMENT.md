@@ -33,12 +33,26 @@ npm run build
 ### DOM Operations
 - Use data-testid attributes for element selection
 - Always include null checks
-- Add debug logging for development
+- Add debug logging with [XBot:DOM] prefix
+- Handle dynamic class names by avoiding CSS class selectors
 
 ### Bot Detection
-- Implement detection logic in ProfileAnalyzer
-- Document detection criteria
-- Add unit tests for algorithms
+- Probability threshold: >= 0.6 for warnings
+- Score components:
+  - Username patterns (max 0.5)
+  - No followers/following (0.3)
+  - Display name similarity (0.2)
+- Maximum total score: 0.9
+- Avoid duplicate detections
+- Skip community posts
+
+### Debug Logging
+- Use consistent prefixes:
+  - [XBot:Core] for main logic
+  - [XBot:DOM] for DOM operations
+  - [XBot:Analysis] for bot detection
+- Include relevant context
+- Log failures with specific reasons
 
 ## Testing
 
@@ -47,13 +61,16 @@ npm run build
 3. Visit twitter.com/notifications
 4. Check console for debug logs
 5. Verify UI indicators appear
+6. Test with known bot accounts
+7. Verify no duplicate warnings
 
 ## Debugging
 
 - Check browser console for logs
-- Use debug logging in services
-- Monitor network requests
-- Test with known bot accounts
+- Filter console by [XBot
+- Monitor extraction failures
+- Check score breakdowns
+- Verify pattern matches
 
 ## Best Practices
 
@@ -61,4 +78,7 @@ npm run build
 2. Add TypeScript interfaces for data structures
 3. Handle edge cases and errors
 4. Document public methods
-5. Use consistent naming conventions 
+5. Use consistent naming conventions
+6. Add detailed debug logging
+7. Avoid CSS class selectors
+8. Track processed elements 

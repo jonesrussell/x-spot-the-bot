@@ -116,14 +116,18 @@ export class BotDetector {
 
     // Skip if we've already processed this username
     if (this.processedUsernames.has(profileData.username)) {
+      console.debug('[XBot:Core] Skipping duplicate username:', profileData.username);
       notification.setAttribute('data-xbot-processed', 'true');
       return;
     }
 
     const analysis = await this.profileAnalyzer.analyzeBotProbability(profileData);
-    if (analysis.probability > 0.5) {
-      console.debug('[XBot:Core] Bot detected', {
+    
+    // Only show warnings for high probability bots
+    if (analysis.probability >= 0.6) {
+      console.debug('[XBot:Core] High probability bot detected', {
         username: profileData.username,
+        displayName: profileData.displayName,
         probability: analysis.probability,
         reasons: analysis.reasons
       });
@@ -136,6 +140,12 @@ export class BotDetector {
         analysis.probability,
         analysis.reasons
       );
+    } else if (analysis.probability > 0) {
+      console.debug('[XBot:Core] Low probability bot ignored', {
+        username: profileData.username,
+        probability: analysis.probability,
+        reasons: analysis.reasons
+      });
     }
 
     // Track processed username and mark element

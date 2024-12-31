@@ -10,9 +10,24 @@ IMPORTANT NOTES:
   - Not our code - it's in ts-node/dist-raw/node-internal-modules-esm-resolve.js
   - Can be ignored as it's a ts-node internal issue
 
+Bot Detection Rules:
+- Probability threshold: >= 0.6 for high probability bots
+- Score components:
+  - No followers/following: 0.3
+  - Username patterns: up to 0.5 combined
+  - Display name similarity: 0.2
+- Maximum total score: 0.9
+- Suspicious patterns:
+  - Random alphanumeric (0.3): ^[a-z0-9]{8,}$
+  - Many numbers (0.2): [0-9]{4,}
+  - Bot keywords (0.3): bot|spam|[0-9]+[a-z]+[0-9]+
+  - Random suffix (0.2): [a-z]+[0-9]{4,}$
+  - Numeric suffix (0.2): [0-9]{4,}$
+  - Random letters (0.2): [A-Z]{2,}[0-9]+
+
 Core Project Structure:
 - src/
-  - content/index.ts: Main content script
+  - content/index.ts: Main content script with BotDetector
   - services/
     - dom-extractor.ts: Handles DOM operations and data extraction
     - profile-analyzer.ts: Analyzes profiles for bot-like behavior
@@ -42,11 +57,12 @@ Current Focus:
 - DOM structure parsing for X's notification page
 - Local storage for interaction history
 - Real-time notification monitoring
+- Duplicate detection prevention
 
 Coding Standards:
 - Use TypeScript interfaces for type definitions
 - Maintain single responsibility principle (SRP)
-- Add debug logging for development
+- Add debug logging with [XBot:Category] prefix
 - Handle DOM operations safely with null checks
 - Follow Edge extension best practices
 
