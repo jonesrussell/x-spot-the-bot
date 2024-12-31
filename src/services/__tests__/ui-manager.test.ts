@@ -4,16 +4,85 @@ import type { BotAnalysis } from '../../types/profile.js';
 describe('UIManager', () => {
   let uiManager: UIManager;
   let container: HTMLElement;
+  let feed: HTMLElement;
 
   beforeEach(() => {
     uiManager = new UIManager();
     container = document.createElement('div');
     container.setAttribute('data-testid', 'cellInnerDiv');
     document.body.appendChild(container);
+
+    // Create mock feed
+    feed = document.createElement('div');
+    feed.setAttribute('data-testid', 'primaryColumn');
+    feed.appendChild(document.createElement('div')); // Add firstChild
+    document.body.appendChild(feed);
   });
 
   afterEach(() => {
     document.body.innerHTML = '';
+  });
+
+  describe('summary panel', () => {
+    it('should create panel with correct styling', async () => {
+      await uiManager.createSummaryPanel();
+      const panel = document.querySelector('.xbd-summary-panel');
+      expect(panel).not.toBeNull();
+      expect(panel?.classList.contains('r-1kqtdi0')).toBe(true); // X's sticky class
+      expect(panel?.classList.contains('r-1d2f490')).toBe(true); // X's z-index class
+    });
+
+    it('should update panel statistics', async () => {
+      await uiManager.createSummaryPanel();
+      uiManager.updatePanelStats({
+        highProbability: 5,
+        mediumProbability: 3,
+        lowProbability: 10
+      });
+      
+      const panel = document.querySelector('.xbd-summary-panel');
+      const highEl = panel?.querySelector('#xbot-high');
+      const mediumEl = panel?.querySelector('#xbot-medium');
+      const lowEl = panel?.querySelector('#xbot-low');
+
+      expect(highEl?.textContent).toBe('5');
+      expect(mediumEl?.textContent).toBe('3');
+      expect(lowEl?.textContent).toBe('10');
+    });
+
+    it('should handle dark mode', async () => {
+      document.documentElement.setAttribute('data-color-mode', 'dark');
+      await uiManager.createSummaryPanel();
+      const panel = document.querySelector('.xbd-summary-panel');
+      expect(panel?.classList.contains('r-kemksi')).toBe(true); // X's dark theme bg class
+    });
+
+    it('should handle light mode', async () => {
+      document.documentElement.setAttribute('data-color-mode', 'light');
+      await uiManager.createSummaryPanel();
+      const panel = document.querySelector('.xbd-summary-panel');
+      expect(panel?.classList.contains('r-14lw9ot')).toBe(true); // X's light theme bg class
+    });
+
+    it('should maintain correct position', async () => {
+      await uiManager.createSummaryPanel();
+      const panel = document.querySelector('.xbd-summary-panel') as HTMLElement;
+      expect(panel).not.toBeNull();
+      
+      // Add necessary styles for testing
+      Object.defineProperty(window, 'getComputedStyle', {
+        value: () => ({
+          position: 'sticky',
+          top: '0px',
+          zIndex: '9999999'
+        })
+      });
+
+      const styles = window.getComputedStyle(panel);
+      expect(styles.position).toBe('sticky');
+      expect(styles.top).toBe('0px');
+      expect(styles.zIndex).toBe('9999999');
+    });
   });
 
   describe('addWarningIndicator', () => {

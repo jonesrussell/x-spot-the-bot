@@ -1,5 +1,11 @@
 import type { BotAnalysis } from '../types/profile.js';
 
+interface PanelStats {
+  highProbability: number;
+  mediumProbability: number;
+  lowProbability: number;
+}
+
 export class UIManager {
   private readonly CSS_ID = 'xbot-styles';
   private readonly HIGH_PROBABILITY_THRESHOLD = 0.6;
@@ -30,10 +36,10 @@ export class UIManager {
     }
   }
 
-  private async createSummaryPanel(): Promise<void> {
+  async createSummaryPanel(): Promise<void> {
     // Create summary panel
     const panel = document.createElement('div');
-    panel.className = 'xbd-summary-panel';
+    panel.className = 'xbd-summary-panel r-1kqtdi0 r-1d2f490'; // Using X's classes
 
     // Add title and stats
     panel.innerHTML = `
@@ -41,11 +47,11 @@ export class UIManager {
       <div class="xbd-summary-stats">
         <div class="xbd-stat high">
           <span class="xbd-stat-icon">🤖</span>
-          <span>High Probability Bots: <span id="xbot-high">0</span></span>
+          <span>High Risk: <span id="xbot-high">0</span></span>
         </div>
         <div class="xbd-stat medium">
           <span class="xbd-stat-icon">⚠️</span>
-          <span>Medium Probability: <span id="xbot-medium">0</span></span>
+          <span>Medium Risk: <span id="xbot-medium">0</span></span>
         </div>
         <div class="xbd-stat low">
           <span class="xbd-stat-icon">✓</span>
@@ -54,27 +60,29 @@ export class UIManager {
       </div>
     `;
 
-    // Try different selectors for the feed
-    const selectors = [
-      '[data-testid="primaryColumn"]',
-      '[aria-label="Timeline: Notifications"]',
-      '[data-testid="notificationsTimeline"]',
-      'section[role="region"]'
-    ];
+    // Add theme-specific class
+    const isDarkMode = document.documentElement.getAttribute('data-color-mode') === 'dark';
+    panel.classList.add(isDarkMode ? 'r-kemksi' : 'r-14lw9ot');
 
-    for (const selector of selectors) {
-      const feed = document.querySelector(selector);
-      if (feed) {
-        console.debug('[XBot:UI] Found feed with selector:', selector);
-        feed.insertBefore(panel, feed.firstChild);
-        this.summaryPanel = panel;
-        break;
-      }
-    }
-
-    if (this.summaryPanel) {
+    // Find feed and insert panel
+    const feed = document.querySelector('[data-testid="primaryColumn"]');
+    if (feed?.firstChild) {
+      feed.insertBefore(panel, feed.firstChild);
+      this.summaryPanel = panel;
       console.debug('[XBot:UI] Summary panel created');
     }
+  }
+
+  updatePanelStats(stats: PanelStats): void {
+    if (!this.summaryPanel) return;
+
+    const highEl = this.summaryPanel.querySelector('#xbot-high');
+    const mediumEl = this.summaryPanel.querySelector('#xbot-medium');
+    const lowEl = this.summaryPanel.querySelector('#xbot-low');
+
+    if (highEl) highEl.textContent = stats.highProbability.toString();
+    if (mediumEl) mediumEl.textContent = stats.mediumProbability.toString();
+    if (lowEl) lowEl.textContent = stats.lowProbability.toString();
   }
 
   private updateStats(analysis: BotAnalysis): void {
