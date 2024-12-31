@@ -3,40 +3,82 @@ import type { ProfileData } from '../types/profile.js';
 export class DOMExtractor {
   private readonly SELECTORS = {
     CELL: '[data-testid="cellInnerDiv"]',
-    NOTIFICATION: 'article[data-testid="notification"]',
-    AVATAR_CONTAINER: (username: string) => `[data-testid="UserAvatar-Container-${username}"]`,
-    USER_LINK: 'a[href^="/"]'
+    NOTIFICATION: '[data-testid="tweet"]',
+    USER_NAME: '[data-testid="User-Name"]',
+    USER_AVATAR: '[data-testid="Tweet-User-Avatar"]'
   } as const;
 
   public extractProfileData(element: HTMLElement): ProfileData | null {
     try {
-      const cell = this.findCell(element);
-      if (!cell) return null;
+      // Skip if this is our warning element
+      if (element.classList.contains('xbd-warning')) {
+        console.debug('DOMExtractor: Skipping our warning element');
+        return null;
+      }
 
-      const userLink = this.findFirstUserLink(cell);
-      if (!userLink) return null;
+      // Find the notification cell
+      const cell = element.closest(this.SELECTORS.CELL);
+      if (!cell || !(cell instanceof HTMLElement)) {
+        console.debug('DOMExtractor: No notification cell found');
+        return null;
+      }
 
-      const username = this.extractUsername(userLink);
-      if (!username) return null;
+      // Find user name element
+      const userNameElement = cell.querySelector(this.SELECTORS.USER_NAME);
+      if (!userNameElement) {
+        console.debug('DOMExtractor: No user name element found');
+        return null;
+      }
 
-      const displayName = this.extractDisplayName(userLink, username);
-      const profileImageUrl = this.extractProfileImage(cell, username);
-      const interactionType = this.extractInteractionType(cell);
+      // Find user link within user name element
+      const userLink = userNameElement.querySelector('a[role="link"]');
+      if (!userLink || !(userLink instanceof HTMLAnchorElement)) {
+        console.debug('DOMExtractor: No user link found in name element');
+        return null;
+      }
 
-      if (!interactionType) return null;
+      const username = userLink.getAttribute('href')?.slice(1);
+      if (!username) {
+        console.debug('DOMExtractor: Could not extract username from href');
+        return null;
+      }
 
-      const profileData: ProfileData = {
+      // Get display name from user name element
+      const displayName = this.extractDisplayName(userNameElement) || username;
+
+      // Find profile image
+      const avatarContainer = cell.querySelector(this.SELECTORS.USER_AVATAR);
+      if (!avatarContainer) {
+        console.debug('DOMExtractor: No avatar container found');
+        return null;
+      }
+
+      const profileImageUrl = this.extractProfileImage(avatarContainer);
+      if (!profileImageUrl) {
+        console.debug('DOMExtractor: Could not extract profile image URL');
+        return null;
+      }
+
+      // Get interaction type from notification text
+      const notification = cell.querySelector(this.SELECTORS.NOTIFICATION);
+      const notificationText = notification?.textContent?.toLowerCase() || '';
+      const interactionType = this.determineInteractionType(notificationText);
+
+      console.debug('DOMExtractor: Successfully extracted profile data for', username, {
+        displayName,
+        profileImageUrl,
+        interactionType
+      });
+
+      return {
         username,
         displayName,
         profileImageUrl,
-        followersCount: 0, // TODO: Implement extraction
-        followingCount: 0, // TODO: Implement extraction
+        followersCount: 0, // TODO: Implement follower count extraction
+        followingCount: 0, // TODO: Implement following count extraction
         interactionTimestamp: Date.now(),
         interactionType
       };
-
-      console.debug('DOMExtractor: Successfully extracted profile data', profileData);
-      return profileData;
 
     } catch (error) {
       console.error('DOMExtractor: Error extracting profile data:', error);
@@ -44,91 +86,44 @@ export class DOMExtractor {
     }
   }
 
-  private findCell(element: HTMLElement): HTMLElement | null {
-    if (!element?.matches(this.SELECTORS.CELL)) {
-      const cell = element.querySelector<HTMLElement>(this.SELECTORS.CELL);
-      if (!cell) {
-        console.debug('DOMExtractor: No cell inner div found');
-        return null;
+  private extractDisplayName(nameElement: Element): string | null {
+    // Get all text nodes, excluding emoji images
+    const walker = document.createTreeWalker(nameElement, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      const text = node.textContent?.trim();
+      if (text && !text.startsWith('@')) {
+        textNodes.push(text);
       }
-      return cell;
     }
-    return element;
+    return textNodes[0] || null;
   }
 
-  private findFirstUserLink(cell: HTMLElement): HTMLAnchorElement | null {
-    const userLinks = Array.from(cell.querySelectorAll<HTMLAnchorElement>(this.SELECTORS.USER_LINK))
-      .filter(link => {
-        const href = link.getAttribute('href');
-        return href && !href.includes('/') && !href.includes('?');
-      });
-
-    if (userLinks.length === 0) {
-      console.debug('DOMExtractor: No user links found');
-      return null;
-    }
-
-    return userLinks[0];
-  }
-
-  private extractUsername(link: HTMLAnchorElement): string | null {
-    const username = link.getAttribute('href')?.replace('/', '');
-    if (!username) {
-      console.debug('DOMExtractor: Could not extract username from link');
-      return null;
-    }
-    return username;
-  }
-
-  private extractDisplayName(link: HTMLAnchorElement, fallback: string): string {
-    const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT, null);
-    const firstTextNode = walker.nextNode();
-    return firstTextNode?.textContent?.trim() || fallback;
-  }
-
-  private extractProfileImage(cell: HTMLElement, username: string): string {
-    const avatarContainer = cell.querySelector(this.SELECTORS.AVATAR_CONTAINER(username));
-    if (!avatarContainer) {
-      console.debug('DOMExtractor: No avatar container found');
-      return '';
-    }
-
-    // Try img tag first
-    const imgElement = avatarContainer.querySelector('img');
-    if (imgElement) {
-      return imgElement.src;
+  private extractProfileImage(container: Element): string | null {
+    // Try to find img tag first
+    const img = container.querySelector('img[src*="profile_images"]');
+    if (img && img instanceof HTMLImageElement && img.src) {
+      return img.src;
     }
 
     // Fallback to background image
-    const bgElements = avatarContainer.querySelectorAll('[style*="background-image"]');
+    const bgElements = container.querySelectorAll('[style*="background-image"]');
     for (const el of bgElements) {
       const style = window.getComputedStyle(el);
       const bgImage = style.backgroundImage;
-      if (bgImage && bgImage !== 'none') {
+      if (bgImage && bgImage !== 'none' && bgImage.includes('profile_images')) {
         return bgImage.replace(/^url\(['"](.+)['"]\)$/, '$1');
       }
     }
 
-    console.debug('DOMExtractor: Could not find profile image URL');
-    return '';
-  }
-
-  private extractInteractionType(cell: HTMLElement): ProfileData['interactionType'] | null {
-    const article = cell.querySelector(this.SELECTORS.NOTIFICATION);
-    if (!article) {
-      console.debug('DOMExtractor: No notification article found');
-      return null;
-    }
-
-    const text = article.textContent?.toLowerCase() || '';
-    return this.determineInteractionType(text);
+    return null;
   }
 
   private determineInteractionType(text: string): ProfileData['interactionType'] {
     if (text.includes('liked')) return 'like';
     if (text.includes('replied')) return 'reply';
     if (text.includes('reposted')) return 'repost';
-    if (text.includes('followed')) return 'follow';
-    return 'like'; // Default to like to satisfy type system
+    return 'follow';
   }
 }

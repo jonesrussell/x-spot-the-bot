@@ -66,12 +66,12 @@ export class BotDetector {
         if (mutation.type === 'childList') {
           mutation.addedNodes.forEach(node => {
             if (node instanceof HTMLElement) {
+              // Skip our warning elements and already processed nodes
+              if (node.classList.contains('xbd-warning') || node.hasAttribute('data-xbot-processed')) {
+                return;
+              }
+
               console.debug('BotDetector: Found new notification cell');
-              console.debug('Cell HTML:', node.outerHTML);
-              console.debug('Cell data-testids:', 
-                Array.from(node.querySelectorAll('[data-testid]'))
-                  .map(el => el.getAttribute('data-testid'))
-              );
               this.processNotification(node);
             }
           });
@@ -103,6 +103,11 @@ export class BotDetector {
   }
 
   private async processNotification(notification: HTMLElement) {
+    // Skip if already processed
+    if (notification.hasAttribute('data-xbot-processed')) {
+      return;
+    }
+
     const profileData = this.domExtractor.extractProfileData(notification);
     if (!profileData) {
       console.debug('BotDetector: Could not extract profile data');
@@ -112,8 +117,17 @@ export class BotDetector {
     const analysis = await this.profileAnalyzer.analyzeBotProbability(profileData);
     if (analysis.probability > 0.5) {
       this.uiManager.addBotWarningUI(notification, analysis.probability, analysis.reasons);
-      await this.storageService.recordSuspiciousProfile(profileData);
+      await this.storageService.recordInteraction(
+        profileData.username,
+        profileData.interactionTimestamp,
+        profileData.interactionType,
+        analysis.probability,
+        analysis.reasons
+      );
     }
+
+    // Mark as processed
+    notification.setAttribute('data-xbot-processed', 'true');
   }
 }
 
