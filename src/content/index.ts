@@ -11,6 +11,7 @@ export class BotDetector {
   private observer: MutationObserver | null = null;
   private retryCount = 0;
   private maxRetries = 10;
+  private processedUsernames = new Set<string>();
 
   constructor() {
     console.debug('[XBot:Core] Initializing...');
@@ -109,12 +110,24 @@ export class BotDetector {
 
     const profileData = this.domExtractor.extractProfileData(notification);
     if (!profileData) {
-      console.debug('[XBot:Core] Could not extract profile data');
+      notification.setAttribute('data-xbot-processed', 'true');
+      return;
+    }
+
+    // Skip if we've already processed this username
+    if (this.processedUsernames.has(profileData.username)) {
+      notification.setAttribute('data-xbot-processed', 'true');
       return;
     }
 
     const analysis = await this.profileAnalyzer.analyzeBotProbability(profileData);
     if (analysis.probability > 0.5) {
+      console.debug('[XBot:Core] Bot detected', {
+        username: profileData.username,
+        probability: analysis.probability,
+        reasons: analysis.reasons
+      });
+
       this.uiManager.addBotWarningUI(notification, analysis.probability, analysis.reasons);
       await this.storageService.recordInteraction(
         profileData.username,
@@ -125,7 +138,8 @@ export class BotDetector {
       );
     }
 
-    // Mark as processed
+    // Track processed username and mark element
+    this.processedUsernames.add(profileData.username);
     notification.setAttribute('data-xbot-processed', 'true');
   }
 }
