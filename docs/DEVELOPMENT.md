@@ -15,7 +15,7 @@ npm run build
 ## Development Workflow
 
 1. Make changes to TypeScript files in `src/`
-2. Run build to compile and bundle
+2. Build to compile and bundle
 3. Load unpacked extension in Edge
 4. Test changes in notifications page
 
@@ -36,6 +36,23 @@ npm run build
 - Add debug logging with [XBot:DOM] prefix
 - Handle dynamic class names by avoiding CSS class selectors
 
+### UI Components
+- Summary Panel:
+  - Sticky header at top of notifications
+  - Shows live bot detection statistics
+  - Dark theme matching X's UI
+  - Updates in real-time as notifications are processed
+- Warning Indicators:
+  - 🤖 Red (>=60% probability)
+  - ⚠️ Orange (30-59% probability)
+  - ✓ Green (<30% probability)
+  - Hover to show detection reasons
+- CSS Requirements:
+  - Use !important for all styles
+  - High z-index (9999999) to stay on top
+  - Support dark/light themes
+  - Maintain relative positioning
+
 ### Bot Detection
 - Probability threshold: >= 0.6 for warnings
 - Score components:
@@ -48,11 +65,12 @@ npm run build
 
 ### Debug Logging
 - Use consistent prefixes:
-  - [XBot:Core] for main logic
-  - [XBot:DOM] for DOM operations
-  - [XBot:Analysis] for bot detection
-- Include relevant context
-- Log failures with specific reasons
+  - [XBot:Core] - Initialization and processing
+  - [XBot:DOM] - Element operations
+  - [XBot:Analyzer] - Bot detection results
+  - [XBot:UI] - Panel and indicator updates
+- Include relevant data in logs
+- Filter console by prefix for debugging
 
 ## Testing
 

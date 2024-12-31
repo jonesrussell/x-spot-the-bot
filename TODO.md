@@ -7,7 +7,8 @@
 - [x] Set up DOM monitoring for notifications page
 - [x] Add local storage for tracking interaction history
 - [x] Replace enums with const objects using 'as const'
-- [ ] Fix UI inconsistencies between development and production builds
+- [x] Fix UI inconsistencies between development and production builds
+- [x] Add summary panel for bot detection statistics
 - [ ] Add follower/following count extraction from profile pages
 - [ ] Implement rate limiting for API calls
 - [ ] Fix test helper functions to avoid Promise returns in callbacks
@@ -16,6 +17,7 @@
 - [x] Add unit tests for core services
 - [x] Implement UI for showing bot warnings
 - [x] Simplify test setup with helper functions
+- [x] Add dark mode support in UI elements
 - [ ] Add settings page for customizing detection thresholds
 - [ ] Create documentation for bot detection algorithms
 - [ ] Add error handling and recovery for API failures
@@ -28,7 +30,7 @@
 ## Low Priority
 - [ ] Add telemetry for detection accuracy
 - [ ] Create options page for user preferences
-- [ ] Add support for dark mode in UI elements
+- [ ] Add export/import functionality for detection history
 - [ ] Optimize performance for large notification lists
 - [ ] Add i18n support for multiple languages
 - [ ] Add accessibility features (ARIA labels, keyboard navigation)

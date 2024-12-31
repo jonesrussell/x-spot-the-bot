@@ -5,9 +5,13 @@ A browser extension that helps identify potential bot accounts in X (Twitter) no
 ## Features
 
 - Real-time bot detection in notifications
+- Live summary panel showing bot detection statistics
 - Profile analysis based on behavioral patterns
 - Local history tracking of suspicious accounts
-- Non-intrusive UI indicators
+- Non-intrusive UI indicators:
+  - 🤖 Red - High probability bot (>=60%)
+  - ⚠️ Orange - Medium probability bot (30-59%)
+  - ✓ Green - Likely real account (<30%)
 - Privacy-focused design (all analysis done locally)
 - Type-safe implementation with strict checks
 
@@ -29,6 +33,17 @@ npm run build
    - Enable "Developer mode"
    - Click "Load unpacked"
    - Select the `dist` directory
+
+## Usage
+
+1. Open X (Twitter) notifications
+2. The extension will automatically:
+   - Show a summary panel at the top with live statistics
+   - Analyze each notification for bot patterns
+   - Display indicators next to usernames
+   - Track counts of detected bots
+3. Hover over indicators to see detection reasons
+4. Filter console logs with `[XBot:Analyzer]` to see detailed results
 
 ## Project Structure
 
