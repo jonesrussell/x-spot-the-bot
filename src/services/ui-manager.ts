@@ -4,14 +4,79 @@ export class UIManager {
   private readonly CSS_ID = 'xbot-styles';
   private readonly HIGH_PROBABILITY_THRESHOLD = 0.6;
   private readonly MEDIUM_PROBABILITY_THRESHOLD = 0.3;
+  private summaryPanel: HTMLElement | null = null;
+  private stats = {
+    high: 0,
+    medium: 0,
+    low: 0
+  };
 
   constructor() {
     this.updateStyles();
+    this.createSummaryPanel();
+  }
+
+  private createSummaryPanel(): void {
+    // Create summary panel
+    const panel = document.createElement('div');
+    panel.className = 'xbd-summary-panel';
+
+    // Add title and stats
+    panel.innerHTML = `
+      <div class="xbd-summary-title">🔍 Bot Detection Summary</div>
+      <div class="xbd-summary-stats">
+        <div class="xbd-stat high">
+          <span class="xbd-stat-icon">🤖</span>
+          <span>High Probability Bots: <span id="xbot-high">0</span></span>
+        </div>
+        <div class="xbd-stat medium">
+          <span class="xbd-stat-icon">⚠️</span>
+          <span>Medium Probability: <span id="xbot-medium">0</span></span>
+        </div>
+        <div class="xbd-stat low">
+          <span class="xbd-stat-icon">✓</span>
+          <span>Likely Real: <span id="xbot-low">0</span></span>
+        </div>
+      </div>
+    `;
+
+    // Insert at top of notifications
+    const feed = document.querySelector('[data-testid="primaryColumn"]');
+    if (feed) {
+      feed.insertBefore(panel, feed.firstChild);
+      this.summaryPanel = panel;
+    }
+  }
+
+  private updateStats(analysis: BotAnalysis): void {
+    if (!this.summaryPanel) {
+      return;
+    }
+
+    if (analysis.probability >= this.HIGH_PROBABILITY_THRESHOLD) {
+      this.stats.high++;
+    } else if (analysis.probability >= this.MEDIUM_PROBABILITY_THRESHOLD) {
+      this.stats.medium++;
+    } else {
+      this.stats.low++;
+    }
+
+    // Update panel counts
+    const highEl = this.summaryPanel.querySelector('#xbot-high');
+    const mediumEl = this.summaryPanel.querySelector('#xbot-medium');
+    const lowEl = this.summaryPanel.querySelector('#xbot-low');
+
+    if (highEl) highEl.textContent = this.stats.high.toString();
+    if (mediumEl) mediumEl.textContent = this.stats.medium.toString();
+    if (lowEl) lowEl.textContent = this.stats.low.toString();
   }
 
   public addWarningIndicator(element: HTMLElement, analysis: BotAnalysis): void {
     // Remove existing warning if any
     this.removeWarningIndicator(element);
+
+    // Update stats
+    this.updateStats(analysis);
 
     // Create warning element
     const warning = document.createElement('div');
@@ -83,6 +148,54 @@ export class UIManager {
     styles.id = this.CSS_ID;
     styles.setAttribute('data-xbot', 'true');
     styles.textContent = `
+      .xbd-summary-panel {
+        position: sticky !important;
+        top: 0 !important;
+        background: #16181c !important;
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+        padding: 16px !important;
+        margin-bottom: 8px !important;
+        z-index: 9999999 !important;
+        font-size: 14px !important;
+        color: #fff !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+      }
+
+      .xbd-summary-title {
+        font-weight: bold !important;
+        margin-bottom: 12px !important;
+        font-size: 16px !important;
+        color: #1d9bf0 !important;
+      }
+
+      .xbd-summary-stats {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+
+      .xbd-stat {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+
+      .xbd-stat.high {
+        color: #ff4444 !important;
+      }
+
+      .xbd-stat.medium {
+        color: #ffaa44 !important;
+      }
+
+      .xbd-stat.low {
+        color: #44cc44 !important;
+      }
+
+      .xbd-stat-icon {
+        font-size: 16px !important;
+      }
+
       .xbd-warning {
         display: inline-flex !important;
         align-items: center !important;
