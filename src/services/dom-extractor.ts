@@ -3,9 +3,10 @@ import type { ProfileData } from '../types/profile.js';
 export class DOMExtractor {
   private readonly SELECTORS = {
     CELL: '[data-testid="cellInnerDiv"]',
-    NOTIFICATION: '[data-testid="tweet"]',
-    USER_NAME: '[data-testid="User-Name"]',
-    USER_AVATAR: '[data-testid="Tweet-User-Avatar"]'
+    NOTIFICATION: '[data-testid="notification"]',
+    USER_NAME: '[data-testid="UserName"]',
+    USER_AVATAR: '[data-testid="UserAvatar"]',
+    TWEET_TEXT: '[data-testid="tweetText"]'
   } as const;
 
   public extractProfileData(element: HTMLElement): ProfileData | null {
@@ -27,6 +28,15 @@ export class DOMExtractor {
         testIds: Array.from(cell.querySelectorAll('[data-testid]'))
           .map(el => el.getAttribute('data-testid'))
       });
+
+      // Check if this is a community or pinned post notification
+      const notificationText = cell.textContent?.toLowerCase() || '';
+      if (notificationText.includes('new pinned post in') || 
+          notificationText.includes('trending in') ||
+          notificationText.includes('community post')) {
+        console.debug('[XBot:DOM] Skipping community/pinned post notification');
+        return null;
+      }
 
       // Find user name element
       const userNameElement = cell.querySelector(this.SELECTORS.USER_NAME);
@@ -67,11 +77,10 @@ export class DOMExtractor {
       // Get interaction type from notification text
       const notification = cell.querySelector(this.SELECTORS.NOTIFICATION);
       if (!notification) {
-        console.debug('[XBot:DOM] Failed at: No tweet element found');
+        console.debug('[XBot:DOM] Failed at: No notification element found');
         return null;
       }
 
-      const notificationText = notification.textContent?.toLowerCase() || '';
       const interactionType = this.determineInteractionType(notificationText);
 
       console.debug('[XBot:DOM] Successfully extracted profile data', {
