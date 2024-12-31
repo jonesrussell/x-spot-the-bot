@@ -1,22 +1,22 @@
 // Type definitions
-export type InteractionType = 'like' | 'reply' | 'repost' | 'follow';
-export type NotificationType = 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
-
-// Constant values
 export const InteractionType = {
-  Like: 'like' as InteractionType,
-  Reply: 'reply' as InteractionType,
-  Repost: 'repost' as InteractionType,
-  Follow: 'follow' as InteractionType
+  Like: 'like',
+  Reply: 'reply',
+  Repost: 'repost',
+  Follow: 'follow'
 } as const;
 
 export const NotificationType = {
-  UserInteraction: 'user_interaction' as NotificationType,
-  PinnedPost: 'pinned_post' as NotificationType,
-  Trending: 'trending' as NotificationType,
-  CommunityPost: 'community_post' as NotificationType,
-  MultiUser: 'multi_user' as NotificationType
+  UserInteraction: 'user_interaction',
+  PinnedPost: 'pinned_post',
+  Trending: 'trending',
+  CommunityPost: 'community_post',
+  MultiUser: 'multi_user'
 } as const;
+
+// Infer types from const objects
+export type InteractionType = typeof InteractionType[keyof typeof InteractionType];
+export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
 
 // Interfaces
 export interface ProfileData {

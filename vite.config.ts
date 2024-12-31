@@ -9,24 +9,47 @@ export default defineConfig({
       entry: 'src/content/index.ts',
       formats: ['es']
     },
+    modulePreload: {
+      polyfill: false
+    },
+    cssCodeSplit: true,
+    sourcemap: true,
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         preserveModules: true,
         entryFileNames: '[name].js',
-        preserveModulesRoot: 'src'
+        preserveModulesRoot: 'src',
+        inlineDynamicImports: false
       },
       treeshake: {
         moduleSideEffects: true,
-        propertyReadSideEffects: true
+        propertyReadSideEffects: true,
+        unknownGlobalSideEffects: false
       }
-    },
-    sourcemap: true,
-    minify: false
+    }
   },
   esbuild: {
+    target: 'es2022',
+    format: 'esm',
+    treeShaking: true,
+    minifyIdentifiers: true,
+    minifySyntax: true,
+    minifyWhitespace: true,
     keepNames: true,
-    treeShaking: false,
-    legalComments: 'inline',
-    target: 'es2022'
+    legalComments: 'none',
+    supported: {
+      'const-enum': true,
+      'arbitrary-module-namespace-names': true,
+      'top-level-await': true
+    }
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'es2022',
+      supported: {
+        'const-enum': true
+      }
+    }
   }
 }); 

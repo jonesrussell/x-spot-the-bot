@@ -1,39 +1,69 @@
-import { jest } from '@jest/globals';
+import '@testing-library/jest-dom';
 
-// Mock Chrome Extension API
-const mockChrome = {
-  storage: {
-    local: {
-      get: jest.fn(),
-      set: jest.fn(),
-      remove: jest.fn(),
-      clear: jest.fn(),
-      mockClear: jest.fn()
-    }
+// Mock Chrome API
+const mockChromeStorage = {
+  local: {
+    get: jest.fn(),
+    set: jest.fn()
   }
 };
 
-// Add chrome to global scope
-(global as any).chrome = mockChrome;
-
-// Reset all mocks before each test
-beforeEach(() => {
-  jest.clearAllMocks();
-  Object.values(mockChrome.storage.local).forEach(mock => {
-    if (mock instanceof Function) {
-      mock.mockClear();
-    }
-  });
+// Type-safe mock implementation
+mockChromeStorage.local.get.mockImplementation((keys, callback) => {
+  if (typeof keys === 'string') {
+    callback?.({ [keys]: null });
+    return Promise.resolve({ [keys]: null });
+  }
+  if (Array.isArray(keys)) {
+    const result = Object.fromEntries(keys.map(key => [key, null]));
+    callback?.(result);
+    return Promise.resolve(result);
+  }
+  if (typeof keys === 'object') {
+    const result = Object.fromEntries(
+      Object.entries(keys).map(([key, defaultValue]) => [key, defaultValue])
+    );
+    callback?.(result);
+    return Promise.resolve(result);
+  }
+  callback?.({});
+  return Promise.resolve({});
 });
 
-// Clean up after each test
-afterEach(() => {
-  // Clean up any DOM modifications
-  document.body.innerHTML = '';
-  
-  // Reset storage mocks
-  mockChrome.storage.local.get.mockReset();
-  mockChrome.storage.local.set.mockReset();
-  mockChrome.storage.local.remove.mockReset();
-  mockChrome.storage.local.clear.mockReset();
+mockChromeStorage.local.set.mockImplementation((items, callback) => {
+  callback?.();
+  return Promise.resolve();
+});
+
+// Assign mock to global object
+Object.assign(global, {
+  chrome: {
+    storage: mockChromeStorage
+  }
+});
+
+// Silence console.debug in tests
+console.debug = jest.fn();
+
+// Add custom matchers
+expect.extend({
+  toHaveBeenCalledWithObject(received: jest.Mock, expected: object) {
+    const calls = received.mock.calls;
+    const match = calls.some(call => {
+      const [actual] = call;
+      return Object.entries(expected).every(
+        ([key, value]) => actual[key] === value
+      );
+    });
+
+    return {
+      pass: match,
+      message: () =>
+        `expected ${received.getMockName()} to have been called with an object containing ${JSON.stringify(
+          expected,
+          null,
+          2
+        )}`
+    };
+  }
 }); 
