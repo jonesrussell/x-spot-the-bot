@@ -133,6 +133,7 @@ export class BotDetector {
       });
 
       this.uiManager.addWarningIndicator(notification, {
+        username: profileData.username,
         probability: analysis.probability,
         reasons: analysis.reasons
       });

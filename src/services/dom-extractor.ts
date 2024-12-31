@@ -1,4 +1,4 @@
-import type { ProfileData } from '../types/profile.js';
+import { ProfileData, InteractionType, NotificationType, NotificationData } from '../types/profile.js';
 
 export class DOMExtractor {
   private readonly SELECTORS = {
@@ -7,6 +7,17 @@ export class DOMExtractor {
     USER_NAME: '[data-testid="UserName"]',
     USER_AVATAR: '[data-testid="UserAvatar"]',
     TWEET_TEXT: '[data-testid="tweetText"]'
+  } as const;
+
+  private readonly NOTIFICATION_PATTERNS = {
+    PINNED_POST: /new pinned post in/i,
+    TRENDING: /trending in/i,
+    COMMUNITY_POST: /new community post in/i,
+    MULTI_USER: /new post notifications for/i,
+    LIKE: /liked/i,
+    REPLY: /replied/i,
+    REPOST: /reposted/i,
+    FOLLOW: /followed/i
   } as const;
 
   public extractProfileData(element: HTMLElement): ProfileData | null {
@@ -29,78 +40,26 @@ export class DOMExtractor {
           .map(el => el.getAttribute('data-testid'))
       });
 
-      // Check if this is a community or pinned post notification
-      const notificationText = cell.textContent?.toLowerCase() || '';
-      
-      // Find all user links in the notification
-      const userLinks = Array.from(cell.querySelectorAll('a[role="link"]')).filter(link => {
-        const href = link.getAttribute('href');
-        return href && href.startsWith('/') && !href.includes('/i/');
-      });
-
-      // Skip notifications without user links
-      if (userLinks.length === 0) {
-        console.debug('[XBot:DOM] Failed at: No user links found');
+      // Determine notification type and handle accordingly
+      const notificationData = this.parseNotification(cell);
+      if (!notificationData) {
         return null;
       }
 
-      // Skip group notifications
-      if (notificationText.includes('new pinned post in') || 
-          notificationText.includes('trending in') ||
-          notificationText.includes('community post')) {
-        console.debug('[XBot:DOM] Skipping group/community notification');
+      // Skip non-user notifications
+      if (notificationData.type !== NotificationType.UserInteraction && 
+          notificationData.type !== NotificationType.MultiUser) {
+        console.debug('[XBot:DOM] Skipping non-user notification:', notificationData.type);
         return null;
       }
 
-      // For notifications with multiple users, process each one
-      // For now, we'll just take the first one to avoid spam
-      const userLink = userLinks[0] as HTMLAnchorElement;
-      const username = userLink.getAttribute('href')?.slice(1);
-      if (!username) {
-        console.debug('[XBot:DOM] Failed at: No href attribute in user link');
+      // Get the first user's data (for now)
+      if (!notificationData.users || notificationData.users.length === 0) {
+        console.debug('[XBot:DOM] No user data found in notification');
         return null;
       }
 
-      // Get display name from the link text
-      const displayName = userLink.textContent?.trim() || username;
-
-      // Find profile image - look for the container with the username
-      const avatarContainer = cell.querySelector(`[data-testid="UserAvatar-Container-${username}"]`);
-      if (!avatarContainer) {
-        console.debug('[XBot:DOM] Failed at: No avatar container found for user');
-        return null;
-      }
-
-      // Extract profile image from the container
-      const profileImageUrl = this.extractProfileImage(avatarContainer);
-      if (!profileImageUrl) {
-        console.debug('[XBot:DOM] Failed at: Could not extract profile image URL');
-        return null;
-      }
-
-      // Determine interaction type
-      let interactionType: ProfileData['interactionType'] = 'follow';
-      if (notificationText.includes('new post notifications for')) {
-        interactionType = 'follow';
-      } else {
-        interactionType = this.determineInteractionType(notificationText);
-      }
-
-      console.debug('[XBot:DOM] Successfully extracted profile data', {
-        username,
-        displayName,
-        interactionType
-      });
-
-      return {
-        username,
-        displayName,
-        profileImageUrl,
-        followersCount: 0,
-        followingCount: 0,
-        interactionTimestamp: Date.now(),
-        interactionType
-      };
+      return notificationData.users[0];
 
     } catch (error) {
       console.error('[XBot:DOM] Error:', error);
@@ -108,18 +67,71 @@ export class DOMExtractor {
     }
   }
 
-  private extractDisplayName(nameElement: Element): string | null {
-    // Get all text nodes, excluding emoji images
-    const walker = document.createTreeWalker(nameElement, NodeFilter.SHOW_TEXT);
-    const textNodes = [];
-    let node;
-    while ((node = walker.nextNode())) {
-      const text = node.textContent?.trim();
-      if (text && !text.startsWith('@')) {
-        textNodes.push(text);
-      }
+  private parseNotification(cell: HTMLElement): NotificationData | null {
+    const text = cell.textContent?.toLowerCase() || '';
+
+    // Check notification type
+    if (this.NOTIFICATION_PATTERNS.PINNED_POST.test(text)) {
+      return { type: NotificationType.PinnedPost, text };
     }
-    return textNodes[0] || null;
+    if (this.NOTIFICATION_PATTERNS.TRENDING.test(text)) {
+      return { type: NotificationType.Trending, text };
+    }
+    if (this.NOTIFICATION_PATTERNS.COMMUNITY_POST.test(text)) {
+      return { type: NotificationType.CommunityPost, text };
+    }
+
+    // Find all user links
+    const userLinks = Array.from(cell.querySelectorAll('a[role="link"]')).filter(link => {
+      const href = link.getAttribute('href');
+      return href && href.startsWith('/') && !href.includes('/i/');
+    });
+
+    if (userLinks.length === 0) {
+      console.debug('[XBot:DOM] No user links found');
+      return null;
+    }
+
+    // Extract user data
+    const users: ProfileData[] = [];
+    for (const link of userLinks) {
+      const username = link.getAttribute('href')?.slice(1);
+      if (!username) continue;
+
+      const avatarContainer = cell.querySelector(`[data-testid="UserAvatar-Container-${username}"]`);
+      if (!avatarContainer) continue;
+
+      const profileImageUrl = this.extractProfileImage(avatarContainer);
+      if (!profileImageUrl) continue;
+
+      const displayName = link.textContent?.trim() || username;
+      const interactionType = this.determineInteractionType(text);
+
+      users.push({
+        username,
+        displayName,
+        profileImageUrl,
+        followersCount: 0,
+        followingCount: 0,
+        interactionTimestamp: Date.now(),
+        interactionType
+      });
+    }
+
+    return {
+      type: this.NOTIFICATION_PATTERNS.MULTI_USER.test(text) 
+        ? NotificationType.MultiUser 
+        : NotificationType.UserInteraction,
+      text,
+      users
+    };
+  }
+
+  private determineInteractionType(text: string): InteractionType {
+    if (this.NOTIFICATION_PATTERNS.LIKE.test(text)) return InteractionType.Like;
+    if (this.NOTIFICATION_PATTERNS.REPLY.test(text)) return InteractionType.Reply;
+    if (this.NOTIFICATION_PATTERNS.REPOST.test(text)) return InteractionType.Repost;
+    return InteractionType.Follow;
   }
 
   private extractProfileImage(container: Element): string | null {
@@ -140,12 +152,5 @@ export class DOMExtractor {
     }
 
     return null;
-  }
-
-  private determineInteractionType(text: string): ProfileData['interactionType'] {
-    if (text.includes('liked')) return 'like';
-    if (text.includes('replied')) return 'reply';
-    if (text.includes('reposted')) return 'repost';
-    return 'follow';
   }
 }

@@ -1,4 +1,5 @@
 import { DOMExtractor } from '../dom-extractor.js';
+import { InteractionType } from '../../types/profile.js';
 
 describe('DOMExtractor', () => {
   let extractor: DOMExtractor;
@@ -30,7 +31,7 @@ describe('DOMExtractor', () => {
       expect(result?.username).toBe('johndoe');
       expect(result?.displayName).toBe('John Doe');
       expect(result?.profileImageUrl).toContain('profile_images');
-      expect(result?.interactionType).toBe('like');
+      expect(result?.interactionType).toBe(InteractionType.Like);
     });
 
     it('should return null for warning elements', () => {
@@ -67,10 +68,10 @@ describe('DOMExtractor', () => {
 
     it('should detect different interaction types', () => {
       const testCases = [
-        { text: 'liked your tweet', expected: 'like' },
-        { text: 'replied to your tweet', expected: 'reply' },
-        { text: 'reposted your tweet', expected: 'repost' },
-        { text: 'followed you', expected: 'follow' }
+        { text: 'liked your tweet', expected: InteractionType.Like },
+        { text: 'replied to your tweet', expected: InteractionType.Reply },
+        { text: 'reposted your tweet', expected: InteractionType.Repost },
+        { text: 'followed you', expected: InteractionType.Follow }
       ];
 
       testCases.forEach(({ text, expected }) => {
@@ -211,7 +212,7 @@ describe('DOMExtractor', () => {
       expect(result?.username).toBe('user1');
       expect(result?.displayName).toBe('User One');
       expect(result?.profileImageUrl).toContain('profile_images');
-      expect(result?.interactionType).toBe('follow');
+      expect(result?.interactionType).toBe(InteractionType.Follow);
     });
 
     it('should handle verified user notifications', () => {
@@ -242,7 +243,7 @@ describe('DOMExtractor', () => {
       expect(result?.username).toBe('verifieduser');
       expect(result?.displayName).toBe('Verified User');
       expect(result?.profileImageUrl).toContain('profile_images');
-      expect(result?.interactionType).toBe('follow');
+      expect(result?.interactionType).toBe(InteractionType.Follow);
     });
   });
 }); 
