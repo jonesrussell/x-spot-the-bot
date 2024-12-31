@@ -2,21 +2,21 @@
 export type InteractionType = 'like' | 'reply' | 'repost' | 'follow';
 export type NotificationType = 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
 
-// Constants used in tests
+// Runtime values
 export const InteractionTypes = {
-  Like: 'like' as const,
-  Reply: 'reply' as const,
-  Repost: 'repost' as const,
-  Follow: 'follow' as const
-};
+  Like: 'like',
+  Reply: 'reply',
+  Repost: 'repost',
+  Follow: 'follow'
+} as const;
 
 export const NotificationTypes = {
-  UserInteraction: 'user_interaction' as const,
-  PinnedPost: 'pinned_post' as const,
-  Trending: 'trending' as const,
-  CommunityPost: 'community_post' as const,
-  MultiUser: 'multi_user' as const
-};
+  UserInteraction: 'user_interaction',
+  PinnedPost: 'pinned_post',
+  Trending: 'trending',
+  CommunityPost: 'community_post',
+  MultiUser: 'multi_user'
+} as const;
 
 // Interfaces
 export interface ProfileData {
@@ -27,7 +27,7 @@ export interface ProfileData {
   followingCount: number;
   interactionTimestamp: number;
   interactionType: InteractionType;
-  notificationType: 'user_interaction' | 'multi_user';
+  notificationType: Extract<NotificationType, 'user_interaction' | 'multi_user'>;
 }
 
 export interface BotAnalysis {

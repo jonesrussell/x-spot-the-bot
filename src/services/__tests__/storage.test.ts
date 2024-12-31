@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
-import { StorageService } from '../storage';
-import { InteractionTypes, NotificationTypes } from '../../types/profile';
-import type { ProfileData } from '../../types/profile';
+import { StorageService } from '../storage.js';
+import { InteractionTypes, NotificationTypes } from '../../types/profile.js';
+import type { ProfileData } from '../../types/profile.js';
 
 interface StorageData {
   profiles: { [key: string]: ProfileData };

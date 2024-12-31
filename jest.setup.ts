@@ -1,37 +1,32 @@
+import { jest } from '@jest/globals';
 import '@testing-library/jest-dom';
 
 // Mock Chrome API
 const mockChromeStorage = {
   local: {
-    get: jest.fn(),
-    set: jest.fn()
+    get: jest.fn((keys: string | string[] | object, callback?: (result: object) => void) => {
+      if (callback) {
+        if (typeof keys === 'string') {
+          callback({ [keys]: null });
+        } else if (Array.isArray(keys)) {
+          callback(Object.fromEntries(keys.map(key => [key, null])));
+        } else if (keys && typeof keys === 'object') {
+          callback(Object.fromEntries(
+            Object.entries(keys).map(([key, defaultValue]) => [key, defaultValue])
+          ));
+        } else {
+          callback({});
+        }
+      }
+    }),
+    set: jest.fn((items: object, callback?: () => void) => {
+      Object.assign(mockChromeStorage.local, items);
+      if (callback) {
+        callback();
+      }
+    })
   }
 };
-
-// Type-safe mock implementation
-mockChromeStorage.local.get.mockImplementation((keys, callback) => {
-  if (callback) {
-    if (typeof keys === 'string') {
-      callback({ [keys]: null });
-    } else if (Array.isArray(keys)) {
-      callback(Object.fromEntries(keys.map(key => [key, null])));
-    } else if (typeof keys === 'object') {
-      callback(Object.fromEntries(
-        Object.entries(keys).map(([key, defaultValue]) => [key, defaultValue])
-      ));
-    } else {
-      callback({});
-    }
-  }
-});
-
-mockChromeStorage.local.set.mockImplementation((items, callback) => {
-  // Store the items in memory for testing
-  Object.assign(mockChromeStorage.local, items);
-  if (callback) {
-    callback();
-  }
-});
 
 // Assign mock to global object
 Object.assign(global, {
@@ -45,12 +40,12 @@ console.debug = jest.fn();
 
 // Add custom matchers
 expect.extend({
-  toHaveBeenCalledWithObject(received: jest.Mock, expected: object) {
+  toHaveBeenCalledWithObject(received: jest.Mock, expected: Record<string, unknown>) {
     const calls = received.mock.calls;
     const match = calls.some(call => {
       const [actual] = call;
       return Object.entries(expected).every(
-        ([key, value]) => actual[key] === value
+        ([key, value]) => actual && typeof actual === 'object' && key in actual && actual[key as keyof typeof actual] === value
       );
     });
 
