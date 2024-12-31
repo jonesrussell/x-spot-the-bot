@@ -21,6 +21,7 @@ export interface ProfileData {
   followingCount: number;
   interactionTimestamp: number;
   interactionType: InteractionType;
+  notificationType: NotificationType;
 }
 
 export interface BotAnalysis {

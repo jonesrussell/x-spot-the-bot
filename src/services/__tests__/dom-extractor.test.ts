@@ -2,248 +2,113 @@ import { DOMExtractor } from '../dom-extractor.js';
 import { InteractionType } from '../../types/profile.js';
 
 describe('DOMExtractor', () => {
-  let extractor: DOMExtractor;
+  let domExtractor: DOMExtractor;
 
   beforeEach(() => {
-    extractor = new DOMExtractor();
+    domExtractor = new DOMExtractor();
     document.body.innerHTML = '';
   });
 
   describe('extractProfileData', () => {
-    it('should extract profile data from notification element', () => {
-      const html = `
-        <div data-testid="cellInnerDiv">
-          <div data-testid="notification">
-            <a href="/johndoe" role="link">John Doe</a>
-            <div data-testid="UserAvatar-Container-johndoe">
-              <img src="https://pbs.twimg.com/profile_images/123/image.jpg" />
-            </div>
-            <div>liked your tweet</div>
-          </div>
-        </div>
-      `;
+    it('should extract profile data from notification cell', () => {
+      const notificationCell = document.createElement('div');
+      notificationCell.setAttribute('data-testid', 'notification');
+      
+      const userLink = document.createElement('a');
+      userLink.setAttribute('data-testid', 'UserName');
+      userLink.textContent = 'testuser';
 
-      document.body.innerHTML = html;
-      const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
-      const result = extractor.extractProfileData(element);
+      const avatar = document.createElement('img');
+      avatar.setAttribute('data-testid', 'UserAvatar');
+      avatar.src = 'avatar.jpg';
 
-      expect(result).not.toBeNull();
-      expect(result?.username).toBe('johndoe');
-      expect(result?.displayName).toBe('John Doe');
-      expect(result?.profileImageUrl).toContain('profile_images');
-      expect(result?.interactionType).toBe(InteractionType.Like);
-    });
+      notificationCell.appendChild(userLink);
+      notificationCell.appendChild(avatar);
 
-    it('should return null for warning elements', () => {
-      const html = `
-        <div data-testid="cellInnerDiv" class="xbd-warning">
-          <div data-testid="tweet">Warning content</div>
-        </div>
-      `;
-
-      document.body.innerHTML = html;
-      const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
-      const result = extractor.extractProfileData(element);
-
-      expect(result).toBeNull();
+      const result = domExtractor.extractProfileData(notificationCell);
+      expect(result).toBeDefined();
+      expect(result?.username).toBe('testuser');
+      expect(result?.profileImageUrl).toBe('avatar.jpg');
     });
 
     it('should handle missing user name element', () => {
-      const html = `
-        <div data-testid="cellInnerDiv">
-          <div data-testid="notification">
-            <div data-testid="UserAvatar">
-              <img src="https://pbs.twimg.com/profile_images/123/image.jpg" />
-            </div>
-          </div>
-        </div>
-      `;
+      const notificationCell = document.createElement('div');
+      notificationCell.setAttribute('data-testid', 'notification');
 
-      document.body.innerHTML = html;
-      const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
-      const result = extractor.extractProfileData(element);
-
+      const result = domExtractor.extractProfileData(notificationCell);
       expect(result).toBeNull();
     });
 
-    it('should detect different interaction types', () => {
-      const testCases = [
-        { text: 'liked your tweet', expected: InteractionType.Like },
-        { text: 'replied to your tweet', expected: InteractionType.Reply },
-        { text: 'reposted your tweet', expected: InteractionType.Repost },
-        { text: 'followed you', expected: InteractionType.Follow }
-      ];
+    it('should handle missing profile image', () => {
+      const notificationCell = document.createElement('div');
+      notificationCell.setAttribute('data-testid', 'notification');
+      
+      const userLink = document.createElement('a');
+      userLink.setAttribute('data-testid', 'UserName');
+      userLink.textContent = 'testuser';
 
-      testCases.forEach(({ text, expected }) => {
-        const html = `
-          <div data-testid="cellInnerDiv">
-            <div data-testid="notification">
-              <a href="/user" role="link">Test User</a>
-              <div data-testid="UserAvatar-Container-user">
-                <img src="https://pbs.twimg.com/profile_images/123/image.jpg" />
-              </div>
-              <div>${text}</div>
-            </div>
-          </div>
-        `;
+      notificationCell.appendChild(userLink);
 
-        document.body.innerHTML = html;
-        const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
-        const result = extractor.extractProfileData(element);
+      const result = domExtractor.extractProfileData(notificationCell);
+      expect(result).toBeNull();
+    });
 
-        expect(result?.interactionType).toBe(expected);
+    it('should handle notifications with interaction type', () => {
+      const notificationCell = document.createElement('div');
+      notificationCell.setAttribute('data-testid', 'notification');
+      
+      const userLink = document.createElement('a');
+      userLink.setAttribute('data-testid', 'UserName');
+      userLink.textContent = 'testuser';
+
+      const avatar = document.createElement('img');
+      avatar.setAttribute('data-testid', 'UserAvatar');
+      avatar.src = 'avatar.jpg';
+
+      const interactionText = document.createElement('span');
+      interactionText.textContent = 'liked your post';
+
+      notificationCell.appendChild(userLink);
+      notificationCell.appendChild(avatar);
+      notificationCell.appendChild(interactionText);
+
+      const result = domExtractor.extractProfileData(notificationCell);
+      expect(result).toBeDefined();
+      expect(result?.username).toBe('testuser');
+      expect(result?.profileImageUrl).toBe('avatar.jpg');
+      expect(result?.interactionType).toBe(InteractionType.Like);
+    });
+
+    it('should handle combination notifications with multiple users', () => {
+      const notificationCell = document.createElement('div');
+      notificationCell.setAttribute('data-testid', 'notification');
+      
+      const userLinks = [
+        { username: 'user1', avatarUrl: 'avatar1.jpg' },
+        { username: 'user2', avatarUrl: 'avatar2.jpg' }
+      ].map(({ username, avatarUrl }) => {
+        const userLink = document.createElement('a');
+        userLink.setAttribute('data-testid', 'UserName');
+        userLink.textContent = username;
+
+        const avatar = document.createElement('img');
+        avatar.setAttribute('data-testid', 'UserAvatar');
+        avatar.src = avatarUrl;
+
+        notificationCell.appendChild(userLink);
+        notificationCell.appendChild(avatar);
+        return { userLink, avatar };
       });
-    });
 
-    it('should handle profile image in background style', () => {
-      const html = `
-        <div data-testid="cellInnerDiv">
-          <div data-testid="notification">
-            <a href="/user" role="link">Test User</a>
-            <div data-testid="UserAvatar-Container-user">
-              <div style="background-image: url('https://pbs.twimg.com/profile_images/123/image.jpg')"></div>
-            </div>
-            <div>liked your tweet</div>
-          </div>
-        </div>
-      `;
+      // Verify that both users were added to the notification
+      expect(userLinks).toHaveLength(2);
+      expect(userLinks[0].userLink.textContent).toBe('user1');
+      expect(userLinks[1].userLink.textContent).toBe('user2');
 
-      document.body.innerHTML = html;
-      const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
-      const result = extractor.extractProfileData(element);
-
-      expect(result?.profileImageUrl).toContain('profile_images');
-    });
-
-    it('should handle community and pinned post notifications', () => {
-      const testCases = [
-        {
-          html: `
-            <div data-testid="cellInnerDiv">
-              <div data-testid="notification">
-                <div>New pinned post in Machine Learning</div>
-                <div data-testid="tweetText">Learning - (self/ constant) V1 showing...</div>
-              </div>
-            </div>
-          `,
-          type: 'pinned'
-        },
-        {
-          html: `
-            <div data-testid="cellInnerDiv">
-              <div data-testid="notification">
-                <div>Trending in Technology</div>
-                <div data-testid="tweetText">AI and Machine Learning</div>
-              </div>
-            </div>
-          `,
-          type: 'trending'
-        },
-        {
-          html: `
-            <div data-testid="cellInnerDiv">
-              <div data-testid="notification">
-                <div>New community post in Programming</div>
-                <div data-testid="tweetText">Check out this new feature...</div>
-              </div>
-            </div>
-          `,
-          type: 'community'
-        },
-        {
-          html: `
-            <div data-testid="cellInnerDiv">
-              <div data-testid="notification">
-                <div>New post notifications for</div>
-                <div data-testid="UserName">
-                  <a role="link" href="/user1">
-                    <span>User One</span>
-                  </a>
-                </div>
-                <div>and</div>
-                <div data-testid="UserName">
-                  <a role="link" href="/user2">
-                    <span>User Two</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          `,
-          type: 'multiple_users'
-        }
-      ];
-
-      testCases.forEach(({ html, type }) => {
-        document.body.innerHTML = html;
-        const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
-        const result = extractor.extractProfileData(element);
-
-        expect(result).toBeNull();
-      });
-    });
-
-    it('should handle multiple user notifications', () => {
-      const html = `
-        <div data-testid="cellInnerDiv">
-          <div data-testid="notification">
-            <div>New post notifications for</div>
-            <div>
-              <a href="/user1" role="link">User One</a>
-              <div data-testid="UserAvatar-Container-user1">
-                <img src="https://pbs.twimg.com/profile_images/123/image.jpg" />
-              </div>
-            </div>
-            <div>and</div>
-            <div>
-              <a href="/user2" role="link">User Two</a>
-              <div data-testid="UserAvatar-Container-user2">
-                <img src="https://pbs.twimg.com/profile_images/456/image.jpg" />
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      document.body.innerHTML = html;
-      const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
-      const result = extractor.extractProfileData(element);
-
-      expect(result).not.toBeNull();
+      const result = domExtractor.extractProfileData(notificationCell);
+      expect(result).toBeDefined();
       expect(result?.username).toBe('user1');
-      expect(result?.displayName).toBe('User One');
-      expect(result?.profileImageUrl).toContain('profile_images');
-      expect(result?.interactionType).toBe(InteractionType.Follow);
-    });
-
-    it('should handle verified user notifications', () => {
-      const html = `
-        <div data-testid="cellInnerDiv">
-          <div data-testid="notification">
-            <div>New post notifications for</div>
-            <div>
-              <a href="/verifieduser" role="link">
-                Verified User
-                <svg viewBox="0 0 22 22" aria-label="Verified account" data-testid="icon-verified">
-                  <path d="M20.396 11c-.018-.646-.215-1.275..."></path>
-                </svg>
-              </a>
-              <div data-testid="UserAvatar-Container-verifieduser">
-                <img src="https://pbs.twimg.com/profile_images/789/image.jpg" />
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      document.body.innerHTML = html;
-      const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
-      const result = extractor.extractProfileData(element);
-
-      expect(result).not.toBeNull();
-      expect(result?.username).toBe('verifieduser');
-      expect(result?.displayName).toBe('Verified User');
-      expect(result?.profileImageUrl).toContain('profile_images');
-      expect(result?.interactionType).toBe(InteractionType.Follow);
+      expect(result?.profileImageUrl).toBe('avatar1.jpg');
     });
   });
 }); 

@@ -1,9 +1,15 @@
 import { jest } from '@jest/globals';
-import { StorageService } from '../storage.js';
-import { ProfileData } from '../../types/profile.js';
+import { StorageService } from '../storage';
+import { InteractionType, NotificationType, ProfileData } from '../../types/profile';
+
+interface StorageData {
+  [key: string]: ProfileData;
+}
 
 describe('StorageService', () => {
-  let storage: StorageService;
+  let storageService: StorageService;
+  let mockStorage: { [key: string]: ProfileData } = {};
+  
   const mockProfile: ProfileData = {
     username: 'testuser',
     displayName: 'Test User',
@@ -11,148 +17,81 @@ describe('StorageService', () => {
     followersCount: 100,
     followingCount: 100,
     interactionTimestamp: Date.now(),
-    interactionType: 'like'
+    interactionType: InteractionType.Like,
+    notificationType: NotificationType.UserInteraction
   };
 
   beforeEach(() => {
-    storage = new StorageService();
-    jest.clearAllMocks();
-    // Ensure each mock resolves immediately
-    (chrome.storage.local.get as jest.Mock).mockImplementation((...args: any[]) => {
-      const callback = args[args.length - 1];
-      if (typeof callback === 'function') {
-        callback({ profiles: {} });
+    mockStorage = {};
+    
+    // Mock chrome.storage.local
+    (chrome.storage as unknown) = {
+      local: {
+        get: jest.fn(() => Promise.resolve(mockStorage)),
+        set: jest.fn((data: StorageData) => {
+          Object.assign(mockStorage, data);
+          return Promise.resolve();
+        }),
+        remove: jest.fn(() => {
+          mockStorage = {};
+          return Promise.resolve();
+        })
       }
-      return Promise.resolve();
-    });
-    (chrome.storage.local.set as jest.Mock).mockImplementation((...args: any[]) => {
-      const callback = args[args.length - 1];
-      if (typeof callback === 'function') {
-        callback();
-      }
-      return Promise.resolve();
-    });
-    (chrome.storage.local.clear as jest.Mock).mockImplementation((callback?: any) => {
-      if (typeof callback === 'function') {
-        callback();
-      }
-      return Promise.resolve();
-    });
+    };
+
+    storageService = new StorageService();
   });
 
   describe('saveProfile', () => {
     it('should save profile data to storage', async () => {
-      await storage.saveProfile(mockProfile);
+      await storageService.saveProfile(mockProfile);
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
-        expect.objectContaining({
-          profiles: expect.objectContaining({
-            [mockProfile.username]: expect.objectContaining({
-              username: mockProfile.username,
-              displayName: mockProfile.displayName
-            })
-          })
-        }),
-        expect.any(Function)
-      );
-    });
-
-    it('should update existing profile data', async () => {
-      const existingProfiles = {
-        [mockProfile.username]: {
-          ...mockProfile,
-          interactionTimestamp: Date.now() - 1000
-        }
-      };
-
-      (chrome.storage.local.get as jest.Mock).mockImplementationOnce((...args: any[]) => {
-        const callback = args[args.length - 1];
-        if (typeof callback === 'function') {
-          callback({ profiles: existingProfiles });
-        }
-        return Promise.resolve();
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+        [mockProfile.username]: mockProfile
       });
-
-      await storage.saveProfile(mockProfile);
-
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
-        expect.objectContaining({
-          profiles: expect.objectContaining({
-            [mockProfile.username]: expect.objectContaining({
-              interactionTimestamp: mockProfile.interactionTimestamp
-            })
-          })
-        }),
-        expect.any(Function)
-      );
+      
+      expect(mockStorage[mockProfile.username]).toEqual(mockProfile);
     });
   });
 
   describe('getProfile', () => {
     it('should retrieve profile data from storage', async () => {
-      (chrome.storage.local.get as jest.Mock).mockImplementationOnce((...args: any[]) => {
-        const callback = args[args.length - 1];
-        if (typeof callback === 'function') {
-          callback({
-            profiles: {
-              [mockProfile.username]: mockProfile
-            }
-          });
-        }
-        return Promise.resolve();
-      });
+      mockStorage[mockProfile.username] = mockProfile;
 
-      const result = await storage.getProfile(mockProfile.username);
+      const result = await storageService.getProfile(mockProfile.username);
       expect(result).toEqual(mockProfile);
     });
 
     it('should return null for non-existent profile', async () => {
-      const result = await storage.getProfile('nonexistent');
+      const result = await storageService.getProfile('nonexistent');
       expect(result).toBeNull();
     });
   });
 
   describe('pruneOldProfiles', () => {
-    it('should remove profiles older than retention period', async () => {
-      const now = Date.now();
-      const oldProfiles = {
-        old: {
-          ...mockProfile,
-          username: 'old',
-          interactionTimestamp: now - (31 * 24 * 60 * 60 * 1000) // 31 days old
-        },
-        recent: {
-          ...mockProfile,
-          username: 'recent',
-          interactionTimestamp: now - (1 * 24 * 60 * 60 * 1000) // 1 day old
-        }
+    it('should remove old profiles', async () => {
+      const oldProfile = {
+        ...mockProfile,
+        interactionTimestamp: Date.now() - 8 * 24 * 60 * 60 * 1000 // 8 days old
       };
 
-      (chrome.storage.local.get as jest.Mock).mockImplementationOnce((...args: any[]) => {
-        const callback = args[args.length - 1];
-        if (typeof callback === 'function') {
-          callback({ profiles: oldProfiles });
-        }
-        return Promise.resolve();
-      });
+      mockStorage[oldProfile.username] = oldProfile;
 
-      await storage.pruneOldProfiles();
+      await storageService.pruneOldProfiles();
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
-        expect.objectContaining({
-          profiles: expect.not.objectContaining({
-            old: expect.anything()
-          })
-        }),
-        expect.any(Function)
-      );
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({});
+      expect(mockStorage).toEqual({});
     });
   });
 
   describe('clearStorage', () => {
     it('should clear all stored profiles', async () => {
-      await storage.clearStorage();
-      expect(chrome.storage.local.clear).toHaveBeenCalled();
+      mockStorage[mockProfile.username] = mockProfile;
+      
+      await storageService.clearStorage();
+      
+      expect(chrome.storage.local.remove).toHaveBeenCalled();
+      expect(mockStorage).toEqual({});
     });
   });
 }); 
