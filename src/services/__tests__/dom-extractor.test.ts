@@ -1,5 +1,5 @@
 import { DOMExtractor } from '../dom-extractor.js';
-import { Values } from '../../types/profile.js';
+import { InteractionTypes } from '../../types/profile.js';
 
 describe('DOMExtractor', () => {
   let domExtractor: DOMExtractor;
@@ -76,7 +76,7 @@ describe('DOMExtractor', () => {
       expect(result).toBeDefined();
       expect(result?.username).toBe('testuser');
       expect(result?.profileImageUrl).toBe('avatar.jpg');
-      expect(result?.interactionType).toBe(Values.InteractionTypes.Like);
+      expect(result?.interactionType).toBe(InteractionTypes.Like);
     });
 
     it('should handle combination notifications with multiple users', () => {

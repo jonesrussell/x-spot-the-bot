@@ -1,5 +1,5 @@
 import { ProfileAnalyzer } from '../profile-analyzer.js';
-import { Values } from '../../types/profile.js';
+import { InteractionTypes, NotificationTypes } from '../../types/profile.js';
 import type { ProfileData } from '../../types/profile.js';
 
 describe('ProfileAnalyzer', () => {
@@ -18,8 +18,8 @@ describe('ProfileAnalyzer', () => {
         followersCount: 100,
         followingCount: 100,
         interactionTimestamp: Date.now(),
-        interactionType: Values.InteractionTypes.Like,
-        notificationType: Values.NotificationTypes.UserInteraction
+        interactionType: InteractionTypes.Like,
+        notificationType: NotificationTypes.UserInteraction
       };
 
       const result = await analyzer.analyzeBotProbability(profile);

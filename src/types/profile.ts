@@ -2,30 +2,21 @@
 export type InteractionType = 'like' | 'reply' | 'repost' | 'follow';
 export type NotificationType = 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
 
-// Values namespace for runtime constants and validation
-export const Values = {
-  InteractionTypes: {
-    Like: 'like',
-    Reply: 'reply',
-    Repost: 'repost',
-    Follow: 'follow'
-  },
-  NotificationTypes: {
-    UserInteraction: 'user_interaction',
-    PinnedPost: 'pinned_post',
-    Trending: 'trending',
-    CommunityPost: 'community_post',
-    MultiUser: 'multi_user'
-  },
-  _internal: {
-    validateInteractionType(type: string): type is InteractionType {
-      return type in Values.InteractionTypes;
-    },
-    validateNotificationType(type: string): type is NotificationType {
-      return type in Values.NotificationTypes;
-    }
-  }
-} as const;
+// Use const enums for better inlining
+export const enum InteractionTypes {
+  Like = 'like',
+  Reply = 'reply',
+  Repost = 'repost',
+  Follow = 'follow'
+}
+
+export const enum NotificationTypes {
+  UserInteraction = 'user_interaction',
+  PinnedPost = 'pinned_post',
+  Trending = 'trending',
+  CommunityPost = 'community_post',
+  MultiUser = 'multi_user'
+}
 
 // Interfaces
 export interface ProfileData {

@@ -17,10 +17,10 @@ Source Code Requirements:
      * Don't participate in type predicates or type guards
      * Don't need type assertions or type narrowing
    - For string literal unions that need runtime checks:
-     * Use a Values namespace object for bundling
-     * Add 'as const' to the namespace object
-     * Include type predicates in Values._internal
-     * Re-export individual constants for convenience
+     * Use direct exports with 'as const'
+     * Add 'satisfies' for type validation
+     * Export standalone type guard functions
+     * Keep type imports separate from value imports
    - Use private class fields (#) over private keyword
 
 2. Modern JavaScript Features:

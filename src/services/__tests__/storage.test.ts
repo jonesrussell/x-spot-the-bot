@@ -1,15 +1,15 @@
 import { jest } from '@jest/globals';
 import { StorageService } from '../storage';
-import { Values } from '../../types/profile';
+import { InteractionTypes, NotificationTypes } from '../../types/profile';
 import type { ProfileData } from '../../types/profile';
 
 interface StorageData {
-  [key: string]: ProfileData;
+  profiles: { [key: string]: ProfileData };
 }
 
 describe('StorageService', () => {
   let storageService: StorageService;
-  let mockStorage: { [key: string]: ProfileData } = {};
+  let mockStorage: StorageData = { profiles: {} };
   
   const mockProfile: ProfileData = {
     username: 'testuser',
@@ -18,17 +18,17 @@ describe('StorageService', () => {
     followersCount: 100,
     followingCount: 100,
     interactionTimestamp: Date.now(),
-    interactionType: Values.InteractionTypes.Like,
-    notificationType: Values.NotificationTypes.UserInteraction
+    interactionType: InteractionTypes.Like,
+    notificationType: NotificationTypes.UserInteraction
   };
 
   beforeEach(() => {
-    mockStorage = {};
-    chrome.storage.local.get.mockImplementation((key, callback) => {
+    mockStorage = { profiles: {} };
+    jest.spyOn(chrome.storage.local, 'get').mockImplementation((_, callback: any) => {
       callback(mockStorage);
     });
-    chrome.storage.local.set.mockImplementation((data, callback) => {
-      Object.assign(mockStorage, data);
+    jest.spyOn(chrome.storage.local, 'set').mockImplementation((data: any, callback?: () => void) => {
+      mockStorage = { profiles: { ...mockStorage.profiles, ...(data.profiles || {}) } };
       if (callback) callback();
     });
     storageService = new StorageService();
@@ -44,7 +44,7 @@ describe('StorageService', () => {
   });
 
   it('should retrieve profile data', async () => {
-    mockStorage.profiles = { [mockProfile.username]: mockProfile };
+    mockStorage.profiles[mockProfile.username] = mockProfile;
     const result = await storageService.getProfile(mockProfile.username);
     expect(result).toEqual(mockProfile);
   });
@@ -59,14 +59,14 @@ describe('StorageService', () => {
       ...mockProfile,
       interactionTimestamp: Date.now() - 31 * 24 * 60 * 60 * 1000 // 31 days old
     };
-    mockStorage.profiles = { [mockProfile.username]: oldProfile };
+    mockStorage.profiles[mockProfile.username] = oldProfile;
     
     await storageService.pruneOldProfiles();
     expect(mockStorage.profiles[mockProfile.username]).toBeUndefined();
   });
 
   it('should keep recent profiles during pruning', async () => {
-    mockStorage.profiles = { [mockProfile.username]: mockProfile };
+    mockStorage.profiles[mockProfile.username] = mockProfile;
     await storageService.pruneOldProfiles();
     expect(mockStorage.profiles[mockProfile.username]).toEqual(mockProfile);
   });
