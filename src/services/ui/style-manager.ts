@@ -1,5 +1,5 @@
-import indicatorStyles from './styles/indicators.css';
-import panelStyles from './styles/panel.css';
+import indicatorStyles from './styles/indicators.css?raw';
+import panelStyles from './styles/panel.css?raw';
 
 export class StyleManager {
   private readonly CSS_ID = 'xbot-styles';
