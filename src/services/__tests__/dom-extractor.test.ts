@@ -52,7 +52,7 @@ describe('DOMExtractor', () => {
       const result = domExtractor.extractProfileData(cell);
       expect(result).toBeDefined();
       expect(result?.username).toBe('testuser');
-      expect(result?.profileImageUrl).toBe('profile_images/testuser.jpg');
+      expect(result?.profileImageUrl).toBe('http://localhost/profile_images/testuser.jpg');
     });
 
     it('should handle missing user name element', () => {
@@ -102,7 +102,7 @@ describe('DOMExtractor', () => {
 
       const result = domExtractor.extractProfileData(cell);
       expect(result?.username).toBe('user1');
-      expect(result?.profileImageUrl).toBe('profile_images/user1.jpg');
+      expect(result?.profileImageUrl).toBe('http://localhost/profile_images/user1.jpg');
     });
   });
 }); 
