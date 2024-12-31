@@ -1,5 +1,7 @@
 import type { JestConfigWithTsJest } from 'ts-jest';
 
+const mockFn = () => Promise.resolve();
+
 const config: JestConfigWithTsJest = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
@@ -12,7 +14,10 @@ const config: JestConfigWithTsJest = {
       'ts-jest',
       {
         useESM: true,
-        tsconfig: 'tsconfig.json'
+        tsconfig: {
+          ...require('./tsconfig.json').compilerOptions,
+          verbatimModuleSyntax: false
+        }
       }
     ]
   },
@@ -40,12 +45,12 @@ const config: JestConfigWithTsJest = {
     chrome: {
       storage: {
         local: {
-          get: jest.fn(),
-          set: jest.fn()
+          get: mockFn,
+          set: mockFn
         }
       }
     }
   }
-};
+} as const;
 
-export default config; 
+module.exports = config; 
