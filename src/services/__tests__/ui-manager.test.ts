@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import type { BotAnalysis } from '../../types/profile.js';
 import { UIManager } from '../ui-manager.js';
 
+// Mock components with virtual modules
 jest.mock('../ui/components/summary-panel', () => ({
   SummaryPanel: jest.fn().mockImplementation(() => ({
     updateStats: jest.fn(),
@@ -9,28 +10,29 @@ jest.mock('../ui/components/summary-panel', () => ({
     updateTheme: jest.fn(),
     getElement: jest.fn()
   }))
-}));
+}), { virtual: true });
 
-jest.mock('../ui/components/warning-indicator.js', () => ({
+jest.mock('../ui/components/warning-indicator', () => ({
   WarningIndicator: jest.fn().mockImplementation(() => ({
     add: jest.fn(),
     remove: jest.fn()
   }))
-}));
+}), { virtual: true });
 
-jest.mock('../ui/theme-manager.js', () => ({
+// Mock managers with virtual modules
+jest.mock('../ui/theme-manager', () => ({
   ThemeManager: jest.fn().mockImplementation(() => ({
     onThemeChange: jest.fn(),
     isDarkMode: jest.fn()
   }))
-}));
+}), { virtual: true });
 
-jest.mock('../ui/style-manager.js', () => ({
+jest.mock('../ui/style-manager', () => ({
   StyleManager: jest.fn().mockImplementation(() => ({
     injectStyles: jest.fn(),
     updateThemeVariables: jest.fn()
   }))
-}));
+}), { virtual: true });
 
 describe('UIManager', () => {
   let uiManager: UIManager;

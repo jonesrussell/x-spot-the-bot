@@ -11,10 +11,11 @@ export class StyleManager {
     const styles = document.createElement('style');
     styles.id = this.CSS_ID;
     styles.setAttribute('data-xbot', 'true');
-    styles.textContent = [
-      panelStyles,
-      indicatorStyles
-    ].join('\n');
+    
+    // Handle both string and Symbol cases for CSS imports
+    const panelCss = typeof panelStyles === 'symbol' ? '' : panelStyles;
+    const indicatorCss = typeof indicatorStyles === 'symbol' ? '' : indicatorStyles;
+    styles.textContent = panelCss + '\n' + indicatorCss;
 
     document.head.appendChild(styles);
     this.stylesInjected = true;
