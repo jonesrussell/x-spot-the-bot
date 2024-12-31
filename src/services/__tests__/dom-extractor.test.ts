@@ -9,119 +9,100 @@ describe('DOMExtractor', () => {
     document.body.innerHTML = '';
   });
 
+  function createNotificationCell(options: {
+    username?: string;
+    text?: string;
+    hasAvatar?: boolean;
+  }) {
+    const cell = document.createElement('div');
+    cell.setAttribute('data-testid', 'cellInnerDiv');
+
+    if (options.text) {
+      cell.textContent = options.text;
+    }
+
+    if (options.username) {
+      const link = document.createElement('a');
+      link.setAttribute('role', 'link');
+      link.setAttribute('href', `/${options.username}`);
+      link.textContent = 'Test User';
+      cell.appendChild(link);
+
+      if (options.hasAvatar) {
+        const img = document.createElement('img');
+        img.setAttribute('src', `profile_images/${options.username}.jpg`);
+        const container = document.createElement('div');
+        container.setAttribute('data-testid', `UserAvatar-Container-${options.username}`);
+        container.appendChild(img);
+        cell.appendChild(container);
+      }
+    }
+
+    return cell;
+  }
+
   describe('extractProfileData', () => {
     it('should extract profile data from notification cell', () => {
-      const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
-      
-      const userLink = document.createElement('a');
-      userLink.setAttribute('role', 'link');
-      userLink.setAttribute('href', '/testuser');
-      userLink.setAttribute('data-testid', 'UserName');
-      userLink.textContent = 'testuser';
+      const cell = createNotificationCell({
+        username: 'testuser',
+        text: 'liked your post',
+        hasAvatar: true
+      });
 
-      const avatar = document.createElement('img');
-      avatar.setAttribute('data-testid', 'UserAvatar-Container-testuser');
-      avatar.src = 'avatar.jpg';
-
-      notificationCell.appendChild(userLink);
-      notificationCell.appendChild(avatar);
-
-      const result = domExtractor.extractProfileData(notificationCell);
+      const result = domExtractor.extractProfileData(cell);
       expect(result).toBeDefined();
       expect(result?.username).toBe('testuser');
-      expect(result?.profileImageUrl).toBe('avatar.jpg');
+      expect(result?.profileImageUrl).toBe('profile_images/testuser.jpg');
     });
 
     it('should handle missing user name element', () => {
-      const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
-
-      const result = domExtractor.extractProfileData(notificationCell);
+      const cell = createNotificationCell({});
+      const result = domExtractor.extractProfileData(cell);
       expect(result).toBeNull();
     });
 
     it('should handle missing profile image', () => {
-      const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
-      
-      const userLink = document.createElement('a');
-      userLink.setAttribute('role', 'link');
-      userLink.setAttribute('href', '/testuser');
-      userLink.setAttribute('data-testid', 'UserName');
-      userLink.textContent = 'testuser';
-
-      notificationCell.appendChild(userLink);
-
-      const result = domExtractor.extractProfileData(notificationCell);
+      const cell = createNotificationCell({
+        username: 'testuser',
+        hasAvatar: false
+      });
+      const result = domExtractor.extractProfileData(cell);
       expect(result).toBeNull();
     });
 
     it('should handle notifications with interaction type', () => {
-      const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
-      
-      const userLink = document.createElement('a');
-      userLink.setAttribute('role', 'link');
-      userLink.setAttribute('href', '/testuser');
-      userLink.setAttribute('data-testid', 'UserName');
-      userLink.textContent = 'testuser';
+      const cell = createNotificationCell({
+        username: 'testuser',
+        text: 'liked your post',
+        hasAvatar: true
+      });
 
-      const avatar = document.createElement('img');
-      avatar.setAttribute('data-testid', 'UserAvatar-Container-testuser');
-      avatar.src = 'avatar.jpg';
-
-      const interactionText = document.createElement('span');
-      interactionText.textContent = 'liked your post';
-
-      notificationCell.appendChild(userLink);
-      notificationCell.appendChild(avatar);
-      notificationCell.appendChild(interactionText);
-
-      const result = domExtractor.extractProfileData(notificationCell);
-      expect(result).toBeDefined();
-      expect(result?.username).toBe('testuser');
-      expect(result?.profileImageUrl).toBe('avatar.jpg');
+      const result = domExtractor.extractProfileData(cell);
       expect(result?.interactionType).toBe(InteractionTypes.Like);
     });
 
-    it('should handle combination notifications with multiple users', () => {
-      const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
-      
-      const userLinks = [
-        { username: 'user1', avatarUrl: 'avatar1.jpg' },
-        { username: 'user2', avatarUrl: 'avatar2.jpg' }
-      ].map(({ username, avatarUrl }) => {
-        const userLink = document.createElement('a');
-        userLink.setAttribute('role', 'link');
-        userLink.setAttribute('href', `/${username}`);
-        userLink.setAttribute('data-testid', 'UserName');
-        userLink.textContent = username;
+    it('should handle multi-user notifications', () => {
+      const cell = createNotificationCell({});
+      cell.textContent = 'new post notifications for';
 
-        const avatar = document.createElement('img');
-        avatar.setAttribute('data-testid', `UserAvatar-Container-${username}`);
-        avatar.src = avatarUrl;
+      ['user1', 'user2'].forEach(username => {
+        const link = document.createElement('a');
+        link.setAttribute('role', 'link');
+        link.setAttribute('href', `/${username}`);
+        link.textContent = username;
+        cell.appendChild(link);
 
-        notificationCell.appendChild(userLink);
-        notificationCell.appendChild(avatar);
-        return { userLink, avatar };
+        const img = document.createElement('img');
+        img.setAttribute('src', `profile_images/${username}.jpg`);
+        const container = document.createElement('div');
+        container.setAttribute('data-testid', `UserAvatar-Container-${username}`);
+        container.appendChild(img);
+        cell.appendChild(container);
       });
 
-      // Add text to indicate multiple users
-      const text = document.createElement('span');
-      text.textContent = 'new post notifications for';
-      notificationCell.appendChild(text);
-
-      // Verify that both users were added to the notification
-      expect(userLinks).toHaveLength(2);
-      expect(userLinks?.[0]?.userLink.textContent).toBe('user1');
-      expect(userLinks?.[1]?.userLink.textContent).toBe('user2');
-
-      const result = domExtractor.extractProfileData(notificationCell);
-      expect(result).toBeDefined();
+      const result = domExtractor.extractProfileData(cell);
       expect(result?.username).toBe('user1');
-      expect(result?.profileImageUrl).toBe('avatar1.jpg');
+      expect(result?.profileImageUrl).toBe('profile_images/user1.jpg');
     });
   });
 }); 
