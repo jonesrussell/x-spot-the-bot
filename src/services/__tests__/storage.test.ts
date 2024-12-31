@@ -1,6 +1,12 @@
 import { StorageService } from '../storage.js';
 import { ProfileData } from '../../types/profile.js';
 
+// Extend the chrome.storage.local mock type
+type ChromeStorageLocal = typeof chrome.storage.local & {
+  mockClear: () => void;
+  mockImplementation: (fn: (key: any, callback: any) => void) => void;
+};
+
 describe('StorageService', () => {
   let storage: StorageService;
   const mockProfile: ProfileData = {
@@ -15,13 +21,13 @@ describe('StorageService', () => {
 
   beforeEach(() => {
     storage = new StorageService();
-    chrome.storage.local.get.mockClear();
-    chrome.storage.local.set.mockClear();
+    (chrome.storage.local as ChromeStorageLocal).mockClear();
+    (chrome.storage.local.set as jest.Mock).mockClear();
   });
 
   describe('saveProfile', () => {
     it('should save profile data to storage', async () => {
-      chrome.storage.local.get.mockImplementation((key, callback) => {
+      (chrome.storage.local as ChromeStorageLocal).mockImplementation((key, callback) => {
         callback({ profiles: {} });
       });
 
@@ -35,7 +41,8 @@ describe('StorageService', () => {
               displayName: mockProfile.displayName
             })
           })
-        })
+        }),
+        expect.any(Function)
       );
     });
 
@@ -47,7 +54,7 @@ describe('StorageService', () => {
         }
       };
 
-      chrome.storage.local.get.mockImplementation((key, callback) => {
+      (chrome.storage.local as ChromeStorageLocal).mockImplementation((key, callback) => {
         callback({ profiles: existingProfiles });
       });
 
@@ -60,14 +67,15 @@ describe('StorageService', () => {
               interactionTimestamp: mockProfile.interactionTimestamp
             })
           })
-        })
+        }),
+        expect.any(Function)
       );
     });
   });
 
   describe('getProfile', () => {
     it('should retrieve profile data from storage', async () => {
-      chrome.storage.local.get.mockImplementation((key, callback) => {
+      (chrome.storage.local as ChromeStorageLocal).mockImplementation((key, callback) => {
         callback({
           profiles: {
             [mockProfile.username]: mockProfile
@@ -80,7 +88,7 @@ describe('StorageService', () => {
     });
 
     it('should return null for non-existent profile', async () => {
-      chrome.storage.local.get.mockImplementation((key, callback) => {
+      (chrome.storage.local as ChromeStorageLocal).mockImplementation((key, callback) => {
         callback({ profiles: {} });
       });
 
@@ -105,7 +113,7 @@ describe('StorageService', () => {
         }
       };
 
-      chrome.storage.local.get.mockImplementation((key, callback) => {
+      (chrome.storage.local as ChromeStorageLocal).mockImplementation((key, callback) => {
         callback({ profiles: oldProfiles });
       });
 
@@ -116,7 +124,8 @@ describe('StorageService', () => {
           profiles: expect.not.objectContaining({
             old: expect.anything()
           })
-        })
+        }),
+        expect.any(Function)
       );
 
       expect(chrome.storage.local.set).toHaveBeenCalledWith(
@@ -124,7 +133,8 @@ describe('StorageService', () => {
           profiles: expect.objectContaining({
             recent: expect.anything()
           })
-        })
+        }),
+        expect.any(Function)
       );
     });
   });
