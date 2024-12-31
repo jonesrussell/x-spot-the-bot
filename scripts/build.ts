@@ -1,22 +1,27 @@
-import { copyFile, mkdir } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const rootDir = resolve(__dirname, '..');
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
 async function copyFiles() {
   try {
-    // Ensure dist directory exists
-    await mkdir(resolve(rootDir, 'dist'), { recursive: true });
-    await mkdir(resolve(rootDir, 'dist/icons'), { recursive: true });
+    // Create dist directory if it doesn't exist
+    await fs.mkdir('dist', { recursive: true }).catch(() => {});
 
     // Copy manifest
-    await copyFile(
-      resolve(rootDir, 'src/manifest.json'),
-      resolve(rootDir, 'dist/manifest.json')
-    );
+    await fs.copyFile('src/manifest.json', 'dist/manifest.json');
+
+    // Copy icons
+    const iconDir = join('dist', 'icons');
+    await fs.mkdir(iconDir, { recursive: true }).catch(() => {});
+    
+    // Use withFileTypes to avoid fs.Stats
+    const entries = await fs.readdir('src/icons', { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isFile() && entry.name.endsWith('.png')) {
+        const srcPath = join('src/icons', entry.name);
+        const destPath = join(iconDir, entry.name);
+        await fs.copyFile(srcPath, destPath);
+      }
+    }
 
     console.log('✓ Files copied successfully');
   } catch (error) {
