@@ -7,6 +7,9 @@ interface StorageData {
   profiles: { [key: string]: ProfileData };
 }
 
+type StorageCallback = (data: StorageData) => void;
+type StorageSetCallback = () => void;
+
 describe('StorageService', () => {
   let storageService: StorageService;
   let mockStorage: StorageData = { profiles: {} };
@@ -24,10 +27,10 @@ describe('StorageService', () => {
 
   beforeEach(() => {
     mockStorage = { profiles: {} };
-    jest.spyOn(chrome.storage.local, 'get').mockImplementation((_, callback: any) => {
+    jest.spyOn(chrome.storage.local, 'get').mockImplementation((_, callback: StorageCallback) => {
       callback(mockStorage);
     });
-    jest.spyOn(chrome.storage.local, 'set').mockImplementation((data: any, callback?: () => void) => {
+    jest.spyOn(chrome.storage.local, 'set').mockImplementation((data: Partial<StorageData>, callback?: StorageSetCallback) => {
       mockStorage = { profiles: { ...mockStorage.profiles, ...(data.profiles || {}) } };
       if (callback) callback();
     });
