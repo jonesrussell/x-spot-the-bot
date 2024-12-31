@@ -40,6 +40,37 @@ Source Code Requirements:
      * Testing and mocking
      * Async operations and error handling
 
+4. UI Requirements:
+   - Summary Panel:
+     * Sticky positioning at top of feed
+     * Dark theme matching X's UI
+     * Live statistics updates
+     * High z-index (9999999)
+   - Warning Indicators:
+     * 🤖 Red for high probability (>=60%)
+     * ⚠️ Orange for medium probability (30-59%)
+     * ✓ Green for likely real (<30%)
+     * Hover state for showing reasons
+   - CSS Standards:
+     * Use !important for all styles
+     * Support dark/light themes with CSS variables
+     * Maintain relative positioning
+     * Avoid class name collisions with X's UI
+   - Accessibility:
+     * High contrast colors
+     * Clear visual hierarchy
+     * Hover states for interactivity
+
+5. Debug Logging Standards:
+   - Use consistent prefixes:
+     * [XBot:Core] - Initialization and processing
+     * [XBot:DOM] - Element operations
+     * [XBot:Analyzer] - Bot detection results
+     * [XBot:UI] - Panel and indicator updates
+   - Include relevant data in logs
+   - Log all state changes and important events
+   - Use debug level for verbose logging
+
 Known Deprecation Warnings:
 - [DEP0180] fs.Stats constructor: Ignore (ts-node internal)
 - [DEP0040] punycode module: Ignore (Jest internal)
