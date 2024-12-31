@@ -62,9 +62,6 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { 
         argsIgnorePattern: '^_'
       }],
-      'no-console': ['warn', { 
-        allow: ['warn', 'error', 'debug'] 
-      }],
       'no-undef': 'off', // TypeScript handles this
     },
   },

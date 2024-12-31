@@ -3,30 +3,35 @@ import { join } from 'path';
 
 async function generateIcons() {
   try {
+    const distIconDir = join('dist', 'icons');
+    await fs.mkdir(distIconDir, { recursive: true });
+
+    // Create a minimal 1x1 pixel PNG file
+    const minimalPNG = Buffer.from([
+      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+      0x00, 0x00, 0x00, 0x0D,
+      0x49, 0x48, 0x44, 0x52,
+      0x00, 0x00, 0x00, 0x01,
+      0x00, 0x00, 0x00, 0x01,
+      0x08, 0x06, 0x00, 0x00, 0x00,
+      0x1F, 0x15, 0xC4, 0x89,
+      0x00, 0x00, 0x00, 0x0A,
+      0x49, 0x44, 0x41, 0x54,
+      0x08, 0xD7, 0x63, 0x00, 0x00,
+      0x00, 0x02, 0x00, 0x01,
+      0xE5, 0x27, 0xDE, 0x97,
+      0x00, 0x00, 0x00, 0x00,
+      0x49, 0x45, 0x4E, 0x44,
+      0xAE, 0x42, 0x60, 0x82
+    ]);
+
+    // Write the same minimal icon for all sizes
     const sizes = [16, 32, 48, 128];
-    const iconDir = join('src', 'icons');
-    
-    // Ensure icons directory exists
-    await fs.mkdir(iconDir, { recursive: true }).catch(() => {});
-
-    // Create a simple robot icon SVG
-    const createSVG = (size: number) => `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-  <rect width="${size}" height="${size}" fill="#1DA1F2"/>
-  <text x="${size/2}" y="${size/2}" font-family="Arial" font-size="${size * 0.6}" 
-    fill="white" text-anchor="middle" dominant-baseline="middle">🤖</text>
-</svg>`;
-
     for (const size of sizes) {
-      const svgContent = createSVG(size);
-      const iconPath = join(iconDir, `icon${size}.svg`);
-      await fs.writeFile(iconPath, svgContent, 'utf8');
+      await fs.writeFile(join(distIconDir, `icon${size}.png`), minimalPNG);
     }
-
-    console.log('✓ Icons generated successfully');
   } catch (error) {
-    console.error('Error generating icons:', error);
-    process.exit(1);
+    console.error('Error creating minimal icons:', error);
   }
 }
 

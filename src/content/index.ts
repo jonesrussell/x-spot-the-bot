@@ -3,6 +3,10 @@ import { ProfileAnalyzer } from '../services/profile-analyzer.js';
 import { StorageService } from '../services/storage.js';
 import { UIManager } from '../services/ui-manager.js';
 
+// Force console to show debug logs
+console.log('[XBot] Extension loaded - Version 1.0.0');
+console.log('[XBot] To see all logs, filter console by "[XBot"');
+
 export class BotDetector {
   private domExtractor: DOMExtractor;
   private profileAnalyzer: ProfileAnalyzer;
