@@ -12,14 +12,16 @@ describe('DOMExtractor', () => {
   describe('extractProfileData', () => {
     it('should extract profile data from notification cell', () => {
       const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'notification');
+      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
       
       const userLink = document.createElement('a');
+      userLink.setAttribute('role', 'link');
+      userLink.setAttribute('href', '/testuser');
       userLink.setAttribute('data-testid', 'UserName');
       userLink.textContent = 'testuser';
 
       const avatar = document.createElement('img');
-      avatar.setAttribute('data-testid', 'UserAvatar');
+      avatar.setAttribute('data-testid', 'UserAvatar-Container-testuser');
       avatar.src = 'avatar.jpg';
 
       notificationCell.appendChild(userLink);
@@ -33,7 +35,7 @@ describe('DOMExtractor', () => {
 
     it('should handle missing user name element', () => {
       const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'notification');
+      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
 
       const result = domExtractor.extractProfileData(notificationCell);
       expect(result).toBeNull();
@@ -41,9 +43,11 @@ describe('DOMExtractor', () => {
 
     it('should handle missing profile image', () => {
       const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'notification');
+      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
       
       const userLink = document.createElement('a');
+      userLink.setAttribute('role', 'link');
+      userLink.setAttribute('href', '/testuser');
       userLink.setAttribute('data-testid', 'UserName');
       userLink.textContent = 'testuser';
 
@@ -55,14 +59,16 @@ describe('DOMExtractor', () => {
 
     it('should handle notifications with interaction type', () => {
       const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'notification');
+      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
       
       const userLink = document.createElement('a');
+      userLink.setAttribute('role', 'link');
+      userLink.setAttribute('href', '/testuser');
       userLink.setAttribute('data-testid', 'UserName');
       userLink.textContent = 'testuser';
 
       const avatar = document.createElement('img');
-      avatar.setAttribute('data-testid', 'UserAvatar');
+      avatar.setAttribute('data-testid', 'UserAvatar-Container-testuser');
       avatar.src = 'avatar.jpg';
 
       const interactionText = document.createElement('span');
@@ -81,24 +87,31 @@ describe('DOMExtractor', () => {
 
     it('should handle combination notifications with multiple users', () => {
       const notificationCell = document.createElement('div');
-      notificationCell.setAttribute('data-testid', 'notification');
+      notificationCell.setAttribute('data-testid', 'cellInnerDiv');
       
       const userLinks = [
         { username: 'user1', avatarUrl: 'avatar1.jpg' },
         { username: 'user2', avatarUrl: 'avatar2.jpg' }
       ].map(({ username, avatarUrl }) => {
         const userLink = document.createElement('a');
+        userLink.setAttribute('role', 'link');
+        userLink.setAttribute('href', `/${username}`);
         userLink.setAttribute('data-testid', 'UserName');
         userLink.textContent = username;
 
         const avatar = document.createElement('img');
-        avatar.setAttribute('data-testid', 'UserAvatar');
+        avatar.setAttribute('data-testid', `UserAvatar-Container-${username}`);
         avatar.src = avatarUrl;
 
         notificationCell.appendChild(userLink);
         notificationCell.appendChild(avatar);
         return { userLink, avatar };
       });
+
+      // Add text to indicate multiple users
+      const text = document.createElement('span');
+      text.textContent = 'new post notifications for';
+      notificationCell.appendChild(text);
 
       // Verify that both users were added to the notification
       expect(userLinks).toHaveLength(2);
