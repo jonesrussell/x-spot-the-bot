@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --watch",
-    "build": "npm run generate-icons && tsc && vite build && npm run copy-files",
+    "build": "tsc -p tsconfig.node.json && npm run generate-icons && tsc && vite build && npm run copy-files",
     "preview": "vite preview",
     "generate-icons": "node --loader ts-node/esm scripts/generate-icons.ts",
     "copy-files": "node --loader ts-node/esm scripts/build.ts"
   },
   "devDependencies": {
+    "@rollup/wasm-node": "^4.29.1",
     "@types/chrome": "^0.0.287",
     "@types/node": "^22.10.2",
     "canvas": "^3.0.0",
