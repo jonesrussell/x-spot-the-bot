@@ -1,4 +1,4 @@
-import { StorageService } from '../services/storage';
+import { StorageService } from '../services/storage.js';
 
 interface ProfileData {
   username: string;
