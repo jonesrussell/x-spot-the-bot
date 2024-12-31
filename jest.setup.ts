@@ -10,29 +10,25 @@ const mockChromeStorage = {
 
 // Type-safe mock implementation
 mockChromeStorage.local.get.mockImplementation((keys, callback) => {
-  if (typeof keys === 'string') {
-    callback?.({ [keys]: null });
-    return Promise.resolve({ [keys]: null });
+  if (callback) {
+    if (typeof keys === 'string') {
+      callback({ [keys]: null });
+    } else if (Array.isArray(keys)) {
+      callback(Object.fromEntries(keys.map(key => [key, null])));
+    } else if (typeof keys === 'object') {
+      callback(Object.fromEntries(
+        Object.entries(keys).map(([key, defaultValue]) => [key, defaultValue])
+      ));
+    } else {
+      callback({});
+    }
   }
-  if (Array.isArray(keys)) {
-    const result = Object.fromEntries(keys.map(key => [key, null]));
-    callback?.(result);
-    return Promise.resolve(result);
-  }
-  if (typeof keys === 'object') {
-    const result = Object.fromEntries(
-      Object.entries(keys).map(([key, defaultValue]) => [key, defaultValue])
-    );
-    callback?.(result);
-    return Promise.resolve(result);
-  }
-  callback?.({});
-  return Promise.resolve({});
 });
 
 mockChromeStorage.local.set.mockImplementation((items, callback) => {
-  callback?.();
-  return Promise.resolve();
+  if (callback) {
+    callback();
+  }
 });
 
 // Assign mock to global object
