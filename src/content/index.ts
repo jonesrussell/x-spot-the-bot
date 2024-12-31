@@ -3,7 +3,7 @@ import { ProfileAnalyzer } from '../services/profile-analyzer.js';
 import { StorageService } from '../services/storage.js';
 import { UIManager } from '../services/ui-manager.js';
 
-class BotDetector {
+export class BotDetector {
   private domExtractor: DOMExtractor;
   private profileAnalyzer: ProfileAnalyzer;
   private storageService: StorageService;
@@ -111,7 +111,7 @@ class BotDetector {
 
     const analysis = await this.profileAnalyzer.analyzeBotProbability(profileData);
     if (analysis.probability > 0.5) {
-      this.uiManager.showWarning(notification, analysis);
+      this.uiManager.addBotWarningUI(notification, analysis.probability, analysis.reasons);
       await this.storageService.recordSuspiciousProfile(profileData);
     }
   }

@@ -1,11 +1,7 @@
 export class UIManager {
   private static styleAdded = false;
 
-  public showWarning(element: HTMLElement, analysis: { probability: number; reasons: string[] }): void {
-    this.addBotWarningUI(element, analysis.probability, analysis.reasons);
-  }
-
-  private addBotWarningUI(element: HTMLElement, probability: number, reasons: string[]): void {
+  public addBotWarningUI(element: HTMLElement, probability: number, reasons: string[]): void {
     this.ensureStyles();
 
     const warningDiv = document.createElement('div');
