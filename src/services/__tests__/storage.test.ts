@@ -17,14 +17,31 @@ describe('StorageService', () => {
   beforeEach(() => {
     storage = new StorageService();
     jest.clearAllMocks();
+    // Ensure each mock resolves immediately
+    (chrome.storage.local.get as jest.Mock).mockImplementation((...args: any[]) => {
+      const callback = args[args.length - 1];
+      if (typeof callback === 'function') {
+        callback({ profiles: {} });
+      }
+      return Promise.resolve();
+    });
+    (chrome.storage.local.set as jest.Mock).mockImplementation((...args: any[]) => {
+      const callback = args[args.length - 1];
+      if (typeof callback === 'function') {
+        callback();
+      }
+      return Promise.resolve();
+    });
+    (chrome.storage.local.clear as jest.Mock).mockImplementation((callback?: any) => {
+      if (typeof callback === 'function') {
+        callback();
+      }
+      return Promise.resolve();
+    });
   });
 
   describe('saveProfile', () => {
     it('should save profile data to storage', async () => {
-      (chrome.storage.local.get as jest.Mock).mockImplementation((keys: unknown, callback: unknown) => {
-        (callback as (items: { [key: string]: any }) => void)({ profiles: {} });
-      });
-
       await storage.saveProfile(mockProfile);
 
       expect(chrome.storage.local.set).toHaveBeenCalledWith(
@@ -48,8 +65,12 @@ describe('StorageService', () => {
         }
       };
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((keys: unknown, callback: unknown) => {
-        (callback as (items: { [key: string]: any }) => void)({ profiles: existingProfiles });
+      (chrome.storage.local.get as jest.Mock).mockImplementationOnce((...args: any[]) => {
+        const callback = args[args.length - 1];
+        if (typeof callback === 'function') {
+          callback({ profiles: existingProfiles });
+        }
+        return Promise.resolve();
       });
 
       await storage.saveProfile(mockProfile);
@@ -69,12 +90,16 @@ describe('StorageService', () => {
 
   describe('getProfile', () => {
     it('should retrieve profile data from storage', async () => {
-      (chrome.storage.local.get as jest.Mock).mockImplementation((keys: unknown, callback: unknown) => {
-        (callback as (items: { [key: string]: any }) => void)({
-          profiles: {
-            [mockProfile.username]: mockProfile
-          }
-        });
+      (chrome.storage.local.get as jest.Mock).mockImplementationOnce((...args: any[]) => {
+        const callback = args[args.length - 1];
+        if (typeof callback === 'function') {
+          callback({
+            profiles: {
+              [mockProfile.username]: mockProfile
+            }
+          });
+        }
+        return Promise.resolve();
       });
 
       const result = await storage.getProfile(mockProfile.username);
@@ -82,10 +107,6 @@ describe('StorageService', () => {
     });
 
     it('should return null for non-existent profile', async () => {
-      (chrome.storage.local.get as jest.Mock).mockImplementation((keys: unknown, callback: unknown) => {
-        (callback as (items: { [key: string]: any }) => void)({ profiles: {} });
-      });
-
       const result = await storage.getProfile('nonexistent');
       expect(result).toBeNull();
     });
@@ -107,8 +128,12 @@ describe('StorageService', () => {
         }
       };
 
-      (chrome.storage.local.get as jest.Mock).mockImplementation((keys: unknown, callback: unknown) => {
-        (callback as (items: { [key: string]: any }) => void)({ profiles: oldProfiles });
+      (chrome.storage.local.get as jest.Mock).mockImplementationOnce((...args: any[]) => {
+        const callback = args[args.length - 1];
+        if (typeof callback === 'function') {
+          callback({ profiles: oldProfiles });
+        }
+        return Promise.resolve();
       });
 
       await storage.pruneOldProfiles();

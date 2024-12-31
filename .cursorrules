@@ -9,6 +9,21 @@ IMPORTANT NOTES:
   - [DEP0180] fs.Stats constructor is deprecated (from ts-node's ESM resolver)
   - Not our code - it's in ts-node/dist-raw/node-internal-modules-esm-resolve.js
   - Can be ignored as it's a ts-node internal issue
+  - [DEP0040] punycode module is deprecated (from Jest ESM loader)
+  - Can be ignored as it's a Jest internal issue
+
+Testing Configuration:
+- Jest with ESM support (using --experimental-vm-modules)
+- Test environment: jsdom
+- File naming: *.test.ts in __tests__ directories
+- Mock implementations:
+  - Chrome storage API mocked globally in jest.setup.ts
+  - Use type-safe mock implementations for callbacks
+  - Handle async operations with Promise.resolve()
+- Test coverage requirements:
+  - Unit tests for all services
+  - Integration tests for DOM operations
+  - Mock Chrome API calls appropriately
 
 Bot Detection Rules:
 - Probability threshold: >= 0.6 for high probability bots
@@ -36,6 +51,7 @@ Core Project Structure:
   - types/profile.ts: TypeScript interfaces
   - icons/generate-icons.ts: Icon generation utilities
   - manifest.json: Extension manifest
+  - __tests__/: Test files for each service
 - scripts/
   - build.ts: Build script for copying files
   - generate-icons.ts: Icon generation script
@@ -51,6 +67,8 @@ Build Configuration:
 - tsconfig.json: ES2022 modules, Node moduleResolution
 - vite.config.ts: Content script bundling
 - package.json: ESM module type
+- jest.config.ts: ESM and TypeScript configuration
+- jest.setup.ts: Global test setup and mocks
 
 Current Focus:
 - Profile analysis (username patterns, follower counts)
@@ -58,6 +76,7 @@ Current Focus:
 - Local storage for interaction history
 - Real-time notification monitoring
 - Duplicate detection prevention
+- Test coverage and stability
 
 Coding Standards:
 - Use TypeScript interfaces for type definitions
@@ -65,6 +84,7 @@ Coding Standards:
 - Add debug logging with [XBot:Category] prefix
 - Handle DOM operations safely with null checks
 - Follow Edge extension best practices
+- Write comprehensive tests with clear descriptions
 
 Dependencies (current versions):
 - typescript: 5.7.2
@@ -75,4 +95,8 @@ Dependencies (current versions):
 - canvas: 3.0.0
 - @rollup/wasm-node: 4.29.1
 - prettier: 3.4.2
-- prettier-plugin-organize-imports: 3.2.4 (4.1.0 available) 
+- prettier-plugin-organize-imports: 3.2.4 (4.1.0 available)
+- jest: 29.7.0
+- jest-environment-jsdom: 29.7.0
+- ts-jest: 29.2.5
+- @types/jest: 29.5.14 
