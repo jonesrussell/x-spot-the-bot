@@ -27,25 +27,19 @@ export class UIManager {
         : 'medium-probability'
     );
 
-    // Add warning text
-    warning.textContent = analysis.probability >= this.HIGH_PROBABILITY_THRESHOLD
-      ? '🤖 Bot Account'
-      : '⚠️ Possible Bot';
-
-    // Add tooltip with reasons
-    if (analysis.reasons.length > 0) {
-      const tooltip = document.createElement('div');
-      tooltip.className = 'xbd-tooltip';
-      tooltip.innerHTML = `
-        <strong>Detection Reasons:</strong>
-        <ul>
-          ${analysis.reasons.map(reason => `<li>${reason}</li>`).join('')}
-        </ul>
-      `;
-      warning.appendChild(tooltip);
-    }
+    // Add warning content
+    warning.innerHTML = `
+      <div class="xbd-warning-icon">${analysis.probability >= this.HIGH_PROBABILITY_THRESHOLD ? '🤖' : '⚠️'}</div>
+      <div class="xbd-warning-text">
+        ${analysis.probability >= this.HIGH_PROBABILITY_THRESHOLD ? 'Bot Account' : 'Possible Bot'}
+        <div class="xbd-warning-reasons">
+          ${analysis.reasons.map(reason => `<div class="xbd-reason">• ${reason}</div>`).join('')}
+        </div>
+      </div>
+    `;
 
     // Insert warning at the top of the notification
+    element.style.position = 'relative';
     element.insertBefore(warning, element.firstChild);
   }
 
@@ -67,12 +61,17 @@ export class UIManager {
     styles.setAttribute('data-xbot', 'true');
     styles.textContent = `
       .xbd-warning {
-        position: relative;
-        padding: 8px;
-        margin: 8px 0;
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 4px 8px;
+        margin: 4px;
         border-radius: 4px;
-        font-weight: bold;
-        cursor: help;
+        display: flex;
+        align-items: start;
+        gap: 4px;
+        font-size: 12px;
+        z-index: 1000;
       }
 
       .xbd-warning.high-probability {
@@ -87,33 +86,23 @@ export class UIManager {
         border: 1px solid #ff8c00;
       }
 
-      .xbd-tooltip {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        z-index: 1000;
-        width: 250px;
-        padding: 8px;
-        background: #fff;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        font-weight: normal;
-        color: #333;
+      .xbd-warning-icon {
+        font-size: 14px;
       }
 
-      .xbd-warning:hover .xbd-tooltip {
+      .xbd-warning-reasons {
+        display: none;
+        margin-top: 4px;
+        color: #666;
+      }
+
+      .xbd-warning:hover .xbd-warning-reasons {
         display: block;
       }
 
-      .xbd-tooltip ul {
-        margin: 4px 0;
-        padding-left: 20px;
-      }
-
-      .xbd-tooltip li {
-        margin: 2px 0;
+      .xbd-reason {
+        font-size: 11px;
+        line-height: 1.4;
       }
     `;
 
