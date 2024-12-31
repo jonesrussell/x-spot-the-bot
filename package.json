@@ -10,6 +10,7 @@
     }
   },
   "scripts": {
+    "clean": "rm -rf dist/*",
     "dev": "vite",
     "build": "tsc -p tsconfig.node.json && npm run generate-icons && tsc && vite build && npm run copy-files",
     "preview": "vite preview",
