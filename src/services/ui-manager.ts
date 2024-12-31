@@ -5,6 +5,8 @@ export class UIManager {
   private readonly HIGH_PROBABILITY_THRESHOLD = 0.6;
   private readonly MEDIUM_PROBABILITY_THRESHOLD = 0.3;
   private summaryPanel: HTMLElement | null = null;
+  private retryCount = 0;
+  private readonly maxRetries = 10;
   private stats = {
     high: 0,
     medium: 0,
@@ -13,10 +15,22 @@ export class UIManager {
 
   constructor() {
     this.updateStyles();
-    this.createSummaryPanel();
+    this.initSummaryPanel();
   }
 
-  private createSummaryPanel(): void {
+  private async initSummaryPanel(): Promise<void> {
+    // Try to create panel
+    await this.createSummaryPanel();
+
+    // If panel wasn't created and we haven't exceeded retries, try again
+    if (!this.summaryPanel && this.retryCount < this.maxRetries) {
+      console.debug('[XBot:UI] Feed not found, retrying panel creation in 1s');
+      this.retryCount++;
+      setTimeout(() => this.initSummaryPanel(), 1000);
+    }
+  }
+
+  private async createSummaryPanel(): Promise<void> {
     // Create summary panel
     const panel = document.createElement('div');
     panel.className = 'xbd-summary-panel';
@@ -40,11 +54,26 @@ export class UIManager {
       </div>
     `;
 
-    // Insert at top of notifications
-    const feed = document.querySelector('[data-testid="primaryColumn"]');
-    if (feed) {
-      feed.insertBefore(panel, feed.firstChild);
-      this.summaryPanel = panel;
+    // Try different selectors for the feed
+    const selectors = [
+      '[data-testid="primaryColumn"]',
+      '[aria-label="Timeline: Notifications"]',
+      '[data-testid="notificationsTimeline"]',
+      'section[role="region"]'
+    ];
+
+    for (const selector of selectors) {
+      const feed = document.querySelector(selector);
+      if (feed) {
+        console.debug('[XBot:UI] Found feed with selector:', selector);
+        feed.insertBefore(panel, feed.firstChild);
+        this.summaryPanel = panel;
+        break;
+      }
+    }
+
+    if (this.summaryPanel) {
+      console.debug('[XBot:UI] Summary panel created');
     }
   }
 
