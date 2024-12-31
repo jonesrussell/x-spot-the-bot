@@ -7,41 +7,40 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: 'src/content/index.ts',
-      formats: ['es']
+      formats: ['iife'],
+      name: 'xbot'
     },
-    modulePreload: {
-      polyfill: false
-    },
-    cssCodeSplit: true,
+    modulePreload: false,
+    cssCodeSplit: false,
     sourcemap: true,
     minify: 'esbuild',
     rollupOptions: {
+      external: ['chrome'],
       output: {
-        preserveModules: true,
-        entryFileNames: '[name].js',
-        preserveModulesRoot: 'src',
-        inlineDynamicImports: false
-      },
-      treeshake: {
-        moduleSideEffects: true,
-        propertyReadSideEffects: true,
-        unknownGlobalSideEffects: false
+        format: 'iife',
+        name: 'xbot',
+        extend: true,
+        globals: {
+          chrome: 'chrome'
+        },
+        generatedCode: {
+          constBindings: true
+        }
       }
     }
+  },
+  resolve: {
+    extensions: ['.ts', '.js']
   },
   esbuild: {
     target: 'es2022',
     format: 'esm',
+    platform: 'browser',
     treeShaking: true,
     minifyIdentifiers: true,
     minifySyntax: true,
     minifyWhitespace: true,
     keepNames: true,
     legalComments: 'none'
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-      target: 'es2022'
-    }
   }
 }); 
