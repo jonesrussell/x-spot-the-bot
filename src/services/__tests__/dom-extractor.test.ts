@@ -13,13 +13,8 @@ describe('DOMExtractor', () => {
       const html = `
         <div data-testid="cellInnerDiv">
           <div data-testid="notification">
-            <div data-testid="UserName">
-              <a role="link" href="/johndoe">
-                <span>John Doe</span>
-                <span>@johndoe</span>
-              </a>
-            </div>
-            <div data-testid="UserAvatar">
+            <a href="/johndoe" role="link">John Doe</a>
+            <div data-testid="UserAvatar-Container-johndoe">
               <img src="https://pbs.twimg.com/profile_images/123/image.jpg" />
             </div>
             <div>liked your tweet</div>
@@ -82,12 +77,8 @@ describe('DOMExtractor', () => {
         const html = `
           <div data-testid="cellInnerDiv">
             <div data-testid="notification">
-              <div data-testid="UserName">
-                <a role="link" href="/user">
-                  <span>Test User</span>
-                </a>
-              </div>
-              <div data-testid="UserAvatar">
+              <a href="/user" role="link">Test User</a>
+              <div data-testid="UserAvatar-Container-user">
                 <img src="https://pbs.twimg.com/profile_images/123/image.jpg" />
               </div>
               <div>${text}</div>
@@ -107,12 +98,8 @@ describe('DOMExtractor', () => {
       const html = `
         <div data-testid="cellInnerDiv">
           <div data-testid="notification">
-            <div data-testid="UserName">
-              <a role="link" href="/user">
-                <span>Test User</span>
-              </a>
-            </div>
-            <div data-testid="UserAvatar">
+            <a href="/user" role="link">Test User</a>
+            <div data-testid="UserAvatar-Container-user">
               <div style="background-image: url('https://pbs.twimg.com/profile_images/123/image.jpg')"></div>
             </div>
             <div>liked your tweet</div>
@@ -161,6 +148,27 @@ describe('DOMExtractor', () => {
             </div>
           `,
           type: 'community'
+        },
+        {
+          html: `
+            <div data-testid="cellInnerDiv">
+              <div data-testid="notification">
+                <div>New post notifications for</div>
+                <div data-testid="UserName">
+                  <a role="link" href="/user1">
+                    <span>User One</span>
+                  </a>
+                </div>
+                <div>and</div>
+                <div data-testid="UserName">
+                  <a role="link" href="/user2">
+                    <span>User Two</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          `,
+          type: 'multiple_users'
         }
       ];
 
@@ -171,6 +179,70 @@ describe('DOMExtractor', () => {
 
         expect(result).toBeNull();
       });
+    });
+
+    it('should handle multiple user notifications', () => {
+      const html = `
+        <div data-testid="cellInnerDiv">
+          <div data-testid="notification">
+            <div>New post notifications for</div>
+            <div>
+              <a href="/user1" role="link">User One</a>
+              <div data-testid="UserAvatar-Container-user1">
+                <img src="https://pbs.twimg.com/profile_images/123/image.jpg" />
+              </div>
+            </div>
+            <div>and</div>
+            <div>
+              <a href="/user2" role="link">User Two</a>
+              <div data-testid="UserAvatar-Container-user2">
+                <img src="https://pbs.twimg.com/profile_images/456/image.jpg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.innerHTML = html;
+      const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
+      const result = extractor.extractProfileData(element);
+
+      expect(result).not.toBeNull();
+      expect(result?.username).toBe('user1');
+      expect(result?.displayName).toBe('User One');
+      expect(result?.profileImageUrl).toContain('profile_images');
+      expect(result?.interactionType).toBe('follow');
+    });
+
+    it('should handle verified user notifications', () => {
+      const html = `
+        <div data-testid="cellInnerDiv">
+          <div data-testid="notification">
+            <div>New post notifications for</div>
+            <div>
+              <a href="/verifieduser" role="link">
+                Verified User
+                <svg viewBox="0 0 22 22" aria-label="Verified account" data-testid="icon-verified">
+                  <path d="M20.396 11c-.018-.646-.215-1.275..."></path>
+                </svg>
+              </a>
+              <div data-testid="UserAvatar-Container-verifieduser">
+                <img src="https://pbs.twimg.com/profile_images/789/image.jpg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.innerHTML = html;
+      const element = document.querySelector('[data-testid="cellInnerDiv"]') as HTMLElement;
+      const result = extractor.extractProfileData(element);
+
+      expect(result).not.toBeNull();
+      expect(result?.username).toBe('verifieduser');
+      expect(result?.displayName).toBe('Verified User');
+      expect(result?.profileImageUrl).toContain('profile_images');
+      expect(result?.interactionType).toBe('follow');
     });
   });
 }); 

@@ -31,57 +31,60 @@ export class DOMExtractor {
 
       // Check if this is a community or pinned post notification
       const notificationText = cell.textContent?.toLowerCase() || '';
+      
+      // Find all user links in the notification
+      const userLinks = Array.from(cell.querySelectorAll('a[role="link"]')).filter(link => {
+        const href = link.getAttribute('href');
+        return href && href.startsWith('/') && !href.includes('/i/');
+      });
+
+      // Skip notifications without user links
+      if (userLinks.length === 0) {
+        console.debug('[XBot:DOM] Failed at: No user links found');
+        return null;
+      }
+
+      // Skip group notifications
       if (notificationText.includes('new pinned post in') || 
           notificationText.includes('trending in') ||
           notificationText.includes('community post')) {
-        console.debug('[XBot:DOM] Skipping community/pinned post notification');
+        console.debug('[XBot:DOM] Skipping group/community notification');
         return null;
       }
 
-      // Find user name element
-      const userNameElement = cell.querySelector(this.SELECTORS.USER_NAME);
-      if (!userNameElement) {
-        console.debug('[XBot:DOM] Failed at: No User-Name element found');
-        return null;
-      }
-
-      // Find user link within user name element
-      const userLink = userNameElement.querySelector('a[role="link"]');
-      if (!userLink || !(userLink instanceof HTMLAnchorElement)) {
-        console.debug('[XBot:DOM] Failed at: No user link in User-Name element');
-        return null;
-      }
-
+      // For notifications with multiple users, process each one
+      // For now, we'll just take the first one to avoid spam
+      const userLink = userLinks[0] as HTMLAnchorElement;
       const username = userLink.getAttribute('href')?.slice(1);
       if (!username) {
         console.debug('[XBot:DOM] Failed at: No href attribute in user link');
         return null;
       }
 
-      // Get display name from user name element
-      const displayName = this.extractDisplayName(userNameElement) || username;
+      // Get display name from the link text
+      const displayName = userLink.textContent?.trim() || username;
 
-      // Find profile image
-      const avatarContainer = cell.querySelector(this.SELECTORS.USER_AVATAR);
+      // Find profile image - look for the container with the username
+      const avatarContainer = cell.querySelector(`[data-testid="UserAvatar-Container-${username}"]`);
       if (!avatarContainer) {
-        console.debug('[XBot:DOM] Failed at: No Tweet-User-Avatar element found');
+        console.debug('[XBot:DOM] Failed at: No avatar container found for user');
         return null;
       }
 
+      // Extract profile image from the container
       const profileImageUrl = this.extractProfileImage(avatarContainer);
       if (!profileImageUrl) {
         console.debug('[XBot:DOM] Failed at: Could not extract profile image URL');
         return null;
       }
 
-      // Get interaction type from notification text
-      const notification = cell.querySelector(this.SELECTORS.NOTIFICATION);
-      if (!notification) {
-        console.debug('[XBot:DOM] Failed at: No notification element found');
-        return null;
+      // Determine interaction type
+      let interactionType: ProfileData['interactionType'] = 'follow';
+      if (notificationText.includes('new post notifications for')) {
+        interactionType = 'follow';
+      } else {
+        interactionType = this.determineInteractionType(notificationText);
       }
-
-      const interactionType = this.determineInteractionType(notificationText);
 
       console.debug('[XBot:DOM] Successfully extracted profile data', {
         username,
