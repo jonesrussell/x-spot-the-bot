@@ -20,11 +20,12 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "check": "npm run format:check && npm run lint && npm run test"
   },
   "devDependencies": {
+    "@eslint/js": "^8.57.0",
     "@rollup/wasm-node": "^4.29.1",
     "@types/chrome": "^0.0.287",
     "@types/jest": "^29.5.14",
