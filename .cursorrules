@@ -102,7 +102,17 @@ Technical Requirements:
 
 Build Configuration:
 - tsconfig.json: ES2022, bundler moduleResolution
-- vite.config.ts: Content script bundling
+- vite.config.ts: 
+  * IIFE format for browser compatibility
+  * Output file must be named 'content.js'
+  * Chrome APIs marked as external
+  * ESM format for esbuild
+  * Platform set to browser
+  * Tree shaking enabled
+- manifest.json: 
+  * manifest_version: 3
+  * content_scripts must use 'content.js'
+  * Proper host permissions for x.com/twitter.com
 - package.json: ESM module type
 - jest.config.ts: ESM and TypeScript
 - jest.setup.ts: Global test setup

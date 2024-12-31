@@ -8,7 +8,8 @@ export default defineConfig({
     lib: {
       entry: 'src/content/index.ts',
       formats: ['iife'],
-      name: 'xbot'
+      name: 'xbot',
+      fileName: 'content.js'
     },
     modulePreload: false,
     cssCodeSplit: false,
@@ -20,6 +21,7 @@ export default defineConfig({
         format: 'iife',
         name: 'xbot',
         extend: true,
+        entryFileNames: 'content.js',
         globals: {
           chrome: 'chrome'
         },
