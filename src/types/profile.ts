@@ -1,12 +1,12 @@
 // Type definitions
-export const InteractionType = {
+export const InteractionTypes = {
   Like: 'like',
   Reply: 'reply',
   Repost: 'repost',
   Follow: 'follow'
 } as const;
 
-export const NotificationType = {
+export const NotificationTypes = {
   UserInteraction: 'user_interaction',
   PinnedPost: 'pinned_post',
   Trending: 'trending',
@@ -15,8 +15,8 @@ export const NotificationType = {
 } as const;
 
 // Infer types from const objects
-export type InteractionType = typeof InteractionType[keyof typeof InteractionType];
-export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
+export type InteractionType = typeof InteractionTypes[keyof typeof InteractionTypes];
+export type NotificationType = typeof NotificationTypes[keyof typeof NotificationTypes];
 
 // Interfaces
 export interface ProfileData {

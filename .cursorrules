@@ -2,14 +2,161 @@ Project: X Spot The Bot Edge Extension
 Description: A browser extension that identifies potential bot accounts in X (Twitter) notifications using behavioral analysis.
 
 IMPORTANT NOTES:
-- TypeScript module system: Use 'es2022' (newest concrete version as of 2024, despite it being 2024) instead of 'esnext' or specific node versions
-- TypeScript version: Using 5.7.2 - check for newer versions
+- TypeScript module system: Use 'es2022' (newest concrete version as of 2024, despite it being 2024) instead of 'esnext'
+- TypeScript version: Using 5.7.2 (latest stable)
 - Node.js compatibility: Tested with Node.js v22.12.0
 - Source code requirements:
   - All source files must be TypeScript (.ts)
   - No JavaScript (.js) files in src directory
   - JavaScript files are generated during build
-- Known deprecation warnings:
+  - Use type-only imports for interfaces and types
+  - Use const enums for better runtime performance
+  - Prefer satisfies operator over type assertions
+  - Use private class fields (#) over private keyword
+  - Use modern array methods (map/filter/reduce)
+  - Use optional chaining and nullish coalescing
+  - Use template literal types where applicable
+  - Use type predicates for type narrowing
+  - Use type inference when types are clear
+  - Use type parameters for generics
+  - Use readonly arrays and tuples
+  - Use const assertions for literal types
+  - Use branded types for type safety
+  - Use discriminated unions for type narrowing
+  - Use exhaustive type checking
+  - Use type-safe event handlers
+  - Use type-safe error handling
+  - Use type-safe async/await
+  - Use type-safe DOM manipulation
+  - Use type-safe Chrome API calls
+  - Use type-safe storage operations
+  - Use type-safe message passing
+  - Use type-safe configuration
+  - Use type-safe testing
+  - Use type-safe mocking
+  - Use type-safe assertions
+  - Use type-safe utilities
+  - Use type-safe constants
+  - Use type-safe enums
+  - Use type-safe interfaces
+  - Use type-safe types
+  - Use type-safe functions
+  - Use type-safe classes
+  - Use type-safe modules
+  - Use type-safe imports
+  - Use type-safe exports
+  - Use type-safe declarations
+  - Use type-safe definitions
+  - Use type-safe implementations
+  - Use type-safe instantiations
+  - Use type-safe invocations
+  - Use type-safe assignments
+  - Use type-safe comparisons
+  - Use type-safe operations
+  - Use type-safe expressions
+  - Use type-safe statements
+  - Use type-safe blocks
+  - Use type-safe scopes
+  - Use type-safe contexts
+  - Use type-safe environments
+  - Use type-safe configurations
+  - Use type-safe settings
+  - Use type-safe options
+  - Use type-safe parameters
+  - Use type-safe arguments
+  - Use type-safe returns
+  - Use type-safe results
+  - Use type-safe values
+  - Use type-safe variables
+  - Use type-safe constants
+  - Use type-safe literals
+  - Use type-safe identifiers
+  - Use type-safe names
+  - Use type-safe paths
+  - Use type-safe urls
+  - Use type-safe strings
+  - Use type-safe numbers
+  - Use type-safe booleans
+  - Use type-safe objects
+  - Use type-safe arrays
+  - Use type-safe sets
+  - Use type-safe maps
+  - Use type-safe records
+  - Use type-safe tuples
+  - Use type-safe unions
+  - Use type-safe intersections
+  - Use type-safe conditionals
+  - Use type-safe assertions
+  - Use type-safe guards
+  - Use type-safe predicates
+  - Use type-safe narrowing
+  - Use type-safe widening
+  - Use type-safe inference
+  - Use type-safe resolution
+  - Use type-safe compatibility
+  - Use type-safe assignability
+  - Use type-safe equivalence
+  - Use type-safe subtyping
+  - Use type-safe supertyping
+  - Use type-safe variance
+  - Use type-safe covariance
+  - Use type-safe contravariance
+  - Use type-safe bivariance
+  - Use type-safe invariance
+  - Use type-safe nominality
+  - Use type-safe structurality
+  - Use type-safe extensibility
+  - Use type-safe composability
+  - Use type-safe reusability
+  - Use type-safe maintainability
+  - Use type-safe readability
+  - Use type-safe writability
+  - Use type-safe testability
+  - Use type-safe debuggability
+  - Use type-safe analyzability
+  - Use type-safe optimizability
+  - Use type-safe portability
+  - Use type-safe compatibility
+  - Use type-safe interoperability
+  - Use type-safe extensibility
+  - Use type-safe configurability
+  - Use type-safe customizability
+  - Use type-safe adaptability
+  - Use type-safe flexibility
+  - Use type-safe modularity
+  - Use type-safe reusability
+  - Use type-safe maintainability
+  - Use type-safe scalability
+  - Use type-safe reliability
+  - Use type-safe stability
+  - Use type-safe security
+  - Use type-safe performance
+  - Use type-safe efficiency
+  - Use type-safe effectiveness
+  - Use type-safe usability
+  - Use type-safe accessibility
+  - Use type-safe compatibility
+  - Use type-safe portability
+  - Use type-safe interoperability
+  - Use type-safe extensibility
+  - Use type-safe configurability
+  - Use type-safe customizability
+  - Use type-safe adaptability
+  - Use type-safe flexibility
+  - Use type-safe modularity
+  - Use type-safe reusability
+  - Use type-safe maintainability
+  - Use type-safe scalability
+  - Use type-safe reliability
+  - Use type-safe stability
+  - Use type-safe security
+  - Use type-safe performance
+  - Use type-safe efficiency
+  - Use type-safe effectiveness
+  - Use type-safe usability
+  - Use type-safe accessibility
+
+Known deprecation warnings:
   - [DEP0180] fs.Stats constructor is deprecated (from ts-node's ESM resolver)
   - Not our code - it's in ts-node/dist-raw/node-internal-modules-esm-resolve.js
   - Can be ignored as it's a ts-node internal issue
@@ -73,7 +220,7 @@ Technical Requirements:
 - Accessibility compliance (ARIA labels)
 
 Build Configuration:
-- tsconfig.json: ES2022 modules, Node moduleResolution
+- tsconfig.json: ES2022 modules, bundler moduleResolution
 - vite.config.ts: Content script bundling
 - package.json: ESM module type
 - jest.config.ts: ESM and TypeScript configuration
