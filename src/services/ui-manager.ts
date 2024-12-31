@@ -50,9 +50,20 @@ export class UIManager {
       </div>
     `;
 
-    // Insert warning at the top of the notification
-    element.style.position = 'relative';
-    element.insertBefore(warning, element.firstChild);
+    // Find the username element to insert after
+    const usernameElement = element.querySelector('[data-testid="User-Name"]') || 
+                           element.querySelector('[data-testid="UserName"]');
+    
+    if (usernameElement?.parentElement) {
+      // Insert warning after the username
+      usernameElement.parentElement.insertBefore(warning, usernameElement.nextSibling);
+      // Make sure the parent has relative positioning
+      usernameElement.parentElement.style.position = 'relative';
+    } else {
+      // Fallback to inserting at the top of the notification
+      element.style.position = 'relative';
+      element.insertBefore(warning, element.firstChild);
+    }
   }
 
   public removeWarningIndicator(element: HTMLElement): void {
@@ -73,19 +84,18 @@ export class UIManager {
     styles.setAttribute('data-xbot', 'true');
     styles.textContent = `
       .xbd-warning {
-        position: absolute !important;
-        top: 0 !important;
-        right: 0 !important;
-        padding: 4px 8px !important;
-        margin: 4px !important;
-        border-radius: 4px !important;
-        display: flex !important;
-        align-items: start !important;
+        display: inline-flex !important;
+        align-items: center !important;
         gap: 4px !important;
+        padding: 2px 6px !important;
+        margin-left: 8px !important;
+        border-radius: 4px !important;
         font-size: 12px !important;
+        line-height: 1.2 !important;
+        vertical-align: middle !important;
         z-index: 9999999 !important;
         background: var(--background-color, #fff) !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
       }
 
       .xbd-warning.high-probability {
@@ -118,10 +128,23 @@ export class UIManager {
 
       .xbd-warning-reasons {
         display: none;
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
         margin-top: 4px !important;
+        padding: 8px !important;
+        background: var(--background-color, #fff) !important;
+        border-radius: 4px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
         color: var(--text-color, #666) !important;
         font-size: 11px !important;
         line-height: 1.4 !important;
+        white-space: nowrap !important;
+        z-index: 9999999 !important;
+      }
+
+      .xbd-warning:hover {
+        position: relative !important;
       }
 
       .xbd-warning:hover .xbd-warning-reasons {

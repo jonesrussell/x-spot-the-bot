@@ -123,7 +123,14 @@ export class BotDetector {
 
     const analysis = await this.profileAnalyzer.analyzeBotProbability(profileData);
     
-    // Only show warnings for high probability bots
+    // Add UI indicator for all accounts
+    this.uiManager.addWarningIndicator(notification, {
+      username: profileData.username,
+      probability: analysis.probability,
+      reasons: analysis.reasons
+    });
+
+    // Log based on probability
     if (analysis.probability >= 0.6) {
       console.debug('[XBot:Core] High probability bot detected', {
         username: profileData.username,
@@ -131,16 +138,18 @@ export class BotDetector {
         probability: analysis.probability,
         reasons: analysis.reasons
       });
-
-      this.uiManager.addWarningIndicator(notification, {
+      await this.storageService.saveProfile(profileData);
+    } else if (analysis.probability >= 0.3) {
+      console.debug('[XBot:Core] Medium probability bot detected', {
         username: profileData.username,
+        displayName: profileData.displayName,
         probability: analysis.probability,
         reasons: analysis.reasons
       });
-      await this.storageService.saveProfile(profileData);
-    } else if (analysis.probability > 0) {
-      console.debug('[XBot:Core] Low probability bot ignored', {
+    } else {
+      console.debug('[XBot:Core] Likely real account', {
         username: profileData.username,
+        displayName: profileData.displayName,
         probability: analysis.probability,
         reasons: analysis.reasons
       });
