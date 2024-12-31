@@ -57,4 +57,60 @@ describe('ProfileAnalyzer', () => {
       expect(probability).toBeGreaterThanOrEqual(0.2);
     });
   });
+
+  describe('analyzeBotProbability', () => {
+    it('should return zero probability for community posts', async () => {
+      const profile: Profile = {
+        username: 'i/communities/tech',
+        displayName: 'Tech Community',
+        followersCount: 1000,
+        followingCount: 1000
+      };
+
+      const result = await analyzer.analyzeBotProbability(profile);
+      expect(result.probability).toBe(0);
+      expect(result.reasons).toHaveLength(0);
+    });
+
+    it('should include reasons for high probability accounts', async () => {
+      const profile: Profile = {
+        username: 'bot12345678',
+        displayName: 'Test Bot',
+        followersCount: 0,
+        followingCount: 0
+      };
+
+      const result = await analyzer.analyzeBotProbability(profile);
+      expect(result.probability).toBeGreaterThanOrEqual(0.6);
+      expect(result.reasons).toContain('No followers or following');
+      expect(result.reasons).toContain('Random alphanumeric username');
+    });
+
+    it('should detect multiple suspicious patterns', async () => {
+      const profile: Profile = {
+        username: 'spambot1234',
+        displayName: 'Spam Bot',
+        followersCount: 0,
+        followingCount: 0
+      };
+
+      const result = await analyzer.analyzeBotProbability(profile);
+      expect(result.reasons).toContain('Username contains bot-like keywords');
+      expect(result.reasons).toContain('Username ends with many numbers');
+      expect(result.reasons).toContain('No followers or following');
+    });
+
+    it('should return low probability with no reasons for normal accounts', async () => {
+      const profile: Profile = {
+        username: 'johndoe',
+        displayName: 'John Doe',
+        followersCount: 100,
+        followingCount: 100
+      };
+
+      const result = await analyzer.analyzeBotProbability(profile);
+      expect(result.probability).toBeLessThan(0.6);
+      expect(result.reasons).toHaveLength(0);
+    });
+  });
 }); 
