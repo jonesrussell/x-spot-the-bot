@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 // Mock Chrome Extension API
 const mockChrome = {
   storage: {
@@ -5,7 +7,8 @@ const mockChrome = {
       get: jest.fn(),
       set: jest.fn(),
       remove: jest.fn(),
-      clear: jest.fn()
+      clear: jest.fn(),
+      mockClear: jest.fn()
     }
   }
 };
@@ -16,6 +19,11 @@ const mockChrome = {
 // Reset all mocks before each test
 beforeEach(() => {
   jest.clearAllMocks();
+  Object.values(mockChrome.storage.local).forEach(mock => {
+    if (mock instanceof Function) {
+      mock.mockClear();
+    }
+  });
 });
 
 // Clean up after each test

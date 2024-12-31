@@ -132,14 +132,8 @@ export class BotDetector {
         reasons: analysis.reasons
       });
 
-      this.uiManager.addBotWarningUI(notification, analysis.probability, analysis.reasons);
-      await this.storageService.recordInteraction(
-        profileData.username,
-        profileData.interactionTimestamp,
-        profileData.interactionType,
-        analysis.probability,
-        analysis.reasons
-      );
+      this.uiManager.addWarningIndicator(notification, analysis);
+      await this.storageService.saveProfile(profileData);
     } else if (analysis.probability > 0) {
       console.debug('[XBot:Core] Low probability bot ignored', {
         username: profileData.username,
