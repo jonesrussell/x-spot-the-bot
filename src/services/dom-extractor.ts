@@ -12,34 +12,34 @@ export class DOMExtractor {
     try {
       // Skip if this is our warning element
       if (element.classList.contains('xbd-warning')) {
-        console.debug('DOMExtractor: Skipping our warning element');
+        console.debug('[XBot:DOM] Skipping warning element');
         return null;
       }
 
       // Find the notification cell
       const cell = element.closest(this.SELECTORS.CELL);
       if (!cell || !(cell instanceof HTMLElement)) {
-        console.debug('DOMExtractor: No notification cell found');
+        console.debug('[XBot:DOM] No notification cell found');
         return null;
       }
 
       // Find user name element
       const userNameElement = cell.querySelector(this.SELECTORS.USER_NAME);
       if (!userNameElement) {
-        console.debug('DOMExtractor: No user name element found');
+        console.debug('[XBot:DOM] No user name element found');
         return null;
       }
 
       // Find user link within user name element
       const userLink = userNameElement.querySelector('a[role="link"]');
       if (!userLink || !(userLink instanceof HTMLAnchorElement)) {
-        console.debug('DOMExtractor: No user link found in name element');
+        console.debug('[XBot:DOM] No user link found in name element');
         return null;
       }
 
       const username = userLink.getAttribute('href')?.slice(1);
       if (!username) {
-        console.debug('DOMExtractor: Could not extract username from href');
+        console.debug('[XBot:DOM] Could not extract username from href');
         return null;
       }
 
@@ -49,13 +49,13 @@ export class DOMExtractor {
       // Find profile image
       const avatarContainer = cell.querySelector(this.SELECTORS.USER_AVATAR);
       if (!avatarContainer) {
-        console.debug('DOMExtractor: No avatar container found');
+        console.debug('[XBot:DOM] No avatar container found');
         return null;
       }
 
       const profileImageUrl = this.extractProfileImage(avatarContainer);
       if (!profileImageUrl) {
-        console.debug('DOMExtractor: Could not extract profile image URL');
+        console.debug('[XBot:DOM] Could not extract profile image URL');
         return null;
       }
 
@@ -64,7 +64,7 @@ export class DOMExtractor {
       const notificationText = notification?.textContent?.toLowerCase() || '';
       const interactionType = this.determineInteractionType(notificationText);
 
-      console.debug('DOMExtractor: Successfully extracted profile data for', username, {
+      console.debug('[XBot:DOM] Successfully extracted profile data for', username, {
         displayName,
         profileImageUrl,
         interactionType
@@ -81,7 +81,7 @@ export class DOMExtractor {
       };
 
     } catch (error) {
-      console.error('DOMExtractor: Error extracting profile data:', error);
+      console.error('[XBot:DOM] Error extracting profile data:', error);
       return null;
     }
   }

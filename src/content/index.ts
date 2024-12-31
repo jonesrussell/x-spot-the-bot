@@ -13,7 +13,7 @@ export class BotDetector {
   private maxRetries = 10;
 
   constructor() {
-    console.debug('BotDetector: Initializing...');
+    console.debug('[XBot:Core] Initializing...');
     this.domExtractor = new DOMExtractor();
     this.profileAnalyzer = new ProfileAnalyzer();
     this.storageService = new StorageService();
@@ -24,17 +24,16 @@ export class BotDetector {
   private async init() {
     const feed = await this.waitForNotificationsFeed();
     if (!feed) {
-      console.debug('BotDetector: Could not find notifications feed after retries');
+      console.debug('[XBot:Core] Could not find notifications feed after retries');
       return;
     }
 
-    console.debug('BotDetector: Found notifications feed, starting observer');
+    console.debug('[XBot:Core] Found notifications feed, starting observer');
     this.setupObserver(feed);
     this.scanExistingNotifications(feed);
   }
 
   private async waitForNotificationsFeed(): Promise<HTMLElement | null> {
-    // Try multiple selectors in order of specificity
     const selectors = [
       '[aria-label="Timeline: Notifications"]',
       '[data-testid="primaryColumn"]',
@@ -45,7 +44,7 @@ export class BotDetector {
     for (const selector of selectors) {
       const feed = document.querySelector(selector);
       if (feed && feed instanceof HTMLElement) {
-        console.debug('BotDetector: Found feed with selector:', selector);
+        console.debug('[XBot:Core] Found feed with selector:', selector);
         return feed;
       }
     }
@@ -54,7 +53,7 @@ export class BotDetector {
       return null;
     }
 
-    console.debug('BotDetector: Feed not found, retrying in 1s');
+    console.debug('[XBot:Core] Feed not found, retrying in 1s');
     this.retryCount++;
     await new Promise(resolve => setTimeout(resolve, 1000));
     return this.waitForNotificationsFeed();
@@ -71,7 +70,7 @@ export class BotDetector {
                 return;
               }
 
-              console.debug('BotDetector: Found new notification cell');
+              console.debug('[XBot:Core] Processing new notification');
               this.processNotification(node);
             }
           });
@@ -86,12 +85,12 @@ export class BotDetector {
   }
 
   private scanExistingNotifications(feed: HTMLElement) {
-    console.debug('BotDetector: Scanning existing notifications...');
+    console.debug('[XBot:Core] Scanning existing notifications...');
     const notifications = feed.querySelectorAll('[data-testid="cellInnerDiv"]');
-    console.debug(`BotDetector: Found ${notifications.length} existing notifications`);
+    console.debug(`[XBot:Core] Found ${notifications.length} existing notifications`);
     
     if (notifications.length === 0) {
-      console.debug('BotDetector: No existing notifications found');
+      console.debug('[XBot:Core] No existing notifications found');
       return;
     }
 
@@ -110,7 +109,7 @@ export class BotDetector {
 
     const profileData = this.domExtractor.extractProfileData(notification);
     if (!profileData) {
-      console.debug('BotDetector: Could not extract profile data');
+      console.debug('[XBot:Core] Could not extract profile data');
       return;
     }
 
@@ -133,12 +132,12 @@ export class BotDetector {
 
 // Initialize when the document is ready
 if (document.readyState === 'loading') {
-  console.debug('BotDetector: Waiting for document to load');
+  console.debug('[XBot:Core] Waiting for document to load');
   document.addEventListener('DOMContentLoaded', () => {
-    console.debug('BotDetector: Starting initialization');
+    console.debug('[XBot:Core] Starting initialization');
     new BotDetector();
   });
 } else {
-  console.debug('BotDetector: Document already loaded, creating instance');
+  console.debug('[XBot:Core] Document already loaded, creating instance');
   new BotDetector();
 }
