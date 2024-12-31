@@ -47,7 +47,7 @@ describe('UIManager', () => {
       expect(warning?.textContent).toContain('Possible Bot');
     });
 
-    it('should not add warning for low probability', () => {
+    it('should add green checkmark for low probability', () => {
       const analysis: BotAnalysis = {
         username: 'testuser',
         probability: 0.1,
@@ -57,7 +57,10 @@ describe('UIManager', () => {
       uiManager.addWarningIndicator(container, analysis);
 
       const warning = container.querySelector('.xbd-warning');
-      expect(warning).toBeNull();
+      expect(warning).not.toBeNull();
+      expect(warning?.classList.contains('low-probability')).toBe(true);
+      expect(warning?.textContent).toContain('Likely Real');
+      expect(warning?.querySelector('.xbd-warning-icon')?.textContent).toBe('✓');
     });
 
     it('should include detection reasons in warning', () => {
