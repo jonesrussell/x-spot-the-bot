@@ -1,5 +1,5 @@
 import { UIManager } from '../ui-manager.js';
-import { BotAnalysis } from '../../types/profile.js';
+import type { BotAnalysis } from '../../types/profile.js';
 
 describe('UIManager', () => {
   let uiManager: UIManager;

@@ -1,4 +1,4 @@
-import { BotAnalysis } from '../types/profile.js';
+import type { BotAnalysis } from '../types/profile.js';
 
 export class UIManager {
   private readonly CSS_ID = 'xbot-styles';

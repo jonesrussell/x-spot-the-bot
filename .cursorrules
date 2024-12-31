@@ -5,248 +5,124 @@ IMPORTANT NOTES:
 - TypeScript module system: Use 'es2022' (newest concrete version as of 2024, despite it being 2024) instead of 'esnext'
 - TypeScript version: Using 5.7.2 (latest stable)
 - Node.js compatibility: Tested with Node.js v22.12.0
-- Source code requirements:
-  - All source files must be TypeScript (.ts)
-  - No JavaScript (.js) files in src directory
-  - JavaScript files are generated during build
-  - Use type-only imports for interfaces and types
-  - Use const enums for better runtime performance
-  - Prefer satisfies operator over type assertions
-  - Use private class fields (#) over private keyword
-  - Use modern array methods (map/filter/reduce)
-  - Use optional chaining and nullish coalescing
-  - Use template literal types where applicable
-  - Use type predicates for type narrowing
-  - Use type inference when types are clear
-  - Use type parameters for generics
-  - Use readonly arrays and tuples
-  - Use const assertions for literal types
-  - Use branded types for type safety
-  - Use discriminated unions for type narrowing
-  - Use exhaustive type checking
-  - Use type-safe event handlers
-  - Use type-safe error handling
-  - Use type-safe async/await
-  - Use type-safe DOM manipulation
-  - Use type-safe Chrome API calls
-  - Use type-safe storage operations
-  - Use type-safe message passing
-  - Use type-safe configuration
-  - Use type-safe testing
-  - Use type-safe mocking
-  - Use type-safe assertions
-  - Use type-safe utilities
-  - Use type-safe constants
-  - Use type-safe enums
-  - Use type-safe interfaces
-  - Use type-safe types
-  - Use type-safe functions
-  - Use type-safe classes
-  - Use type-safe modules
-  - Use type-safe imports
-  - Use type-safe exports
-  - Use type-safe declarations
-  - Use type-safe definitions
-  - Use type-safe implementations
-  - Use type-safe instantiations
-  - Use type-safe invocations
-  - Use type-safe assignments
-  - Use type-safe comparisons
-  - Use type-safe operations
-  - Use type-safe expressions
-  - Use type-safe statements
-  - Use type-safe blocks
-  - Use type-safe scopes
-  - Use type-safe contexts
-  - Use type-safe environments
-  - Use type-safe configurations
-  - Use type-safe settings
-  - Use type-safe options
-  - Use type-safe parameters
-  - Use type-safe arguments
-  - Use type-safe returns
-  - Use type-safe results
-  - Use type-safe values
-  - Use type-safe variables
-  - Use type-safe constants
-  - Use type-safe literals
-  - Use type-safe identifiers
-  - Use type-safe names
-  - Use type-safe paths
-  - Use type-safe urls
-  - Use type-safe strings
-  - Use type-safe numbers
-  - Use type-safe booleans
-  - Use type-safe objects
-  - Use type-safe arrays
-  - Use type-safe sets
-  - Use type-safe maps
-  - Use type-safe records
-  - Use type-safe tuples
-  - Use type-safe unions
-  - Use type-safe intersections
-  - Use type-safe conditionals
-  - Use type-safe assertions
-  - Use type-safe guards
-  - Use type-safe predicates
-  - Use type-safe narrowing
-  - Use type-safe widening
-  - Use type-safe inference
-  - Use type-safe resolution
-  - Use type-safe compatibility
-  - Use type-safe assignability
-  - Use type-safe equivalence
-  - Use type-safe subtyping
-  - Use type-safe supertyping
-  - Use type-safe variance
-  - Use type-safe covariance
-  - Use type-safe contravariance
-  - Use type-safe bivariance
-  - Use type-safe invariance
-  - Use type-safe nominality
-  - Use type-safe structurality
-  - Use type-safe extensibility
-  - Use type-safe composability
-  - Use type-safe reusability
-  - Use type-safe maintainability
-  - Use type-safe readability
-  - Use type-safe writability
-  - Use type-safe testability
-  - Use type-safe debuggability
-  - Use type-safe analyzability
-  - Use type-safe optimizability
-  - Use type-safe portability
-  - Use type-safe compatibility
-  - Use type-safe interoperability
-  - Use type-safe extensibility
-  - Use type-safe configurability
-  - Use type-safe customizability
-  - Use type-safe adaptability
-  - Use type-safe flexibility
-  - Use type-safe modularity
-  - Use type-safe reusability
-  - Use type-safe maintainability
-  - Use type-safe scalability
-  - Use type-safe reliability
-  - Use type-safe stability
-  - Use type-safe security
-  - Use type-safe performance
-  - Use type-safe efficiency
-  - Use type-safe effectiveness
-  - Use type-safe usability
-  - Use type-safe accessibility
-  - Use type-safe compatibility
-  - Use type-safe portability
-  - Use type-safe interoperability
-  - Use type-safe extensibility
-  - Use type-safe configurability
-  - Use type-safe customizability
-  - Use type-safe adaptability
-  - Use type-safe flexibility
-  - Use type-safe modularity
-  - Use type-safe reusability
-  - Use type-safe maintainability
-  - Use type-safe scalability
-  - Use type-safe reliability
-  - Use type-safe stability
-  - Use type-safe security
-  - Use type-safe performance
-  - Use type-safe efficiency
-  - Use type-safe effectiveness
-  - Use type-safe usability
-  - Use type-safe accessibility
 
-Known deprecation warnings:
-  - [DEP0180] fs.Stats constructor is deprecated (from ts-node's ESM resolver)
-  - Not our code - it's in ts-node/dist-raw/node-internal-modules-esm-resolve.js
-  - Can be ignored as it's a ts-node internal issue
-  - [DEP0040] punycode module is deprecated (from Jest ESM loader)
-  - Can be ignored as it's a Jest internal issue
+Source Code Requirements:
+1. TypeScript Standards:
+   - All source files must be TypeScript (.ts)
+   - No JavaScript (.js) files in src directory
+   - JavaScript files are generated during build
+   - Use type-only imports for interfaces and types
+   - Use const enums for better runtime performance
+   - Prefer satisfies operator over type assertions
+   - Use private class fields (#) over private keyword
+
+2. Modern JavaScript Features:
+   - Use modern array methods (map/filter/reduce)
+   - Use optional chaining and nullish coalescing
+   - Use template literal types where applicable
+
+3. Type Safety Guidelines:
+   - Use type inference when types are clear
+   - Use type predicates for type narrowing
+   - Use discriminated unions and exhaustive type checking
+   - Use branded types for enhanced type safety
+   - Use readonly arrays and tuples where appropriate
+   - Use const assertions for literal types
+   - Implement proper type guards and narrowing
+   - Ensure type safety across:
+     * Event handlers and DOM manipulation
+     * Chrome API calls and storage operations
+     * Message passing and configuration
+     * Testing and mocking
+     * Async operations and error handling
+
+Known Deprecation Warnings:
+- [DEP0180] fs.Stats constructor: Ignore (ts-node internal)
+- [DEP0040] punycode module: Ignore (Jest internal)
 
 Testing Configuration:
-- Jest with ESM support (using --experimental-vm-modules)
+- Jest with ESM support (--experimental-vm-modules)
 - Test environment: jsdom
 - File naming: *.test.ts in __tests__ directories
 - Mock implementations:
-  - Chrome storage API mocked globally in jest.setup.ts
-  - Use type-safe mock implementations for callbacks
-  - Handle async operations with Promise.resolve()
-- Test coverage requirements:
-  - Unit tests for all services
-  - Integration tests for DOM operations
-  - Mock Chrome API calls appropriately
-  - Visual regression tests for UI components
-  - Edge case coverage for data extraction
+  * Chrome storage API mocked globally
+  * Type-safe mock implementations for callbacks
+  * Async operations with Promise.resolve()
+- Coverage requirements:
+  * Unit tests for all services
+  * Integration tests for DOM operations
+  * Mock Chrome API calls
+  * Visual regression tests for UI
+  * Edge case coverage for data extraction
 
 Bot Detection Rules:
 - Probability threshold: >= 0.6 for high probability bots
 - Score components:
-  - No followers/following: 0.3
-  - Username patterns: up to 0.5 combined
-  - Display name similarity: 0.2
+  * No followers/following: 0.3
+  * Username patterns: up to 0.5 combined
+  * Display name similarity: 0.2
 - Maximum total score: 0.9
 - Suspicious patterns:
-  - Random alphanumeric (0.3): ^[a-z0-9]{8,}$
-  - Many numbers (0.2): [0-9]{4,}
-  - Bot keywords (0.3): bot|spam|[0-9]+[a-z]+[0-9]+
-  - Random suffix (0.2): [a-z]+[0-9]{4,}$
-  - Numeric suffix (0.2): [0-9]{4,}$
-  - Random letters (0.2): [A-Z]{2,}[0-9]+
+  * Random alphanumeric (0.3): ^[a-z0-9]{8,}$
+  * Many numbers (0.2): [0-9]{4,}
+  * Bot keywords (0.3): bot|spam|[0-9]+[a-z]+[0-9]+
+  * Random suffix (0.2): [a-z]+[0-9]{4,}$
+  * Numeric suffix (0.2): [0-9]{4,}$
+  * Random letters (0.2): [A-Z]{2,}[0-9]+
 
-Core Project Structure:
-- src/
-  - content/index.ts: Main content script with BotDetector
-  - services/
-    - dom-extractor.ts: Handles DOM operations and data extraction
-    - profile-analyzer.ts: Analyzes profiles for bot-like behavior
-    - storage.ts: Manages local storage and interaction history
-    - ui-manager.ts: Handles UI elements and styling
-  - types/profile.ts: TypeScript interfaces
-  - icons/generate-icons.ts: Icon generation utilities
-  - manifest.json: Extension manifest
-  - __tests__/: Test files for each service
-- scripts/
-  - build.ts: Build script for copying files
-  - generate-icons.ts: Icon generation script
+Project Structure:
+src/
+  ├── content/
+  │   └── index.ts           # Main content script with BotDetector
+  ├── services/
+  │   ├── dom-extractor.ts   # DOM operations and data extraction
+  │   ├── profile-analyzer.ts # Bot behavior analysis
+  │   ├── storage.ts         # Local storage management
+  │   └── ui-manager.ts      # UI elements and styling
+  ├── types/
+  │   └── profile.ts         # TypeScript interfaces
+  ├── icons/
+  │   └── generate-icons.ts  # Icon generation utilities
+  └── __tests__/            # Test files for each service
 
 Technical Requirements:
 - TypeScript with strict type checking
-- ESM modules with proper extensions (.js for imports)
+- ESM modules with proper extensions
 - Vite for bundling
 - Edge extension APIs (chrome.* namespace)
-- MutationObserver for real-time notification monitoring
+- MutationObserver for notifications
 - Rate limiting for API calls
-- Error boundaries for UI components
-- Accessibility compliance (ARIA labels)
+- Error boundaries for UI
+- Accessibility compliance (ARIA)
 
 Build Configuration:
-- tsconfig.json: ES2022 modules, bundler moduleResolution
+- tsconfig.json: ES2022, bundler moduleResolution
 - vite.config.ts: Content script bundling
 - package.json: ESM module type
-- jest.config.ts: ESM and TypeScript configuration
-- jest.setup.ts: Global test setup and mocks
+- jest.config.ts: ESM and TypeScript
+- jest.setup.ts: Global test setup
 
 Current Focus:
-- Profile analysis (username patterns, follower counts)
-- DOM structure parsing for X's notification page
-- Local storage for interaction history
-- Real-time notification monitoring
-- Duplicate detection prevention
-- Test coverage and stability
-- UI consistency between dev and prod
-- Accessibility improvements
+- Profile analysis
+- DOM structure parsing
+- Local storage management
+- Real-time monitoring
+- Duplicate detection
+- Test coverage
+- UI consistency
+- Accessibility
 
 Coding Standards:
-- Use TypeScript interfaces for type definitions
-- Maintain single responsibility principle (SRP)
-- Add debug logging with [XBot:Category] prefix
-- Handle DOM operations safely with null checks
-- Follow Edge extension best practices
-- Write comprehensive tests with clear descriptions
-- Ensure proper error handling and recovery
-- Follow accessibility guidelines
+- Use TypeScript interfaces
+- Follow SRP (Single Responsibility)
+- Debug logging: [XBot:Category]
+- Safe DOM operations
+- Edge extension best practices
+- Comprehensive testing
+- Error handling
+- Accessibility guidelines
 
-Dependencies (current versions):
+Dependencies:
 - typescript: 5.7.2
 - vite: 6.0.6
 - @types/chrome: 0.0.287
@@ -255,7 +131,7 @@ Dependencies (current versions):
 - canvas: 3.0.0
 - @rollup/wasm-node: 4.29.1
 - prettier: 3.4.2
-- prettier-plugin-organize-imports: 3.2.4 (4.1.0 available)
+- prettier-plugin-organize-imports: 3.2.4
 - jest: 29.7.0
 - jest-environment-jsdom: 29.7.0
 - ts-jest: 29.2.5

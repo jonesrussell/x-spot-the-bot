@@ -1,4 +1,4 @@
-import { ProfileData, BotAnalysis } from '../types/profile.js';
+import type { ProfileData, BotAnalysis } from '../types/profile.js';
 
 export class ProfileAnalyzer {
   private readonly BOT_PATTERNS = {

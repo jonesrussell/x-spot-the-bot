@@ -37,19 +37,11 @@ export default defineConfig({
     minifySyntax: true,
     minifyWhitespace: true,
     keepNames: true,
-    legalComments: 'none',
-    supported: {
-      'const-enum': true,
-      'arbitrary-module-namespace-names': true,
-      'top-level-await': true
-    }
+    legalComments: 'none'
   },
   optimizeDeps: {
     esbuildOptions: {
-      target: 'es2022',
-      supported: {
-        'const-enum': true
-      }
+      target: 'es2022'
     }
   }
 }); 

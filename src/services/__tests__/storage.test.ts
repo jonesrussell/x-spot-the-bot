@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { StorageService } from '../storage';
-import { InteractionType, NotificationType, ProfileData } from '../../types/profile';
+import { InteractionTypes, NotificationTypes } from '../../types/profile';
+import type { ProfileData } from '../../types/profile';
 
 interface StorageData {
   [key: string]: ProfileData;
@@ -17,8 +18,8 @@ describe('StorageService', () => {
     followersCount: 100,
     followingCount: 100,
     interactionTimestamp: Date.now(),
-    interactionType: InteractionType.Like,
-    notificationType: NotificationType.UserInteraction
+    interactionType: InteractionTypes.Like,
+    notificationType: NotificationTypes.UserInteraction
   };
 
   beforeEach(() => {

@@ -1,5 +1,5 @@
-import { InteractionType, NotificationType } from '../types/profile.js';
-import type { ProfileData } from '../types/profile.js';
+import { InteractionTypes, NotificationTypes } from '../types/profile.js';
+import type { ProfileData, InteractionType, NotificationType } from '../types/profile.js';
 
 interface NotificationData {
   type: NotificationType;
@@ -60,19 +60,30 @@ export class DOMExtractor {
       }
 
       // Skip non-user notifications
-      if (notificationData.type !== NotificationType.UserInteraction && 
-          notificationData.type !== NotificationType.MultiUser) {
+      if (notificationData.type !== NotificationTypes.UserInteraction && 
+          notificationData.type !== NotificationTypes.MultiUser) {
         console.debug('[XBot:DOM] Skipping non-user notification:', notificationData.type);
         return null;
       }
 
       // Convert UserProfileData to ProfileData
-      const userProfile = notificationData.users[0];
+      const userProfile = notificationData.users?.[0];
+      if (!userProfile) {
+        console.debug('[XBot:DOM] No user profile found in notification');
+        return null;
+      }
+
       return {
-        ...userProfile,
+        username: userProfile.username,
+        displayName: userProfile.displayName,
+        profileImageUrl: userProfile.profileImageUrl,
+        followersCount: userProfile.followersCount,
+        followingCount: userProfile.followingCount,
+        interactionTimestamp: userProfile.interactionTimestamp,
+        interactionType: userProfile.interactionType,
         notificationType: userProfile.notificationType === 'multi_user'
-          ? NotificationType.MultiUser
-          : NotificationType.UserInteraction
+          ? NotificationTypes.MultiUser
+          : NotificationTypes.UserInteraction
       };
 
     } catch (error) {
@@ -86,13 +97,13 @@ export class DOMExtractor {
 
     // Check notification type
     if (DOMExtractor.#PATTERNS.PINNED_POST.test(text)) {
-      return { type: NotificationType.PinnedPost, text };
+      return { type: NotificationTypes.PinnedPost, text };
     }
     if (DOMExtractor.#PATTERNS.TRENDING.test(text)) {
-      return { type: NotificationType.Trending, text };
+      return { type: NotificationTypes.Trending, text };
     }
     if (DOMExtractor.#PATTERNS.COMMUNITY_POST.test(text)) {
-      return { type: NotificationType.CommunityPost, text };
+      return { type: NotificationTypes.CommunityPost, text };
     }
 
     // Find all user links
@@ -145,8 +156,8 @@ export class DOMExtractor {
 
     return {
       type: DOMExtractor.#PATTERNS.MULTI_USER.test(text)
-        ? NotificationType.MultiUser
-        : NotificationType.UserInteraction,
+        ? NotificationTypes.MultiUser
+        : NotificationTypes.UserInteraction,
       text,
       users
     };
@@ -154,10 +165,10 @@ export class DOMExtractor {
 
   #determineInteractionType(text: string): InteractionType {
     const { LIKE, REPLY, REPOST } = DOMExtractor.#PATTERNS;
-    if (LIKE.test(text)) return InteractionType.Like;
-    if (REPLY.test(text)) return InteractionType.Reply;
-    if (REPOST.test(text)) return InteractionType.Repost;
-    return InteractionType.Follow;
+    if (LIKE.test(text)) return InteractionTypes.Like;
+    if (REPLY.test(text)) return InteractionTypes.Reply;
+    if (REPOST.test(text)) return InteractionTypes.Repost;
+    return InteractionTypes.Follow;
   }
 
   #extractProfileImage(container: Element): string | null {

@@ -1,4 +1,4 @@
-import { ProfileData } from '../types/profile.js';
+import type { ProfileData } from '../types/profile.js';
 
 export class StorageService {
   private readonly STORAGE_KEY = 'profiles';
@@ -23,7 +23,7 @@ export class StorageService {
     // Remove profiles older than retention period
     Object.keys(profiles).forEach(username => {
       const profile = profiles[username];
-      if (now - profile.interactionTimestamp > retentionPeriod) {
+      if (profile && now - profile.interactionTimestamp > retentionPeriod) {
         delete profiles[username];
       }
     });

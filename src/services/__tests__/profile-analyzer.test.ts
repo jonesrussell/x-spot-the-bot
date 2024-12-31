@@ -1,5 +1,6 @@
 import { ProfileAnalyzer } from '../profile-analyzer.js';
-import { ProfileData, InteractionType, NotificationType } from '../../types/profile.js';
+import { InteractionTypes, NotificationTypes } from '../../types/profile.js';
+import type { ProfileData } from '../../types/profile.js';
 
 describe('ProfileAnalyzer', () => {
   let analyzer: ProfileAnalyzer;
@@ -17,8 +18,8 @@ describe('ProfileAnalyzer', () => {
         followersCount: 100,
         followingCount: 100,
         interactionTimestamp: Date.now(),
-        interactionType: InteractionType.Like,
-        notificationType: NotificationType.UserInteraction
+        interactionType: InteractionTypes.Like,
+        notificationType: NotificationTypes.UserInteraction
       };
 
       const result = await analyzer.analyzeBotProbability(profile);
@@ -34,8 +35,8 @@ describe('ProfileAnalyzer', () => {
         followersCount: 100,
         followingCount: 100,
         interactionTimestamp: Date.now(),
-        interactionType: InteractionType.Like,
-        notificationType: NotificationType.UserInteraction
+        interactionType: InteractionTypes.Like,
+        notificationType: NotificationTypes.UserInteraction
       };
 
       const result = await analyzer.analyzeBotProbability(profile);
@@ -51,8 +52,8 @@ describe('ProfileAnalyzer', () => {
         followersCount: 100,
         followingCount: 100,
         interactionTimestamp: Date.now(),
-        interactionType: InteractionType.Like,
-        notificationType: NotificationType.UserInteraction
+        interactionType: InteractionTypes.Like,
+        notificationType: NotificationTypes.UserInteraction
       };
 
       const result = await analyzer.analyzeBotProbability(profile);
@@ -68,8 +69,8 @@ describe('ProfileAnalyzer', () => {
         followersCount: 0,
         followingCount: 0,
         interactionTimestamp: Date.now(),
-        interactionType: InteractionType.Like,
-        notificationType: NotificationType.UserInteraction
+        interactionType: InteractionTypes.Like,
+        notificationType: NotificationTypes.UserInteraction
       };
 
       const result = await analyzer.analyzeBotProbability(profile);
