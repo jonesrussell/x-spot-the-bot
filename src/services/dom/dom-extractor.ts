@@ -1,4 +1,4 @@
-import type { InteractionType, ProfileData } from '../types/profile.js';
+import type { InteractionType, ProfileData } from '../../types/profile.js';
 
 export class DOMExtractor {
   static readonly #DEFAULT_PROFILE_IMAGE = 'https://abs.twimg.com/sticky/default_profile_images/default_profile.png';
@@ -6,11 +6,12 @@ export class DOMExtractor {
   public extractProfileData(cell: HTMLElement): ProfileData | null {
     try {
       // Extract username and display name
-      const usernameElement = cell.querySelector('[data-testid="User-Name"]');
-      if (!usernameElement) return null;
+      const userLink = cell.querySelector('[role="link"][href^="/"]');
+      if (!userLink) return null;
 
-      const username = usernameElement.textContent?.trim() || 'unknown';
-      const displayName = usernameElement.textContent?.trim() || username;
+      const username = userLink.getAttribute('href')?.slice(1) || 'unknown';
+      const displayNameElement = userLink.querySelector('[data-testid="User-Name"]');
+      const displayName = displayNameElement?.textContent?.trim() || username;
 
       // Extract profile image
       const imageElement = cell.querySelector('img[src*="profile_images"]');
@@ -54,21 +55,23 @@ export class DOMExtractor {
   }
 
   #extractNotificationType(cell: HTMLElement): 'user_interaction' | 'multi_user' {
-    const notificationElement = cell.querySelector('[data-testid="notification-type"]');
-    const type = notificationElement?.textContent?.trim();
-    return type === 'multi_user' ? 'multi_user' : 'user_interaction';
+    const notificationText = cell.querySelector('[data-testid="notificationText"]')?.textContent || '';
+    return notificationText.includes(' and ') ? 'multi_user' : 'user_interaction';
   }
 
   #extractInteractionType(cell: HTMLElement): InteractionType {
-    const interactionElement = cell.querySelector('[data-testid="interaction-type"]');
-    const type = interactionElement?.textContent?.trim();
-    switch (type) {
-      case 'like': case 'reply': case 'repost': case 'follow':
-      case 'mention': case 'quote': case 'list': case 'space':
-      case 'live': case 'other':
-        return type;
-      default:
-        return 'like';
-    }
+    const notificationText = cell.querySelector('[data-testid="notificationText"]')?.textContent?.toLowerCase() || '';
+    
+    if (notificationText.includes('liked')) return 'like';
+    if (notificationText.includes('replied')) return 'reply';
+    if (notificationText.includes('reposted')) return 'repost';
+    if (notificationText.includes('followed')) return 'follow';
+    if (notificationText.includes('mentioned')) return 'mention';
+    if (notificationText.includes('quoted')) return 'quote';
+    if (notificationText.includes('list')) return 'list';
+    if (notificationText.includes('space')) return 'space';
+    if (notificationText.includes('live')) return 'live';
+    
+    return 'other';
   }
 }

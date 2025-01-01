@@ -1,37 +1,52 @@
-export interface PatternMatch {
-  score: number;
-  reason: string;
-}
+import { type PatternMatch } from '../../types/analysis.js';
 
 export class PatternMatcher {
-  public findMatches(username: string): PatternMatch[] {
-    if (!username || typeof username !== 'string') return [];
+  readonly #botKeywords = /bot|spam|[0-9]+[a-z]+[0-9]+/i;
+  readonly #manyNumbers = /[0-9]{4,}/;
+  readonly #randomAlphanumeric = /^[a-z0-9]{8,}$/i;
+  readonly #numericSuffix = /[a-z]+[0-9]{4,}$/i;
 
+  findMatches(username: string): PatternMatch[] {
     const matches: PatternMatch[] = [];
 
-    // Check for bot keywords
-    if (/bot|spam|auto/i.test(username)) {
+    if (this.#botKeywords.test(username)) {
       matches.push({
         score: 0.35,
-        reason: 'Username contains suspicious keywords'
+        reason: 'Bot-like keywords detected in username'
       });
     }
 
-    // Check for many numbers
-    if (/[0-9]{4,}/.test(username)) {
+    if (this.#manyNumbers.test(username)) {
       matches.push({
         score: 0.25,
-        reason: 'Username contains unusually many numbers'
+        reason: 'Username contains many numbers'
+      });
+    }
+
+    if (this.#randomAlphanumeric.test(username)) {
+      matches.push({
+        score: 0.3,
+        reason: 'Random alphanumeric username pattern detected'
+      });
+    }
+
+    if (this.#numericSuffix.test(username)) {
+      matches.push({
+        score: 0.2,
+        reason: 'Username ends with numeric suffix'
       });
     }
 
     return matches;
   }
 
-  public getHighestScore(matches: PatternMatch[]): PatternMatch | null {
-    if (!matches.length) return null;
-    return matches.reduce((highest, current) => 
-      current.score > highest.score ? current : highest
-    );
+  getHighestScore(matches: PatternMatch[]): PatternMatch | null {
+    if (matches.length === 0) {
+      return null;
+    }
+
+    return matches.reduce((highest, current) => {
+      return current.score > highest.score ? current : highest;
+    });
   }
 } 

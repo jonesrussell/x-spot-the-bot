@@ -8,7 +8,10 @@ describe('StorageService', () => {
 
   beforeEach(() => {
     mockStorage = {};
-    global.chrome = {
+    vi.stubGlobal('chrome', {
+      runtime: {
+        lastError: null
+      },
       storage: {
         local: {
           get: vi.fn((keys, callback) => {
@@ -22,19 +25,19 @@ describe('StorageService', () => {
             } else {
               Object.assign(result, mockStorage);
             }
-            if (typeof callback === 'function') callback(result);
+            callback(result);
           }),
           set: vi.fn((items, callback) => {
             Object.assign(mockStorage, items);
-            if (typeof callback === 'function') callback();
+            callback();
           }),
           clear: vi.fn((callback) => {
             mockStorage = {};
-            if (typeof callback === 'function') callback();
+            callback();
           })
         }
       }
-    } as any;
+    });
     storage = new StorageService();
   });
 
@@ -54,12 +57,8 @@ describe('StorageService', () => {
       };
 
       await storage.saveProfile(profile);
-      expect(chrome.storage.local.set).toHaveBeenCalledWith(
-        expect.objectContaining({
-          [`profile:${profile.username}`]: profile
-        }),
-        expect.any(Function)
-      );
+      const key = `profile:${profile.username}`;
+      expect(mockStorage[key]).toEqual(profile);
     });
   });
 
@@ -78,7 +77,8 @@ describe('StorageService', () => {
         botProbability: 0.1
       };
 
-      mockStorage[`profile:${profile.username}`] = profile;
+      const key = `profile:${profile.username}`;
+      mockStorage[key] = profile;
       const result = await storage.getProfile(profile.username);
       expect(result).toEqual(profile);
     });

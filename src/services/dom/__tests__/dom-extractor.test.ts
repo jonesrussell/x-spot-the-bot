@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { addNotificationText, addProfileImage, addUserInfo, createNotificationCell } from '../../../test/helpers/dom.js';
+import { addNotificationText, addUserInfo, createNotificationCell } from '../../../test/helpers/dom.js';
 import { DOMExtractor } from '../dom-extractor.js';
 
 describe('DOMExtractor', () => {
@@ -15,7 +15,9 @@ describe('DOMExtractor', () => {
       const cell = createNotificationCell();
       addUserInfo(cell, 'testuser', 'Test User');
       addNotificationText(cell, 'liked your post');
-      addProfileImage(cell, 'https://example.com/profile.jpg');
+      const img = document.createElement('img');
+      img.setAttribute('src', 'https://example.com/profile_images/profile.jpg');
+      cell.querySelector('article')?.appendChild(img);
       document.body.appendChild(cell);
 
       const result = domExtractor.extractProfileData(cell);
@@ -23,7 +25,7 @@ describe('DOMExtractor', () => {
       expect(result?.username).toBe('testuser');
       expect(result?.displayName).toBe('Test User');
       expect(result?.interactionType).toBe('like');
-      expect(result?.profileImageUrl).toBe('https://example.com/profile.jpg');
+      expect(result?.profileImageUrl).toBe('https://example.com/profile_images/profile.jpg');
     });
 
     it('should handle missing user name element', () => {
