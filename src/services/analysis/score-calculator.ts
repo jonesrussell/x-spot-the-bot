@@ -36,6 +36,9 @@ export class ScoreCalculator {
         probability += ScoreCalculator.#DISPLAY_NAME_MATCH_SCORE;
         reasons.push('Display name exactly matches username');
       }
+    } else {
+      // If below threshold, just use pattern score
+      probability = patternScore || 0;
     }
 
     // Cap probability at maximum

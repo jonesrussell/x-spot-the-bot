@@ -1,42 +1,30 @@
-import indicatorStyles from './styles/indicators.css?raw';
-import panelStyles from './styles/panel.css?raw';
+import indicatorStyles from './styles/indicators.css';
+import panelStyles from './styles/panel.css';
 
 export class StyleManager {
-  private readonly CSS_ID = 'xbot-styles';
-  private stylesInjected = false;
+  #stylesInjected = false;
 
   public injectStyles(): void {
-    if (this.stylesInjected) return;
+    if (this.#stylesInjected) return;
 
-    const styles = document.createElement('style');
-    styles.id = this.CSS_ID;
-    styles.setAttribute('data-xbot', 'true');
-    
-    // In test environment, use mock styles
-    const isTestEnv = import.meta.env.MODE === 'test';
-    const panelCss = isTestEnv ? '.xbd-summary-panel { color: red; }' : panelStyles;
-    const indicatorCss = isTestEnv ? '.xbd-warning { color: blue; }' : indicatorStyles;
-    
-    styles.textContent = `${panelCss}\n${indicatorCss}`;
-
-    document.head.appendChild(styles);
-    this.stylesInjected = true;
+    const style = document.createElement('style');
+    style.textContent = `${panelStyles}\n${indicatorStyles}`;
+    document.head.appendChild(style);
+    this.#stylesInjected = true;
   }
 
   public updateThemeVariables(isDarkMode: boolean): void {
     const root = document.documentElement;
     if (isDarkMode) {
       root.style.setProperty('--background-color', '#15202b');
-      root.style.setProperty('--text-color', '#ffffff');
-      root.style.setProperty('--high-probability-color', '#ff3333');
-      root.style.setProperty('--medium-probability-color', '#ffa500');
-      root.style.setProperty('--low-probability-color', '#33cc33');
+      root.style.setProperty('--text-color', '#999999');
+      root.style.setProperty('--high-probability-color', '#ff4444');
+      root.style.setProperty('--medium-probability-color', '#ffaa44');
     } else {
       root.style.setProperty('--background-color', '#ffffff');
-      root.style.setProperty('--text-color', '#000000');
-      root.style.setProperty('--high-probability-color', '#cc0000');
+      root.style.setProperty('--text-color', '#666666');
+      root.style.setProperty('--high-probability-color', '#ff0000');
       root.style.setProperty('--medium-probability-color', '#ff8c00');
-      root.style.setProperty('--low-probability-color', '#008800');
     }
   }
 } 
