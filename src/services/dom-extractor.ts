@@ -34,57 +34,25 @@ export class DOMExtractor {
   public extractProfileData(element: HTMLElement): ProfileData | null {
     try {
       // Skip if this is our warning element
-      if (element.classList.contains('xbd-warning')) {
-        console.log('[XBot:DOM] Skipping warning element');
-        return null;
-      }
+      if (element.classList.contains('xbd-warning')) return null;
 
       // Find the notification cell
       const cell = element.closest(DOMExtractor.#SELECTORS.CELL);
-      if (!cell) {
-        console.log('[XBot:DOM] No notification cell found');
-        return null;
-      }
-
-      // Debug log the cell structure
-      console.log('[XBot:DOM] Cell HTML:', {
-        html: cell.outerHTML,
-        imgs: [...cell.querySelectorAll('img')].map(img => ({
-          src: img.src,
-          alt: img.alt,
-          class: img.className
-        })),
-        links: [...cell.querySelectorAll('a')].map(a => ({
-          href: a.href,
-          text: a.textContent,
-          testid: a.getAttribute('data-testid')
-        }))
-      });
+      if (!cell) return null;
 
       // Skip if already processed
-      if (cell.hasAttribute('data-xbot-processed')) {
-        console.log('[XBot:DOM] Cell already processed');
-        return null;
-      }
+      if (cell.hasAttribute('data-xbot-processed')) return null;
       cell.setAttribute('data-xbot-processed', 'true');
 
       // Find notification article
       const article = cell.querySelector(DOMExtractor.#SELECTORS.NOTIFICATION);
-      if (!article) {
-        console.log('[XBot:DOM] No notification article found');
-        return null;
-      }
+      if (!article) return null;
 
       // Get notification text
       const notificationText = article.querySelector(DOMExtractor.#SELECTORS.NOTIFICATION_TEXT);
       const text = (notificationText?.textContent ?? article.textContent ?? '').toLowerCase();
       
-      if (!text) {
-        console.log('[XBot:DOM] No notification text found');
-        return null;
-      }
-
-      console.log('[XBot:DOM] Processing notification:', { text });
+      if (!text) return null;
 
       // Find all user links
       const userLinks = [...article.querySelectorAll(DOMExtractor.#SELECTORS.USER_LINK)]
@@ -97,10 +65,7 @@ export class DOMExtractor {
                  !href.includes('/topics/');
         });
 
-      if (!userLinks.length) {
-        console.log('[XBot:DOM] No user links found');
-        return null;
-      }
+      if (!userLinks.length) return null;
 
       // Extract user data
       const users = userLinks
@@ -151,18 +116,8 @@ export class DOMExtractor {
             }
           }
 
-          // Debug log the image search
-          console.log('[XBot:DOM] Image search for', username, {
-            cellImages: [...cell.querySelectorAll('img')].map((img: HTMLImageElement) => ({
-              src: img.src,
-              alt: img.alt,
-              distance: img.getBoundingClientRect().top - userRect.top
-            }))
-          });
-
           // For now, allow profiles without images to help with debugging
           if (!profileImageUrl) {
-            console.log('[XBot:DOM] No profile image found for user:', username);
             profileImageUrl = 'https://abs.twimg.com/sticky/default_profile_images/default_profile.png';
           }
 
@@ -185,22 +140,14 @@ export class DOMExtractor {
           return true;
         });
 
-      if (!users.length) {
-        console.log('[XBot:DOM] No valid users found after processing');
-        return null;
-      }
+      if (!users.length) return null;
 
       const userProfile = users[0];
-      if (!userProfile) {
-        console.log('[XBot:DOM] First user profile is undefined');
-        return null;
-      }
+      if (!userProfile) return null;
 
-      console.log('[XBot:DOM] Found user profile:', {
+      console.debug('[XBot:DOM] Processing:', {
         username: userProfile.username,
-        displayName: userProfile.displayName,
-        interactionType: userProfile.interactionType,
-        profileImageUrl: userProfile.profileImageUrl
+        type: userProfile.interactionType
       });
 
       return userProfile;
