@@ -16,6 +16,11 @@ export class BotDetector {
   private retryCount = 0;
   private maxRetries = 10;
   private processedUsernames = new Set<string>();
+  private stats = {
+    highProbability: 0,
+    mediumProbability: 0,
+    lowProbability: 0
+  };
 
   constructor() {
     console.debug('[XBot:Core] Initializing...');
@@ -134,8 +139,9 @@ export class BotDetector {
       reasons: analysis.reasons
     });
 
-    // Log based on probability
+    // Update stats based on probability
     if (analysis.probability >= 0.6) {
+      this.stats.highProbability++;
       console.debug('[XBot:Core] High probability bot detected', {
         username: profileData.username,
         displayName: profileData.displayName,
@@ -144,6 +150,7 @@ export class BotDetector {
       });
       await this.storageService.saveProfile(profileData);
     } else if (analysis.probability >= 0.3) {
+      this.stats.mediumProbability++;
       console.debug('[XBot:Core] Medium probability bot detected', {
         username: profileData.username,
         displayName: profileData.displayName,
@@ -151,6 +158,7 @@ export class BotDetector {
         reasons: analysis.reasons
       });
     } else {
+      this.stats.lowProbability++;
       console.debug('[XBot:Core] Likely real account', {
         username: profileData.username,
         displayName: profileData.displayName,
@@ -158,6 +166,9 @@ export class BotDetector {
         reasons: analysis.reasons
       });
     }
+
+    // Update panel stats
+    this.uiManager.updatePanelStats(this.stats);
 
     // Track processed username and mark element
     this.processedUsernames.add(profileData.username);

@@ -1,33 +1,46 @@
 import { promises as fs } from 'fs';
-import { join } from 'path';
 
-async function copyFiles() {
+async function copyManifest() {
   try {
-    // Create dist directory if it doesn't exist
-    await fs.mkdir('dist', { recursive: true }).catch(() => {});
+    // Read the source manifest
+    const manifest = JSON.parse(
+      await fs.readFile('src/manifest.json', 'utf-8')
+    );
 
-    // Copy manifest
-    await fs.copyFile('src/manifest.json', 'dist/manifest.json');
-
-    // Copy icons
-    const iconDir = join('dist', 'icons');
-    await fs.mkdir(iconDir, { recursive: true }).catch(() => {});
-    
-    // Use withFileTypes to avoid fs.Stats
-    const entries = await fs.readdir('src/icons', { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.isFile() && entry.name.endsWith('.png')) {
-        const srcPath = join('src/icons', entry.name);
-        const destPath = join(iconDir, entry.name);
-        await fs.copyFile(srcPath, destPath);
+    // Ensure required fields are present
+    const finalManifest = {
+      ...manifest,
+      manifest_version: 3,
+      name: "X Spot The Bot",
+      short_name: "XSpotBot",
+      version: "1.0.0",
+      description: "Identifies potential bot accounts in X (Twitter) notifications",
+      action: {
+        default_title: "X Spot The Bot",
+        default_icon: {
+          "16": "icons/icon16.png",
+          "32": "icons/icon32.png",
+          "48": "icons/icon48.png",
+          "128": "icons/icon128.png"
+        }
       }
-    }
+    };
 
-    console.log('✓ Files copied successfully');
+    // Create dist directory if it doesn't exist
+    await fs.mkdir('dist', { recursive: true });
+
+    // Write the manifest with proper formatting
+    await fs.writeFile(
+      'dist/manifest.json',
+      JSON.stringify(finalManifest, null, 2),
+      'utf-8'
+    );
+
+    console.log('✓ Manifest copied successfully');
   } catch (error) {
-    console.error('Error copying files:', error);
+    console.error('Error copying manifest:', error);
     process.exit(1);
   }
 }
 
-copyFiles(); 
+copyManifest(); 

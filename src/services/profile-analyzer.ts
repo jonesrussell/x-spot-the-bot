@@ -34,7 +34,26 @@ export class ProfileAnalyzer {
     NO_FOLLOWERS: 0.3
   } as const;
 
+  #isWhitelisted(username: string): boolean {
+    // If this is a notification about someone the user follows, they're not a bot
+    const notificationText = document.querySelector(`[data-testid="notificationText"]`)?.textContent?.toLowerCase() ?? '';
+    if (notificationText.includes('new post notifications for') && notificationText.includes(username.toLowerCase())) {
+      console.debug('[XBot:Analyzer] Whitelisting followed user:', username);
+      return true;
+    }
+    return false;
+  }
+
   public async analyzeBotProbability(profile: ProfileData): Promise<BotAnalysis> {
+    // Skip analysis for whitelisted users
+    if (this.#isWhitelisted(profile.username)) {
+      return {
+        username: profile.username,
+        probability: 0,
+        reasons: ['User is followed by you']
+      };
+    }
+
     try {
       // Skip if no username
       if (!profile.username) {

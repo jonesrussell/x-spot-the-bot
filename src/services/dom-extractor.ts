@@ -16,15 +16,19 @@ export class DOMExtractor {
   } as const;
 
   static readonly #PATTERNS = {
-    PINNED_POST: /new pinned post in/i,
-    TRENDING: /trending in/i,
-    COMMUNITY_POST: /new community post in/i,
-    MULTI_USER: /new post notifications for|and \d+ others/i,
-    LIKE: /liked/i,
-    REPLY: /replied|replying to/i,
-    REPOST: /reposted/i,
-    FOLLOW: /followed/i,
-    LIVE: /is live:/i
+    PINNED_POST: /new pinned post in|pinned a post from/i,
+    TRENDING: /trending in|trending with/i,
+    COMMUNITY_POST: /new community post in|posted in/i,
+    MULTI_USER: /new post notifications for|and \d+ others|others liked|others followed/i,
+    LIKE: /liked your|liked \d+ of your/i,
+    REPLY: /replied to|replying to|replied to your|commented on your/i,
+    REPOST: /reposted your|reposted \d+ of your/i,
+    FOLLOW: /followed you|followed each other/i,
+    LIVE: /is live:|started a space|scheduled a space/i,
+    MENTION: /mentioned you|tagged you/i,
+    QUOTE: /quoted your|quote tweeted/i,
+    LIST: /added you to|created a list/i,
+    SPACE: /started a space|scheduled a space|space is starting/i
   } as const;
 
   public extractProfileData(element: HTMLElement): ProfileData | null {
@@ -41,6 +45,21 @@ export class DOMExtractor {
         console.log('[XBot:DOM] No notification cell found');
         return null;
       }
+
+      // Debug log the cell structure
+      console.log('[XBot:DOM] Cell HTML:', {
+        html: cell.outerHTML,
+        imgs: [...cell.querySelectorAll('img')].map(img => ({
+          src: img.src,
+          alt: img.alt,
+          class: img.className
+        })),
+        links: [...cell.querySelectorAll('a')].map(a => ({
+          href: a.href,
+          text: a.textContent,
+          testid: a.getAttribute('data-testid')
+        }))
+      });
 
       // Skip if already processed
       if (cell.hasAttribute('data-xbot-processed')) {
@@ -97,44 +116,54 @@ export class DOMExtractor {
           // Find avatar image - try multiple methods
           let profileImageUrl: string | null = null;
 
-          // Method 1: Direct img with profile_images in src
-          const directImg = cell.querySelector(`img[src*="profile_images"]`);
-          if (directImg) {
-            profileImageUrl = directImg.getAttribute('src');
-          }
+          // Method 1: Direct profile image search
+          const profileImgs = [...cell.querySelectorAll('img[src*="profile_images"]')]
+            .filter((img): img is HTMLImageElement => img instanceof HTMLImageElement && !!img.src);
+            
+          // Try to find the image closest to the username link
+          const userRect = link.getBoundingClientRect();
+          let closestImg = profileImgs[0];
+          let minDistance = Infinity;
 
-          // Method 2: Avatar container by username
-          if (!profileImageUrl) {
-            const container = cell.querySelector(`[data-testid="UserAvatar-Container-${username}"]`);
-            const containerImg = container?.querySelector('img');
-            if (containerImg) {
-              profileImageUrl = containerImg.getAttribute('src');
+          for (const img of profileImgs) {
+            const imgRect = img.getBoundingClientRect();
+            const distance = Math.abs(userRect.top - imgRect.top);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestImg = img;
             }
           }
 
-          // Method 3: Any img near the user link
+          if (closestImg) {
+            profileImageUrl = closestImg.src;
+          }
+
+          // Method 2: Look for avatar near username text
           if (!profileImageUrl) {
-            const nearbyImg = link.closest('div')?.querySelector('img');
-            if (nearbyImg?.src.includes('profile_images')) {
-              profileImageUrl = nearbyImg.src;
+            const allImages = [...cell.querySelectorAll('img')] as HTMLImageElement[];
+            const userImage = allImages.find(img => 
+              img.alt?.toLowerCase().includes(username.toLowerCase()) ||
+              img.alt?.toLowerCase().includes('profile image') ||
+              img.alt?.toLowerCase().includes('avatar')
+            );
+            if (userImage?.src) {
+              profileImageUrl = userImage.src;
             }
           }
 
-          // Method 4: CSS background image
-          if (!profileImageUrl) {
-            const avatarDiv = cell.querySelector(`[data-testid="UserAvatar-Container-${username}"] div[style*="background-image"]`);
-            if (avatarDiv) {
-              const style = window.getComputedStyle(avatarDiv);
-              const bgImage = style.backgroundImage;
-              if (bgImage && bgImage !== 'none') {
-                profileImageUrl = bgImage.slice(5, -2); // Remove url(" and ")
-              }
-            }
-          }
+          // Debug log the image search
+          console.log('[XBot:DOM] Image search for', username, {
+            cellImages: [...cell.querySelectorAll('img')].map((img: HTMLImageElement) => ({
+              src: img.src,
+              alt: img.alt,
+              distance: img.getBoundingClientRect().top - userRect.top
+            }))
+          });
 
+          // For now, allow profiles without images to help with debugging
           if (!profileImageUrl) {
             console.log('[XBot:DOM] No profile image found for user:', username);
-            return null;
+            profileImageUrl = 'https://abs.twimg.com/sticky/default_profile_images/default_profile.png';
           }
 
           return {
@@ -186,6 +215,10 @@ export class DOMExtractor {
     if (DOMExtractor.#PATTERNS.REPLY.test(text)) return 'reply';
     if (DOMExtractor.#PATTERNS.REPOST.test(text)) return 'repost';
     if (DOMExtractor.#PATTERNS.FOLLOW.test(text)) return 'follow';
+    if (DOMExtractor.#PATTERNS.MENTION.test(text)) return 'mention';
+    if (DOMExtractor.#PATTERNS.QUOTE.test(text)) return 'quote';
+    if (DOMExtractor.#PATTERNS.LIST.test(text)) return 'list';
+    if (DOMExtractor.#PATTERNS.SPACE.test(text)) return 'space';
     if (DOMExtractor.#PATTERNS.LIVE.test(text)) return 'live';
     return 'other';
   }

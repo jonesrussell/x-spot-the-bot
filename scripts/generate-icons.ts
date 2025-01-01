@@ -3,9 +3,6 @@ import { join } from 'path';
 
 async function generateIcons() {
   try {
-    const distIconDir = join('dist', 'icons');
-    await fs.mkdir(distIconDir, { recursive: true });
-
     // Create a minimal 1x1 pixel PNG file
     const minimalPNG = Buffer.from([
       0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
@@ -25,7 +22,10 @@ async function generateIcons() {
       0xAE, 0x42, 0x60, 0x82
     ]);
 
-    // Write the same minimal icon for all sizes
+    // Write directly to dist/icons
+    const distIconDir = join('dist', 'icons');
+    await fs.mkdir(distIconDir, { recursive: true });
+    
     const sizes = [16, 32, 48, 128];
     for (const size of sizes) {
       await fs.writeFile(join(distIconDir, `icon${size}.png`), minimalPNG);

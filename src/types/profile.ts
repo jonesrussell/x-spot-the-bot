@@ -1,6 +1,22 @@
 // Type definitions
-export type InteractionType = 'like' | 'reply' | 'repost' | 'follow' | 'live' | 'other';
-export type NotificationType = 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
+export type InteractionType = 
+  | 'like' 
+  | 'reply' 
+  | 'repost' 
+  | 'follow'
+  | 'mention'
+  | 'quote'
+  | 'list'
+  | 'space'
+  | 'live'
+  | 'other';
+
+export type NotificationType = 
+  | 'user_interaction'
+  | 'multi_user'
+  | 'pinned_post'
+  | 'trending'
+  | 'community_post';
 
 // Runtime values
 export const InteractionTypes = {
