@@ -13,7 +13,7 @@
     "clean": "rm -rf dist/*",
     "dev": "vite",
     "build": "tsc -p tsconfig.node.json && tsc && vite build && npm run generate-icons && npm run copy-files",
-    "watch": "concurrently \"tsc -p tsconfig.node.json && tsc --watch\" \"vite build --watch\" \"nodemon --watch public --exec npm run copy-files\"",
+    "watch": "tsc --watch",
     "preview": "vite preview",
     "generate-icons": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' scripts/generate-icons.ts",
     "copy-files": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' scripts/build.ts",
