@@ -1,5 +1,5 @@
-import indicatorStyles from './styles/indicators.css';
-import panelStyles from './styles/panel.css';
+import * as indicatorStyles from './styles/indicators.css';
+import * as panelStyles from './styles/panel.css';
 
 export class StyleManager {
   #stylesInjected = false;

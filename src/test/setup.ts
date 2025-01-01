@@ -26,4 +26,4 @@ vi.mock('import.meta', () => ({
     PROD: false,
     SSR: false
   }
-}), { virtual: true }); 
+})); 

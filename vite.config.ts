@@ -1,3 +1,4 @@
+import { resolve } from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -35,12 +36,19 @@ export default defineConfig({
     }
   },
   resolve: {
-    extensions: ['.ts', '.js', '.css']
+    extensions: ['.ts', '.js', '.css'],
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@services': resolve(__dirname, './src/services'),
+      '@types': resolve(__dirname, './src/types'),
+      '@utils': resolve(__dirname, './src/utils')
+    }
   },
   css: {
     modules: {
       localsConvention: 'camelCase',
-      generateScopedName: '[name]__[local]__[hash:base64:5]'
+      generateScopedName: '[name]__[local]__[hash:base64:5]',
+      exportGlobals: true
     }
   },
   esbuild: {

@@ -1,10 +1,10 @@
-import { DOMExtractor } from '../services/dom-extractor.js';
-import { FeedDetector } from '../services/feed/feed-detector.js';
-import { NotificationProcessor } from '../services/notification/notification-processor.js';
-import { ProfileAnalyzer } from '../services/profile-analyzer.js';
-import { StatsTracker } from '../services/stats/stats-tracker.js';
-import { StorageService } from '../services/storage.js';
-import { UIManager } from '../services/ui-manager.js';
+import { ProfileAnalyzer } from '@services/analysis/profile-analyzer.js';
+import { DOMExtractor } from '@services/dom/dom-extractor.js';
+import { FeedDetector } from '@services/feed/feed-detector.js';
+import { NotificationProcessor } from '@services/notification/notification-processor.js';
+import { StatsTracker } from '@services/stats/stats-tracker.js';
+import { StorageService } from '@services/storage.js';
+import { UIManager } from '@services/ui-manager.js';
 
 console.log('[XBot] Content script loaded - X Spot The Bot v1.0.0');
 

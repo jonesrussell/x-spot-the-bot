@@ -1,4 +1,4 @@
-import type { ProfileData } from '../../types/profile.js';
+import type { RawProfileData } from '../../types/profile.js';
 
 export interface BotScore {
   probability: number;
@@ -9,7 +9,7 @@ export class ScoreCalculator {
   static readonly #THRESHOLD = 0.35;
   static readonly #MAX_PROBABILITY = 0.8;
 
-  public calculateScore(profile: ProfileData, patternScore: number, patternReason: string | null): BotScore {
+  public calculateScore(profile: RawProfileData, patternScore: number, patternReason: string | null): BotScore {
     const reasons: string[] = [];
     let probability = Math.max(0, patternScore);
 
