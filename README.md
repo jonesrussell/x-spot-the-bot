@@ -6,7 +6,10 @@ A browser extension that helps identify potential bot accounts in X (Twitter) no
 
 - Real-time bot detection in notifications
 - Live summary panel showing bot detection statistics
-- Profile analysis based on behavioral patterns
+- Profile analysis based on behavioral patterns:
+  * Username patterns (random alphanumeric, bot keywords, numeric patterns)
+  * Profile completeness (followers/following ratio)
+  * Account verification status
 - Local history tracking of suspicious accounts
 - Non-intrusive UI indicators:
   - 🤖 Red - High probability bot (>=60%)
@@ -52,17 +55,26 @@ src/
   ├── content/         # Content scripts
   │   └── index.ts    # Main extension entry point
   ├── services/       # Core functionality
-  │   ├── dom-extractor.ts    # DOM operations
-  │   ├── profile-analyzer.ts # Bot detection
-  │   ├── storage.ts         # Data persistence
-  │   └── ui-manager.ts      # UI components
-  ├── types/          # TypeScript definitions
-  │   └── profile.ts  # Core type definitions
-  └── icons/          # Extension icons
-scripts/              # Build utilities
-docs/                 # Documentation
-  ├── DEVELOPMENT.md  # Development guide
-  └── ARCHITECTURE.md # System architecture
+  │   ├── analysis/   # Bot detection services
+  │   │   ├── pattern-matcher.ts
+  │   │   ├── profile-analyzer.ts
+  │   │   └── score-calculator.ts
+  │   ├── dom/        # DOM operations
+  │   │   ├── dom-extractor.ts
+  │   │   └── element-extractor.ts
+  │   ├── ui/         # UI components
+  │   │   ├── components/
+  │   │   ├── styles/
+  │   │   ├── style-manager.ts
+  │   │   └── theme-manager.ts
+  │   ├── feed/       # Feed monitoring
+  │   ├── notification/ # Notification handling
+  │   └── storage.ts  # Data persistence
+  ├── test/          # Test utilities
+  │   ├── fixtures/  # Test data
+  │   └── helpers/   # Test helpers
+  ├── types/         # TypeScript definitions
+  └── icons/         # Extension icons
 ```
 
 ## Technical Details
@@ -71,7 +83,7 @@ docs/                 # Documentation
 - ES2022 modules with proper ESM imports
 - Edge extension APIs (chrome.* namespace)
 - Vite for bundling and development
-- Jest for testing (with ESM support)
+- Vitest for testing with DOM support
 - MutationObserver for DOM monitoring
 - Type-safe DOM operations
 - Comprehensive test coverage
@@ -97,6 +109,28 @@ npm run format
 # Check all (format, lint, test)
 npm run check
 ```
+
+## Bot Detection Patterns
+
+The extension uses multiple patterns to identify potential bots:
+
+1. Username Analysis:
+   - Random alphanumeric (0.3): `^[a-z0-9]{8,}$`
+   - Many numbers (0.2): `[0-9]{4,}`
+   - Bot keywords (0.3): `bot|spam|[0-9]+[a-z]+[0-9]+`
+   - Random/numeric suffix (0.2): `[a-z]+[0-9]{4,}$`
+
+2. Profile Analysis:
+   - No followers/following
+   - High following to followers ratio
+   - Display name matches username
+   - Verification status
+
+3. Score Calculation:
+   - Pattern matching scores
+   - Profile completeness factors
+   - Capped probability (0.8 max)
+   - Threshold-based analysis
 
 ## Contributing
 
