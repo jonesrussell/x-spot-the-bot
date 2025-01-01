@@ -4,26 +4,25 @@ import { StorageService } from '../services/storage.js';
 import { UIManager } from '../services/ui-manager.js';
 
 export class BotDetector {
-  private domExtractor: DOMExtractor;
-  private profileAnalyzer: ProfileAnalyzer;
-  private storageService: StorageService;
-  private uiManager: UIManager;
-  private observer: MutationObserver | null = null;
-  private retryCount = 0;
-  private maxRetries = 10;
-  private processedUsernames = new Set<string>();
-  private stats = {
+  #domExtractor: DOMExtractor;
+  #profileAnalyzer: ProfileAnalyzer;
+  #storageService: StorageService;
+  #uiManager: UIManager;
+  #observer: MutationObserver | null = null;
+  #retryCount = 0;
+  #maxRetries = 10;
+  #processedUsernames = new Set<string>();
+  #stats = {
     highProbability: 0,
     mediumProbability: 0,
     lowProbability: 0
   };
 
   constructor() {
-    console.debug('[XBot] Extension loaded - Version 1.0.0');
-    this.domExtractor = new DOMExtractor();
-    this.profileAnalyzer = new ProfileAnalyzer();
-    this.storageService = new StorageService();
-    this.uiManager = new UIManager();
+    this.#domExtractor = new DOMExtractor();
+    this.#profileAnalyzer = new ProfileAnalyzer();
+    this.#storageService = new StorageService();
+    this.#uiManager = new UIManager();
     this.init();
   }
 
@@ -47,14 +46,14 @@ export class BotDetector {
       if (feed && feed instanceof HTMLElement) return feed;
     }
 
-    if (this.retryCount >= this.maxRetries) return null;
-    this.retryCount++;
+    if (this.#retryCount >= this.#maxRetries) return null;
+    this.#retryCount++;
     await new Promise(resolve => setTimeout(resolve, 1000));
     return this.waitForNotificationsFeed();
   }
 
   private setupObserver(feed: HTMLElement): void {
-    this.observer = new MutationObserver((mutations) => {
+    this.#observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
           mutation.addedNodes.forEach(node => {
@@ -69,7 +68,7 @@ export class BotDetector {
       }
     });
 
-    this.observer.observe(feed, {
+    this.#observer.observe(feed, {
       childList: true,
       subtree: true
     });
@@ -87,35 +86,35 @@ export class BotDetector {
   private async processNotification(notification: HTMLElement): Promise<void> {
     if (notification.hasAttribute('data-xbot-processed')) return;
 
-    const profileData = this.domExtractor.extractProfileData(notification);
+    const profileData = this.#domExtractor.extractProfileData(notification);
     if (!profileData) {
       notification.setAttribute('data-xbot-processed', 'true');
       return;
     }
 
-    if (this.processedUsernames.has(profileData.username)) {
+    if (this.#processedUsernames.has(profileData.username)) {
       notification.setAttribute('data-xbot-processed', 'true');
       return;
     }
 
-    const analysis = await this.profileAnalyzer.analyzeProfile(profileData);
+    const analysis = await this.#profileAnalyzer.analyzeProfile(profileData);
     
-    this.uiManager.addWarningIndicator(notification, {
+    this.#uiManager.addWarningIndicator(notification, {
       username: profileData.username,
       probability: analysis.probability,
       reasons: analysis.reasons
     });
 
     if (analysis.probability >= 0.6) {
-      await this.storageService.saveProfile(profileData);
+      await this.#storageService.saveProfile(profileData);
     }
 
-    if (analysis.probability >= 0.6) this.stats.highProbability++;
-    else if (analysis.probability >= 0.3) this.stats.mediumProbability++;
-    else this.stats.lowProbability++;
+    if (analysis.probability >= 0.6) this.#stats.highProbability++;
+    else if (analysis.probability >= 0.3) this.#stats.mediumProbability++;
+    else this.#stats.lowProbability++;
 
-    this.uiManager.updatePanelStats(this.stats);
-    this.processedUsernames.add(profileData.username);
+    this.#uiManager.updatePanelStats(this.#stats);
+    this.#processedUsernames.add(profileData.username);
     notification.setAttribute('data-xbot-processed', 'true');
   }
 }

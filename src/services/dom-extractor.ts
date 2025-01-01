@@ -139,7 +139,6 @@ export class DOMExtractor {
 
       return userProfile;
     } catch (error) {
-      console.error('[XBot:Error]', error);
       return null;
     }
   }
