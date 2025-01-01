@@ -25,11 +25,24 @@ Code Standards:
    - Dark theme matching X's UI
    - High contrast + accessibility
    - !important CSS rules
+   - CSS naming: .xbd-* prefix
+   - CSS variables for theming
+   - Mobile-first responsive design
+   - z-index management (9999999 for overlays)
 
 4. Logging:
    - Prefixes: [XBot:Core/DOM/Analyzer/UI]
    - Include relevant data
    - Debug level for verbose
+
+4. CSS Organization:
+   - Component-scoped styles
+   - CSS variables for themes
+   - Consistent naming (.xbd-component-element)
+   - Important rules for X overrides
+   - Media queries for dark mode
+   - Hover states for tooltips
+   - Flexbox for layouts
 
 Code Organization:
 1. Single Responsibility:

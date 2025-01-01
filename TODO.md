@@ -11,6 +11,10 @@
   - [x] Update UIManager to use new components
   - [x] Update tests for new component structure
   - [x] Add tests for individual components
+  - [ ] Refactor inline CSS to CSS modules
+  - [ ] Add CSS minification
+  - [ ] Implement CSS variable system
+  - [ ] Add responsive breakpoints
 
 ## High Priority
 - [ ] Add settings panel for customizing:
@@ -23,6 +27,11 @@
   - [ ] Validate patterns
 - [ ] Add batch analysis for multiple notifications
 - [ ] Add export functionality for detected bots
+- [ ] Improve CSS architecture:
+  - [ ] Extract common styles to mixins
+  - [ ] Create CSS variable system
+  - [ ] Add responsive design support
+  - [ ] Optimize CSS bundle size
 
 ## Medium Priority
 - [ ] Add keyboard shortcuts
@@ -35,6 +44,11 @@
   - [ ] False positive tracking
   - [ ] Time-based analysis
 - [ ] Add user whitelist/blacklist
+- [ ] CSS Improvements:
+  - [ ] Add CSS animations for indicators
+  - [ ] Create reusable CSS components
+  - [ ] Add RTL support
+  - [ ] Improve mobile layout
 
 ## Low Priority
 - [ ] Add localization support
@@ -44,6 +58,11 @@
   - [ ] Detection accuracy charts
   - [ ] User behavior trends
 - [ ] Add notification sound for high-risk bots
+- [ ] CSS Enhancements:
+  - [ ] Add print styles
+  - [ ] Create CSS documentation
+  - [ ] Add CSS linting
+  - [ ] Create style guide
 
 ## Completed
 - [x] Initial project setup
@@ -59,4 +78,9 @@
 - [x] DOM extraction service
 - [x] Storage service
 - [x] Test helpers and fixtures
-- [x] Component-based UI architecture 
+- [x] Component-based UI architecture
+- [x] Basic CSS architecture
+- [x] Theme variable system
+- [x] Dark/light mode support
+- [x] CSS module setup
+- [x] Component styles separation 

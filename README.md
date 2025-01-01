@@ -87,6 +87,15 @@ src/
 - MutationObserver for DOM monitoring
 - Type-safe DOM operations
 - Comprehensive test coverage
+- CSS Architecture:
+  * CSS modules for component styles
+  * CSS variables for theming
+  * Mobile-first responsive design
+  * BEM-like naming (.xbd-component-element)
+  * Dark mode media queries
+  * Important rules for X overrides
+  * z-index management for overlays
+  * Flexbox-based layouts
 
 ## Development Commands
 
