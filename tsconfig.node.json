@@ -1,16 +1,23 @@
 {
   "compilerOptions": {
     "composite": true,
-    "module": "Node16",
-    "moduleResolution": "Node16",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "es2022",
+    "lib": ["es2022"],
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "strict": true,
-    "types": ["node"],
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
+    "types": ["node", "vite/client"],
     "outDir": "./dist/scripts",
     "declaration": true,
     "declarationDir": "./dist/types"
   },
-  "include": ["vite.config.ts", "scripts"],
+  "include": ["vite.config.ts", "scripts/**/*.ts"],
+  "exclude": ["node_modules", "dist", "coverage"],
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"
