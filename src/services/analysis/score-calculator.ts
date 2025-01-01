@@ -17,34 +17,25 @@ export class ScoreCalculator {
 
     // Handle pattern score
     if (patternScore !== null) {
-      // Ensure pattern score is non-negative
-      probability = Math.max(0, patternScore);
+      probability = Math.max(0, Math.min(patternScore, ScoreCalculator.#MAX_PROBABILITY));
       if (patternReason) reasons.push(patternReason);
     }
 
     // Only check additional factors if pattern score is above threshold
     if (probability >= ScoreCalculator.#PATTERN_THRESHOLD) {
       // Check followers/following
-      if (profile.followersCount === 0 && profile.followingCount === 0) {
-        probability += ScoreCalculator.#NO_FOLLOWERS_SCORE;
-        reasons.push('Account has no followers or following');
+      if ((profile.followersCount === 0 && profile.followingCount === 0) ||
+          (profile.followersCount === undefined && profile.followingCount === undefined)) {
+        probability = Math.min(probability + ScoreCalculator.#NO_FOLLOWERS_SCORE, ScoreCalculator.#MAX_PROBABILITY);
+        reasons.push('No followers or following');
       }
 
       // Check display name similarity
       if (profile.displayName && profile.username &&
           profile.displayName.toLowerCase() === profile.username.toLowerCase()) {
-        probability += ScoreCalculator.#DISPLAY_NAME_MATCH_SCORE;
-        reasons.push('Display name exactly matches username');
+        probability = Math.min(probability + ScoreCalculator.#DISPLAY_NAME_MATCH_SCORE, ScoreCalculator.#MAX_PROBABILITY);
+        reasons.push('Display name matches username');
       }
-    } else {
-      // If below threshold, just use pattern score
-      probability = patternScore || 0;
-    }
-
-    // Cap probability at maximum
-    if (probability >= ScoreCalculator.#MAX_PROBABILITY) {
-      probability = ScoreCalculator.#MAX_PROBABILITY;
-      reasons.push('Maximum pattern score');
     }
 
     return {

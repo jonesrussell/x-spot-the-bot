@@ -1,32 +1,37 @@
 import type { ProfileData } from '../types/profile.js';
 
-interface StorageData {
-  profiles: Record<string, ProfileData>;
-}
-
 export class StorageService {
+  static readonly #PROFILE_PREFIX = 'profile:';
+
   public async saveProfile(profile: ProfileData): Promise<void> {
-    const data = await this.getStorageData();
-    data.profiles[profile.username] = profile;
-    await this.setStorageData(data);
+    const key = StorageService.#PROFILE_PREFIX + profile.username;
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ [key]: profile }, () => resolve());
+    });
   }
 
   public async getProfile(username: string): Promise<ProfileData | null> {
-    const data = await this.getStorageData();
-    return data.profiles[username] || null;
-  }
-
-  private async getStorageData(): Promise<StorageData> {
+    const key = StorageService.#PROFILE_PREFIX + username;
     return new Promise((resolve) => {
-      chrome.storage.local.get(['profiles'], (result: { profiles?: Record<string, ProfileData> }) => {
-        resolve({ profiles: result['profiles'] || {} });
+      chrome.storage.local.get([key], (result: Record<string, ProfileData>) => {
+        resolve(result[key] || null);
       });
     });
   }
 
-  private async setStorageData(data: StorageData): Promise<void> {
+  public async clearProfiles(): Promise<void> {
     return new Promise((resolve) => {
-      chrome.storage.local.set(data, resolve);
+      chrome.storage.local.get(null, (result: Record<string, unknown>) => {
+        const profileKeys = Object.keys(result).filter(key => 
+          key.startsWith(StorageService.#PROFILE_PREFIX)
+        );
+        
+        if (profileKeys.length > 0) {
+          chrome.storage.local.remove(profileKeys, () => resolve());
+        } else {
+          resolve();
+        }
+      });
     });
   }
 }

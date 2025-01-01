@@ -5,13 +5,8 @@ export interface PatternMatch {
 
 export class PatternMatcher {
   static readonly #PATTERNS = {
-    RANDOM_ALPHANUMERIC: {
-      pattern: /^[a-z0-9]{8,}$/i,
-      score: 0.4,
-      reason: 'Username appears randomly generated'
-    },
     BOT_KEYWORDS: {
-      pattern: /bot|spam|auto|[0-9]+[a-z]+[0-9]+/i,
+      pattern: /bot|spam|auto/i,
       score: 0.35,
       reason: 'Username contains suspicious keywords'
     },
@@ -41,27 +36,21 @@ export class PatternMatcher {
     if (!username || typeof username !== 'string') return [];
 
     // Remove emojis and other non-ASCII characters
-    const cleanUsername = username.replace(/[^\u0020-\u007F]/g, '');
+    const cleanUsername = username.replace(/[^\x20-\x7E]/g, '');
     if (!cleanUsername) return [];
     
     const matches: PatternMatch[] = [];
-    const seenReasons = new Set<string>();
 
-    for (const [, pattern] of Object.entries(PatternMatcher.#PATTERNS)) {
+    for (const pattern of Object.values(PatternMatcher.#PATTERNS)) {
       if (pattern.pattern.test(cleanUsername)) {
-        // Avoid duplicate reasons with different scores
-        if (!seenReasons.has(pattern.reason)) {
-          matches.push({
-            score: pattern.score,
-            reason: pattern.reason
-          });
-          seenReasons.add(pattern.reason);
-        }
+        matches.push({
+          score: pattern.score,
+          reason: pattern.reason
+        });
       }
     }
 
-    // Sort by score descending
-    return matches.sort((a, b) => b.score - a.score);
+    return matches;
   }
 
   public getHighestScore(matches: PatternMatch[]): PatternMatch | null {
