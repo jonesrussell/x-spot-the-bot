@@ -1,6 +1,6 @@
 import type { InteractionType, ProfileData } from '../types/profile.js';
 
-interface UserProfileData extends Omit<ProfileData, 'notificationType'> {
+interface UserProfileData extends ProfileData {
   notificationType: 'user_interaction' | 'multi_user';
 }
 
@@ -28,33 +28,46 @@ export class DOMExtractor {
     MENTION: /mentioned you|tagged you/i,
     QUOTE: /quoted your|quote tweeted/i,
     LIST: /added you to|created a list/i,
-    SPACE: /started a space|scheduled a space|space is starting/i
+    SPACE: /started a space|scheduled a space|space is starting/i,
+    BOT_PATTERNS: {
+      RANDOM_ALPHANUMERIC: /^[a-z0-9]{8,}$/,
+      MANY_NUMBERS: /[0-9]{4,}/,
+      BOT_KEYWORDS: /bot|spam|[0-9]+[a-z]+[0-9]+/,
+      RANDOM_SUFFIX: /[a-z]+[0-9]{4,}$/,
+      NUMERIC_SUFFIX: /[0-9]{4,}$/,
+      RANDOM_LETTERS: /[A-Z]{2,}[0-9]+/
+    }
   } as const;
+
+  #calculateBotProbability(username: string): number {
+    let score = 0;
+    const patterns = DOMExtractor.#PATTERNS.BOT_PATTERNS;
+
+    if (patterns.RANDOM_ALPHANUMERIC.test(username)) score += 0.3;
+    if (patterns.MANY_NUMBERS.test(username)) score += 0.2;
+    if (patterns.BOT_KEYWORDS.test(username)) score += 0.3;
+    if (patterns.RANDOM_SUFFIX.test(username)) score += 0.2;
+    if (patterns.NUMERIC_SUFFIX.test(username)) score += 0.2;
+    if (patterns.RANDOM_LETTERS.test(username)) score += 0.2;
+
+    return Math.min(score, 0.9);
+  }
 
   public extractProfileData(element: HTMLElement): ProfileData | null {
     try {
-      // Skip if this is our warning element
       if (element.classList.contains('xbd-warning')) return null;
 
-      // Find the notification cell
       const cell = element.closest(DOMExtractor.#SELECTORS.CELL);
-      if (!cell) return null;
-
-      // Skip if already processed
-      if (cell.hasAttribute('data-xbot-processed')) return null;
+      if (!cell || cell.hasAttribute('data-xbot-processed')) return null;
       cell.setAttribute('data-xbot-processed', 'true');
 
-      // Find notification article
       const article = cell.querySelector(DOMExtractor.#SELECTORS.NOTIFICATION);
       if (!article) return null;
 
-      // Get notification text
       const notificationText = article.querySelector(DOMExtractor.#SELECTORS.NOTIFICATION_TEXT);
       const text = (notificationText?.textContent ?? article.textContent ?? '').toLowerCase();
-      
       if (!text) return null;
 
-      // Find all user links
       const userLinks = [...article.querySelectorAll(DOMExtractor.#SELECTORS.USER_LINK)]
         .filter(link => {
           const href = link.getAttribute('href');
@@ -67,7 +80,6 @@ export class DOMExtractor {
 
       if (!userLinks.length) return null;
 
-      // Extract user data
       const users = userLinks
         .map(link => {
           const username = link.getAttribute('href')?.slice(1);
@@ -77,15 +89,12 @@ export class DOMExtractor {
           const interactionType = this.#determineInteractionType(text);
           const isMultiUser = DOMExtractor.#PATTERNS.MULTI_USER.test(text);
           const notificationType = isMultiUser ? 'multi_user' : 'user_interaction';
+          const botProbability = this.#calculateBotProbability(username);
 
-          // Find avatar image - try multiple methods
-          let profileImageUrl: string | null = null;
-
-          // Method 1: Direct profile image search
+          let profileImageUrl = 'https://abs.twimg.com/sticky/default_profile_images/default_profile.png';
           const profileImgs = [...cell.querySelectorAll('img[src*="profile_images"]')]
             .filter((img): img is HTMLImageElement => img instanceof HTMLImageElement && !!img.src);
             
-          // Try to find the image closest to the username link
           const userRect = link.getBoundingClientRect();
           let closestImg = profileImgs[0];
           let minDistance = Infinity;
@@ -103,24 +112,6 @@ export class DOMExtractor {
             profileImageUrl = closestImg.src;
           }
 
-          // Method 2: Look for avatar near username text
-          if (!profileImageUrl) {
-            const allImages = [...cell.querySelectorAll('img')] as HTMLImageElement[];
-            const userImage = allImages.find(img => 
-              img.alt?.toLowerCase().includes(username.toLowerCase()) ||
-              img.alt?.toLowerCase().includes('profile image') ||
-              img.alt?.toLowerCase().includes('avatar')
-            );
-            if (userImage?.src) {
-              profileImageUrl = userImage.src;
-            }
-          }
-
-          // For now, allow profiles without images to help with debugging
-          if (!profileImageUrl) {
-            profileImageUrl = 'https://abs.twimg.com/sticky/default_profile_images/default_profile.png';
-          }
-
           return {
             username,
             displayName,
@@ -129,10 +120,11 @@ export class DOMExtractor {
             followingCount: 0,
             interactionTimestamp: Date.now(),
             interactionType,
-            notificationType
+            notificationType,
+            botProbability
           } satisfies UserProfileData;
         })
-        .filter((user): user is ProfileData => {
+        .filter((user): user is UserProfileData => {
           if (!user) return false;
           user.notificationType = DOMExtractor.#PATTERNS.MULTI_USER.test(text)
             ? 'multi_user'
@@ -145,14 +137,9 @@ export class DOMExtractor {
       const userProfile = users[0];
       if (!userProfile) return null;
 
-      console.debug('[XBot:DOM] Processing:', {
-        username: userProfile.username,
-        type: userProfile.interactionType
-      });
-
       return userProfile;
     } catch (error) {
-      console.error('[XBot:DOM] Error extracting profile data:', error);
+      console.error('[XBot:Error]', error);
       return null;
     }
   }

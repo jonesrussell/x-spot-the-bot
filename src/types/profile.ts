@@ -45,7 +45,8 @@ export interface ProfileData {
   followingCount: number;
   interactionTimestamp: number;
   interactionType: InteractionType;
-  notificationType: Extract<NotificationType, 'user_interaction' | 'multi_user'>;
+  notificationType: 'user_interaction' | 'multi_user';
+  botProbability: number;
 }
 
 export interface BotAnalysis {

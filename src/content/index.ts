@@ -3,10 +3,6 @@ import { ProfileAnalyzer } from '../services/profile-analyzer.js';
 import { StorageService } from '../services/storage.js';
 import { UIManager } from '../services/ui-manager.js';
 
-// Force console to show debug logs
-console.log('[XBot] Extension loaded - Version 1.0.0');
-console.log('[XBot] To see all logs, filter console by "[XBot"');
-
 export class BotDetector {
   private domExtractor: DOMExtractor;
   private profileAnalyzer: ProfileAnalyzer;
@@ -23,7 +19,7 @@ export class BotDetector {
   };
 
   constructor() {
-    console.debug('[XBot:Core] Initializing...');
+    console.debug('[XBot] Extension loaded - Version 1.0.0');
     this.domExtractor = new DOMExtractor();
     this.profileAnalyzer = new ProfileAnalyzer();
     this.storageService = new StorageService();
@@ -33,12 +29,7 @@ export class BotDetector {
 
   private async init(): Promise<void> {
     const feed = await this.waitForNotificationsFeed();
-    if (!feed) {
-      console.debug('[XBot:Core] Could not find notifications feed after retries');
-      return;
-    }
-
-    console.debug('[XBot:Core] Found notifications feed, starting observer');
+    if (!feed) return;
     this.setupObserver(feed);
     this.scanExistingNotifications(feed);
   }
@@ -53,17 +44,10 @@ export class BotDetector {
 
     for (const selector of selectors) {
       const feed = document.querySelector(selector);
-      if (feed && feed instanceof HTMLElement) {
-        console.debug('[XBot:Core] Found feed with selector:', selector);
-        return feed;
-      }
+      if (feed && feed instanceof HTMLElement) return feed;
     }
 
-    if (this.retryCount >= this.maxRetries) {
-      return null;
-    }
-
-    console.debug('[XBot:Core] Feed not found, retrying in 1s');
+    if (this.retryCount >= this.maxRetries) return null;
     this.retryCount++;
     await new Promise(resolve => setTimeout(resolve, 1000));
     return this.waitForNotificationsFeed();
@@ -75,12 +59,9 @@ export class BotDetector {
         if (mutation.type === 'childList') {
           mutation.addedNodes.forEach(node => {
             if (node instanceof HTMLElement) {
-              // Skip our warning elements and already processed nodes
               if (node.classList.contains('xbd-warning') || node.hasAttribute('data-xbot-processed')) {
                 return;
               }
-
-              console.debug('[XBot:Core] Processing new notification');
               this.processNotification(node);
             }
           });
@@ -95,15 +76,7 @@ export class BotDetector {
   }
 
   private scanExistingNotifications(feed: HTMLElement): void {
-    console.debug('[XBot:Core] Scanning existing notifications...');
     const notifications = feed.querySelectorAll('[data-testid="cellInnerDiv"]');
-    console.debug(`[XBot:Core] Found ${notifications.length} existing notifications`);
-    
-    if (notifications.length === 0) {
-      console.debug('[XBot:Core] No existing notifications found');
-      return;
-    }
-
     notifications.forEach(notification => {
       if (notification instanceof HTMLElement) {
         this.processNotification(notification);
@@ -112,10 +85,7 @@ export class BotDetector {
   }
 
   private async processNotification(notification: HTMLElement): Promise<void> {
-    // Skip if already processed
-    if (notification.hasAttribute('data-xbot-processed')) {
-      return;
-    }
+    if (notification.hasAttribute('data-xbot-processed')) return;
 
     const profileData = this.domExtractor.extractProfileData(notification);
     if (!profileData) {
@@ -123,54 +93,28 @@ export class BotDetector {
       return;
     }
 
-    // Skip if we've already processed this username
     if (this.processedUsernames.has(profileData.username)) {
-      console.debug('[XBot:Core] Skipping duplicate username:', profileData.username);
       notification.setAttribute('data-xbot-processed', 'true');
       return;
     }
 
-    const analysis = await this.profileAnalyzer.analyzeBotProbability(profileData);
+    const analysis = await this.profileAnalyzer.analyzeProfile(profileData);
     
-    // Add UI indicator for all accounts
     this.uiManager.addWarningIndicator(notification, {
       username: profileData.username,
       probability: analysis.probability,
       reasons: analysis.reasons
     });
 
-    // Update stats based on probability
     if (analysis.probability >= 0.6) {
-      this.stats.highProbability++;
-      console.debug('[XBot:Core] High probability bot detected', {
-        username: profileData.username,
-        displayName: profileData.displayName,
-        probability: analysis.probability,
-        reasons: analysis.reasons
-      });
       await this.storageService.saveProfile(profileData);
-    } else if (analysis.probability >= 0.3) {
-      this.stats.mediumProbability++;
-      console.debug('[XBot:Core] Medium probability bot detected', {
-        username: profileData.username,
-        displayName: profileData.displayName,
-        probability: analysis.probability,
-        reasons: analysis.reasons
-      });
-    } else {
-      this.stats.lowProbability++;
-      console.debug('[XBot:Core] Likely real account', {
-        username: profileData.username,
-        displayName: profileData.displayName,
-        probability: analysis.probability,
-        reasons: analysis.reasons
-      });
     }
 
-    // Update panel stats
-    this.uiManager.updatePanelStats(this.stats);
+    if (analysis.probability >= 0.6) this.stats.highProbability++;
+    else if (analysis.probability >= 0.3) this.stats.mediumProbability++;
+    else this.stats.lowProbability++;
 
-    // Track processed username and mark element
+    this.uiManager.updatePanelStats(this.stats);
     this.processedUsernames.add(profileData.username);
     notification.setAttribute('data-xbot-processed', 'true');
   }
@@ -178,12 +122,9 @@ export class BotDetector {
 
 // Initialize when the document is ready
 if (document.readyState === 'loading') {
-  console.debug('[XBot:Core] Waiting for document to load');
   document.addEventListener('DOMContentLoaded', () => {
-    console.debug('[XBot:Core] Starting initialization');
     new BotDetector();
   });
 } else {
-  console.debug('[XBot:Core] Document already loaded, creating instance');
   new BotDetector();
 }

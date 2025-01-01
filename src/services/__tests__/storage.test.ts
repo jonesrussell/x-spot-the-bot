@@ -23,7 +23,8 @@ describe('StorageService', () => {
     followingCount: 100,
     interactionTimestamp: Date.now(),
     interactionType: InteractionTypes.Like,
-    notificationType: NotificationTypes.UserInteraction
+    notificationType: NotificationTypes.UserInteraction,
+    botProbability: 0.3
   };
 
   beforeEach(() => {
