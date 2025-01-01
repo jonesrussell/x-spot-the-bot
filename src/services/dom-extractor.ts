@@ -66,6 +66,8 @@ export class DOMExtractor {
 
       // Get the first user link that's not the current user
       const userLink = userLinks[0];
+      if (!userLink) return null;
+
       const username = userLink.getAttribute('href')?.slice(1);
       if (!username) return null;
 

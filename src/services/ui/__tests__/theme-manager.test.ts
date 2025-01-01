@@ -1,102 +1,29 @@
-import { jest } from '@jest/globals';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { ThemeManager } from '../theme-manager.js';
 
 describe('ThemeManager', () => {
   let themeManager: ThemeManager;
-  // eslint-disable-next-line no-unused-vars
-  let triggerMutation: (mutations: MutationRecord[]) => void;
 
   beforeEach(() => {
-    // Mock MutationObserver
-    // eslint-disable-next-line no-unused-vars
-    const mockObserver = jest.fn((callback: (mutations: MutationRecord[]) => void) => {
-      triggerMutation = callback;
-      return {
-        observe: jest.fn(),
-        disconnect: jest.fn()
-      };
-    });
-    global.MutationObserver = mockObserver as unknown as typeof MutationObserver;
-
-    document.documentElement.removeAttribute('data-color-mode');
+    document.documentElement.style.cssText = '';
     themeManager = new ThemeManager();
   });
 
-  describe('isDarkMode', () => {
-    it('should detect dark mode', () => {
-      document.documentElement.setAttribute('data-color-mode', 'dark');
-      expect(themeManager.isDarkMode()).toBe(true);
+  describe('updateTheme', () => {
+    it('should set dark theme variables', () => {
+      themeManager.updateTheme(true);
+      expect(document.documentElement.style.getPropertyValue('--background-color')).toBe('#15202b');
+      expect(document.documentElement.style.getPropertyValue('--text-color')).toBe('#999999');
+      expect(document.documentElement.style.getPropertyValue('--high-probability-color')).toBe('#ff4444');
+      expect(document.documentElement.style.getPropertyValue('--medium-probability-color')).toBe('#ffaa44');
     });
 
-    it('should detect light mode', () => {
-      document.documentElement.setAttribute('data-color-mode', 'light');
-      expect(themeManager.isDarkMode()).toBe(false);
-    });
-
-    it('should handle missing theme attribute', () => {
-      expect(themeManager.isDarkMode()).toBe(false);
-    });
-  });
-
-  describe('onThemeChange', () => {
-    it('should call callback when theme changes', () => {
-      const callback = jest.fn();
-      themeManager.onThemeChange(callback);
-
-      // Change to dark mode
-      document.documentElement.setAttribute('data-color-mode', 'dark');
-      triggerMutation?.([{
-        type: 'attributes',
-        attributeName: 'data-color-mode',
-        target: document.documentElement
-      } as unknown as MutationRecord]);
-      expect(callback).toHaveBeenLastCalledWith(true);
-
-      // Change to light mode
-      document.documentElement.setAttribute('data-color-mode', 'light');
-      triggerMutation?.([{
-        type: 'attributes',
-        attributeName: 'data-color-mode',
-        target: document.documentElement
-      } as unknown as MutationRecord]);
-      expect(callback).toHaveBeenLastCalledWith(false);
-    });
-
-    it('should call callback immediately with current theme', () => {
-      document.documentElement.setAttribute('data-color-mode', 'dark');
-      const callback = jest.fn();
-      themeManager.onThemeChange(callback);
-      expect(callback).toHaveBeenCalledWith(true);
-    });
-
-    it('should support multiple callbacks', () => {
-      const callback1 = jest.fn();
-      const callback2 = jest.fn();
-      themeManager.onThemeChange(callback1);
-      themeManager.onThemeChange(callback2);
-
-      document.documentElement.setAttribute('data-color-mode', 'dark');
-      triggerMutation?.([{
-        type: 'attributes',
-        attributeName: 'data-color-mode',
-        target: document.documentElement
-      } as unknown as MutationRecord]);
-      expect(callback1).toHaveBeenCalledWith(true);
-      expect(callback2).toHaveBeenCalledWith(true);
-    });
-
-    it('should ignore non-theme attribute changes', () => {
-      const callback = jest.fn();
-      themeManager.onThemeChange(callback);
-      callback.mockClear(); // Clear initial call
-
-      document.documentElement.setAttribute('some-other-attr', 'value');
-      triggerMutation?.([{
-        type: 'attributes',
-        attributeName: 'some-other-attr',
-        target: document.documentElement
-      } as unknown as MutationRecord]);
-      expect(callback).not.toHaveBeenCalled();
+    it('should set light theme variables', () => {
+      themeManager.updateTheme(false);
+      expect(document.documentElement.style.getPropertyValue('--background-color')).toBe('#ffffff');
+      expect(document.documentElement.style.getPropertyValue('--text-color')).toBe('#666666');
+      expect(document.documentElement.style.getPropertyValue('--high-probability-color')).toBe('#ff0000');
+      expect(document.documentElement.style.getPropertyValue('--medium-probability-color')).toBe('#ff8c00');
     });
   });
 }); 
