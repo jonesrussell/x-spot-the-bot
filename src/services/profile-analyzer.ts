@@ -2,17 +2,26 @@ import type { BotAnalysis, ProfileData } from '../types/profile.js';
 
 export class ProfileAnalyzer {
   static readonly #BOT_PATTERNS = {
-    RANDOM_ALPHANUMERIC: /^[a-z0-9]{12,}$/,
-    MANY_NUMBERS: /[0-9]{6,}/,
-    BOT_KEYWORDS: /\b(bot|spam|auto)\b|[0-9]{3,}[a-z]+[0-9]{3,}/i,
-    RANDOM_SUFFIX: /[a-z]+[0-9]{6,}$/,
-    NUMERIC_SUFFIX: /[0-9]{6,}$/,
-    RANDOM_LETTERS: /[A-Z]{3,}[0-9]{3,}/
+    RANDOM_ALPHANUMERIC: /^[a-z0-9]{15,}$/,
+    MANY_NUMBERS: /[0-9]{8,}/,
+    BOT_KEYWORDS: /\b(bot|spam|scam|auto)\b|[0-9]{4,}[a-z]+[0-9]{4,}/i,
+    RANDOM_SUFFIX: /[a-z]+[0-9]{8,}$/,
+    NUMERIC_SUFFIX: /[0-9]{8,}$/,
+    RANDOM_LETTERS: /[A-Z]{4,}[0-9]{4,}/
   } as const;
 
   public analyzeProfile(profile: ProfileData): BotAnalysis {
     const reasons: string[] = [];
     let probability = 0;
+
+    // Skip verified accounts
+    if (profile.isVerified === true) {
+      return {
+        username: profile.username,
+        probability: 0,
+        reasons: []
+      };
+    }
 
     // Check username patterns
     const patterns = ProfileAnalyzer.#BOT_PATTERNS;
@@ -28,7 +37,7 @@ export class ProfileAnalyzer {
 
     if (patterns.BOT_KEYWORDS.test(username)) {
       patternScore = Math.max(patternScore, 0.35);
-      reasons.push('Username contains bot-like keywords');
+      reasons.push('Username contains suspicious keywords');
     }
 
     if (patterns.MANY_NUMBERS.test(username)) {
@@ -53,20 +62,23 @@ export class ProfileAnalyzer {
 
     probability += patternScore;
 
-    // Check profile completeness - only if we already have some suspicion
-    if (probability > 0.2 && !profile.followersCount && !profile.followingCount) {
-      probability += 0.2;
-      reasons.push('No followers or following');
-    }
+    // Only check these if we have strong suspicion (higher threshold)
+    if (probability > 0.35) {
+      // Check profile completeness
+      if (!profile.followersCount && !profile.followingCount) {
+        probability += 0.2;
+        reasons.push('No followers or following');
+      }
 
-    // Check display name similarity - only if we already have some suspicion
-    if (probability > 0.2 && profile.displayName === profile.username) {
-      probability += 0.15;
-      reasons.push('Display name matches username');
+      // Check display name similarity
+      if (profile.displayName === profile.username) {
+        probability += 0.15;
+        reasons.push('Display name matches username');
+      }
     }
 
     // Cap final probability
-    probability = Math.min(probability, 0.85);
+    probability = Math.min(probability, 0.8);
 
     return {
       username: profile.username,

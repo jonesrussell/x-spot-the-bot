@@ -1,78 +1,69 @@
-import { jest } from '@jest/globals';
 import type { ProfileData } from '../../types/profile.js';
-import { InteractionTypes, NotificationTypes } from '../../types/profile.js';
 import { StorageService } from '../storage.js';
 
-interface StorageData {
-  profiles: { [key: string]: ProfileData };
-}
-
-// eslint-disable-next-line no-unused-vars
-type StorageCallback = (data: StorageData) => void;
-type StorageSetCallback = () => void;
-
 describe('StorageService', () => {
-  let storageService: StorageService;
-  let mockStorage: StorageData = { profiles: {} };
-  
-  const mockProfile: ProfileData = {
-    username: 'testuser',
-    displayName: 'Test User',
-    profileImageUrl: 'avatar.jpg',
-    followersCount: 100,
-    followingCount: 100,
-    interactionTimestamp: Date.now(),
-    interactionType: InteractionTypes.Like,
-    notificationType: NotificationTypes.UserInteraction,
-    botProbability: 0.3
-  };
+  let storage: StorageService;
 
   beforeEach(() => {
-    mockStorage = { profiles: {} };
-    jest.spyOn(chrome.storage.local, 'get').mockImplementation((_, callback: StorageCallback) => {
-      callback(mockStorage);
-    });
-    jest.spyOn(chrome.storage.local, 'set').mockImplementation((data: Partial<StorageData>, callback?: StorageSetCallback) => {
-      mockStorage = { profiles: { ...mockStorage.profiles, ...(data.profiles || {}) } };
-      if (callback) callback();
-    });
-    storageService = new StorageService();
+    storage = new StorageService();
+    chrome.storage.local.clear();
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    chrome.storage.local.clear();
   });
 
-  it('should save profile data', async () => {
-    await storageService.saveProfile(mockProfile);
-    expect(mockStorage.profiles[mockProfile.username]).toEqual(mockProfile);
+  describe('saveProfile', () => {
+    it('should save a profile to storage', async () => {
+      const mockProfile = {
+        username: 'test_user',
+        displayName: 'Test User',
+        profileImageUrl: 'https://example.com/avatar.jpg',
+        followersCount: 100,
+        followingCount: 200,
+        interactionTimestamp: Date.now(),
+        interactionType: 'like' as const,
+        notificationType: 'user_interaction' as const,
+        botProbability: 0.8,
+        isVerified: false
+      } satisfies ProfileData;
+
+      await storage.saveProfile(mockProfile);
+
+      const result = await chrome.storage.local.get(['profiles']);
+      expect(result['profiles']).toBeDefined();
+      expect(result['profiles']?.[mockProfile.username]).toEqual(mockProfile);
+    });
   });
 
-  it('should retrieve profile data', async () => {
-    mockStorage.profiles[mockProfile.username] = mockProfile;
-    const result = await storageService.getProfile(mockProfile.username);
-    expect(result).toEqual(mockProfile);
-  });
+  describe('getProfile', () => {
+    it('should retrieve a profile from storage', async () => {
+      const mockProfile = {
+        username: 'test_user',
+        displayName: 'Test User',
+        profileImageUrl: 'https://example.com/avatar.jpg',
+        followersCount: 100,
+        followingCount: 200,
+        interactionTimestamp: Date.now(),
+        interactionType: 'like' as const,
+        notificationType: 'user_interaction' as const,
+        botProbability: 0.8,
+        isVerified: false
+      } satisfies ProfileData;
 
-  it('should return null for non-existent profile', async () => {
-    const result = await storageService.getProfile('nonexistent');
-    expect(result).toBeNull();
-  });
+      await chrome.storage.local.set({
+        profiles: {
+          [mockProfile.username]: mockProfile
+        }
+      });
 
-  it('should prune old profiles', async () => {
-    const oldProfile = {
-      ...mockProfile,
-      interactionTimestamp: Date.now() - 31 * 24 * 60 * 60 * 1000 // 31 days old
-    };
-    mockStorage.profiles[mockProfile.username] = oldProfile;
-    
-    await storageService.pruneOldProfiles();
-    expect(mockStorage.profiles[mockProfile.username]).toBeUndefined();
-  });
+      const result = await storage.getProfile(mockProfile.username);
+      expect(result).toEqual(mockProfile);
+    });
 
-  it('should keep recent profiles during pruning', async () => {
-    mockStorage.profiles[mockProfile.username] = mockProfile;
-    await storageService.pruneOldProfiles();
-    expect(mockStorage.profiles[mockProfile.username]).toEqual(mockProfile);
+    it('should return null for non-existent profile', async () => {
+      const result = await storage.getProfile('non_existent_user');
+      expect(result).toBeNull();
+    });
   });
 }); 

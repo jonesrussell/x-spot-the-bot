@@ -12,7 +12,8 @@ export class DOMExtractor {
     USER_NAME: '[data-testid="User-Name"]',
     USER_AVATAR: 'img[src*="profile_images"]',
     NOTIFICATION_TEXT: '[data-testid="notificationText"]',
-    TWEET_TEXT: '[data-testid="tweetText"]'
+    TWEET_TEXT: '[data-testid="tweetText"]',
+    VERIFIED_ICON: '[data-testid="icon-verified"]'
   } as const;
 
   static readonly #PATTERNS = {
@@ -30,12 +31,12 @@ export class DOMExtractor {
     LIST: /added you to|created a list/i,
     SPACE: /started a space|scheduled a space|space is starting/i,
     BOT_PATTERNS: {
-      RANDOM_ALPHANUMERIC: /^[a-z0-9]{8,}$/,
-      MANY_NUMBERS: /[0-9]{4,}/,
-      BOT_KEYWORDS: /bot|spam|[0-9]+[a-z]+[0-9]+/,
-      RANDOM_SUFFIX: /[a-z]+[0-9]{4,}$/,
-      NUMERIC_SUFFIX: /[0-9]{4,}$/,
-      RANDOM_LETTERS: /[A-Z]{2,}[0-9]+/
+      RANDOM_ALPHANUMERIC: /^[a-z0-9]{15,}$/,
+      MANY_NUMBERS: /[0-9]{8,}/,
+      BOT_KEYWORDS: /\b(bot|spam|scam|auto)\b|[0-9]{4,}[a-z]+[0-9]{4,}/i,
+      RANDOM_SUFFIX: /[a-z]+[0-9]{8,}$/,
+      NUMERIC_SUFFIX: /[0-9]{8,}$/,
+      RANDOM_LETTERS: /[A-Z]{4,}[0-9]{4,}/
     }
   } as const;
 
@@ -96,6 +97,7 @@ export class DOMExtractor {
           const isMultiUser = DOMExtractor.#PATTERNS.MULTI_USER.test(text);
           const notificationType = isMultiUser ? 'multi_user' : 'user_interaction';
           const botProbability = this.#calculateBotProbability(username);
+          const isVerified = !!link.querySelector(DOMExtractor.#SELECTORS.VERIFIED_ICON);
 
           let profileImageUrl = 'https://abs.twimg.com/sticky/default_profile_images/default_profile.png';
           const profileImgs = [...cell.querySelectorAll('img[src*="profile_images"]')]
@@ -127,7 +129,8 @@ export class DOMExtractor {
             interactionTimestamp: Date.now(),
             interactionType,
             notificationType,
-            botProbability
+            botProbability,
+            isVerified
           } satisfies UserProfileData;
         })
         .filter((user): user is UserProfileData => {

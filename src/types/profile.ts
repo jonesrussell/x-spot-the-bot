@@ -47,6 +47,7 @@ export interface ProfileData {
   interactionType: InteractionType;
   notificationType: 'user_interaction' | 'multi_user';
   botProbability: number;
+  isVerified: boolean;
 }
 
 export interface BotAnalysis {
