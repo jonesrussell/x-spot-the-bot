@@ -16,7 +16,7 @@ describe('StorageService', () => {
       },
       storage: {
         local: {
-          get: vi.fn((_keys: StorageKey, callback: (_profiles: Record<string, ProfileData>) => void) => {
+          get: vi.fn((_keys: StorageKey, callback) => {
             const matches: Record<string, ProfileData> = {};
             if (typeof _keys === 'string' && mockStorage[_keys]) {
               matches[_keys] = mockStorage[_keys];
