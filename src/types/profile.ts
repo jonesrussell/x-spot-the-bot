@@ -50,6 +50,9 @@ export interface ProfileData {
   isVerified: boolean;
 }
 
+// Raw profile data without bot analysis
+export type RawProfileData = Omit<ProfileData, 'botProbability'>;
+
 export interface BotAnalysis {
   username: string;
   probability: number;
