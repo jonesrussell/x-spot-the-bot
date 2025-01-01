@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { StyleManager } from '../style-manager.js';
 
-vi.mock('../styles/indicators.css', () => ({
+vi.mock('../styles/indicators.css?inline', () => ({
   default: '.xbd-warning { color: blue; }'
 }));
 
-vi.mock('../styles/panel.css', () => ({
+vi.mock('../styles/panel.css?inline', () => ({
   default: '.xbd-summary-panel { color: red; }'
 }));
 

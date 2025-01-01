@@ -47,10 +47,24 @@ export default defineConfig({
   css: {
     modules: {
       localsConvention: 'camelCase',
-      generateScopedName: '[name]__[local]__[hash:base64:5]',
-      exportGlobals: true
+      generateScopedName: '[name]__[local]__[hash:base64:5]'
     }
   },
+  plugins: [{
+    name: 'css-inline',
+    transform(code, id) {
+      if (id.endsWith('.css?inline')) {
+        const minified = code
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        return {
+          code: `export default ${JSON.stringify(minified)};`,
+          map: null
+        };
+      }
+    }
+  }],
   esbuild: {
     target: 'es2022',
     format: 'esm',
