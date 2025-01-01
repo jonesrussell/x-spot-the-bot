@@ -31,6 +31,22 @@ Code Standards:
    - Include relevant data
    - Debug level for verbose
 
+Code Organization:
+1. Single Responsibility:
+   - Each class/module has one primary purpose
+   - Services split by domain (UI/DOM/Analysis)
+   - Clear separation between core logic and UI
+
+2. DRY Principles:
+   - Shared utilities in common modules
+   - Reusable test fixtures and helpers
+   - Common types and interfaces
+
+3. Separation of Concerns:
+   - DOM operations isolated from analysis
+   - UI logic separate from data processing
+   - Storage separate from business logic
+
 Bot Detection:
 - High probability: >= 0.6
 - Patterns:
@@ -40,11 +56,23 @@ Bot Detection:
   * Random/numeric suffix (0.2): [a-z]+[0-9]{4,}$
 
 Testing:
-- Vitest + jsdom
-- Unit tests for all services
-- Integration tests for DOM
-- Mock Chrome API calls
-- Coverage required
+1. Organization:
+   - Unit tests in __tests__ directories
+   - Shared test fixtures in test/fixtures
+   - Mock implementations in __mocks__
+   - Integration tests separate from units
+
+2. Best Practices:
+   - Test files mirror source structure
+   - One describe block per class/function
+   - Clear test descriptions
+   - Isolated test cases
+
+3. Coverage Requirements:
+   - 80% minimum coverage
+   - All services must be tested
+   - Mock external dependencies
+   - Test edge cases
 
 Build:
 - Vite + ESM
