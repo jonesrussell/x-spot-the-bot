@@ -3,6 +3,8 @@ import { ProfileAnalyzer } from '../services/profile-analyzer.js';
 import { StorageService } from '../services/storage.js';
 import { UIManager } from '../services/ui-manager.js';
 
+console.log('[XBot] Content script loaded - X Spot The Bot v1.0.0');
+
 export class BotDetector {
   #domExtractor: DOMExtractor;
   #profileAnalyzer: ProfileAnalyzer;
@@ -17,8 +19,12 @@ export class BotDetector {
     mediumProbability: 0,
     lowProbability: 0
   };
+  #lastSummaryTime = 0;
+  readonly #SUMMARY_INTERVAL = 2000; // Log summary every 2 seconds
 
   constructor() {
+    this.resetState();
+    console.debug('[XBot] Extension initialized');
     this.#domExtractor = new DOMExtractor();
     this.#profileAnalyzer = new ProfileAnalyzer();
     this.#storageService = new StorageService();
@@ -26,9 +32,28 @@ export class BotDetector {
     this.init();
   }
 
+  private resetState(): void {
+    this.#processedUsernames.clear();
+    this.#stats = {
+      highProbability: 0,
+      mediumProbability: 0,
+      lowProbability: 0
+    };
+    this.#lastSummaryTime = 0;
+    this.#retryCount = 0;
+    if (this.#observer) {
+      this.#observer.disconnect();
+      this.#observer = null;
+    }
+  }
+
   private async init(): Promise<void> {
     const feed = await this.waitForNotificationsFeed();
-    if (!feed) return;
+    if (!feed) {
+      console.warn('[XBot] Failed to find notifications feed after max retries');
+      return;
+    }
+    console.debug('[XBot] Found notifications feed, starting detection');
     this.setupObserver(feed);
     this.scanExistingNotifications(feed);
   }
@@ -72,15 +97,33 @@ export class BotDetector {
       childList: true,
       subtree: true
     });
+    console.debug('[XBot] Notification observer started');
   }
 
   private scanExistingNotifications(feed: HTMLElement): void {
     const notifications = feed.querySelectorAll('[data-testid="cellInnerDiv"]');
+    console.debug(`[XBot] Scanning ${notifications.length} existing notifications`);
     notifications.forEach(notification => {
       if (notification instanceof HTMLElement) {
         this.processNotification(notification);
       }
     });
+  }
+
+  private logSummary(): void {
+    const now = Date.now();
+    if (now - this.#lastSummaryTime < this.#SUMMARY_INTERVAL) return;
+    
+    const total = this.#processedUsernames.size;
+    if (total === 0) return;
+
+    console.log('[XBot] Bot Detection Summary:',
+      `\n🔍 Total Analyzed: ${total}`,
+      `\n🤖 High Risk: ${this.#stats.highProbability}`,
+      `\n⚠️ Medium Risk: ${this.#stats.mediumProbability}`,
+      `\n✓ Likely Real: ${this.#stats.lowProbability}`
+    );
+    this.#lastSummaryTime = now;
   }
 
   private async processNotification(notification: HTMLElement): Promise<void> {
@@ -107,15 +150,19 @@ export class BotDetector {
 
     if (analysis.probability >= 0.6) {
       await this.#storageService.saveProfile(profileData);
+      console.debug(`[XBot] High risk bot detected: @${profileData.username} (${(analysis.probability * 100).toFixed(1)}%)`);
+      this.#stats.highProbability++;
+    } else if (analysis.probability >= 0.3) {
+      console.debug(`[XBot] Medium risk account: @${profileData.username} (${(analysis.probability * 100).toFixed(1)}%)`);
+      this.#stats.mediumProbability++;
+    } else {
+      this.#stats.lowProbability++;
     }
-
-    if (analysis.probability >= 0.6) this.#stats.highProbability++;
-    else if (analysis.probability >= 0.3) this.#stats.mediumProbability++;
-    else this.#stats.lowProbability++;
 
     this.#uiManager.updatePanelStats(this.#stats);
     this.#processedUsernames.add(profileData.username);
     notification.setAttribute('data-xbot-processed', 'true');
+    this.logSummary();
   }
 }
 

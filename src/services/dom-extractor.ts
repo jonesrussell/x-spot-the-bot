@@ -62,7 +62,10 @@ export class DOMExtractor {
       cell.setAttribute('data-xbot-processed', 'true');
 
       const article = cell.querySelector(DOMExtractor.#SELECTORS.NOTIFICATION);
-      if (!article) return null;
+      if (!article) {
+        console.debug('[XBot:DOM] No notification article found in cell');
+        return null;
+      }
 
       const notificationText = article.querySelector(DOMExtractor.#SELECTORS.NOTIFICATION_TEXT);
       const text = (notificationText?.textContent ?? article.textContent ?? '').toLowerCase();
@@ -78,7 +81,10 @@ export class DOMExtractor {
                  !href.includes('/topics/');
         });
 
-      if (!userLinks.length) return null;
+      if (!userLinks.length) {
+        console.debug('[XBot:DOM] No valid user links found in notification');
+        return null;
+      }
 
       const users = userLinks
         .map(link => {
@@ -139,6 +145,7 @@ export class DOMExtractor {
 
       return userProfile;
     } catch (error) {
+      console.error('[XBot:DOM] Error extracting profile data:', error);
       return null;
     }
   }
