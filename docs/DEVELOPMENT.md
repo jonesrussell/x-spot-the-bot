@@ -2,101 +2,232 @@
 
 ## Setup
 
-1. Install dependencies:
-```bash
-npm install
-```
+1. **Prerequisites**
+   - Node.js v22.12.0 or higher
+   - TypeScript ~5.5.3
+   - Edge browser for testing
 
-2. Build the extension:
-```bash
-npm run build
-```
+2. **Installation**
+   ```bash
+   # Clone repository
+   git clone https://github.com/your-username/x-spot-the-bot.git
+   cd x-spot-the-bot
+
+   # Install dependencies
+   npm install
+
+   # Build extension
+   npm run build
+   ```
 
 ## Development Workflow
 
-1. Make changes to TypeScript files in `src/`
-2. Build to compile and bundle
-3. Load unpacked extension in Edge
-4. Test changes in notifications page
+1. **Development Mode**
+   ```bash
+   # Start development server
+   npm run dev
 
-## Important Notes
+   # Watch mode with auto-reload
+   npm run dev:watch
+   ```
 
-### TypeScript Configuration
-- Using ES2022 modules (newest concrete version as of 2024)
-- Node module resolution for development
-- Strict type checking enabled
+2. **Testing**
+   ```bash
+   # Run all tests
+   npm run test
 
-### Module Imports
-- Use .js extensions for all imports
-- Example: `import { StorageService } from '../services/storage.js';`
+   # Run tests in watch mode
+   npm run test:watch
 
-### DOM Operations
-- Use data-testid attributes for element selection
-- Always include null checks
-- Add debug logging with [XBot:DOM] prefix
-- Handle dynamic class names by avoiding CSS class selectors
+   # Run tests with coverage
+   npm run test:coverage
+   ```
+
+3. **Code Quality**
+   ```bash
+   # Format code
+   npm run format
+
+   # Lint code
+   npm run lint
+
+   # Type check
+   npm run typecheck
+
+   # Run all checks
+   npm run check
+   ```
+
+## Code Standards
+
+### TypeScript
+
+1. **File Organization**
+   - One class per file
+   - Clear file naming
+   - Consistent directory structure
+   - Related files grouped together
+
+2. **Imports/Exports**
+   ```typescript
+   // Type-only imports
+   import type { ProfileData } from '../types/profile.js';
+
+   // ESM imports with .js extension
+   import { DOMExtractor } from './dom/dom-extractor.js';
+
+   // Named exports preferred
+   export class ProfileAnalyzer { }
+   ```
+
+3. **Class Structure**
+   ```typescript
+   export class ServiceName {
+     // Private fields with #
+     readonly #config = { };
+     
+     // Public methods first
+     public methodName(): void { }
+     
+     // Private methods last
+     #helperMethod(): void { }
+   }
+   ```
+
+### Testing
+
+1. **Test Structure**
+   ```typescript
+   describe('ServiceName', () => {
+     let service: ServiceName;
+
+     beforeEach(() => {
+       service = new ServiceName();
+     });
+
+     describe('methodName', () => {
+       it('should describe expected behavior', () => {
+         // Arrange
+         const input = '';
+
+         // Act
+         const result = service.methodName(input);
+
+         // Assert
+         expect(result).toBeDefined();
+       });
+     });
+   });
+   ```
+
+2. **Test Helpers**
+   ```typescript
+   // DOM helpers
+   import { createNotificationCell } from '../../../test/helpers/dom.js';
+
+   // Test fixtures
+   import { mockProfiles } from '../../../test/fixtures/profiles.js';
+   ```
 
 ### UI Components
-- Summary Panel:
-  - Sticky header at top of notifications
-  - Shows live bot detection statistics
-  - Dark theme matching X's UI
-  - Updates in real-time as notifications are processed
-- Warning Indicators:
-  - 🤖 Red (>=60% probability)
-  - ⚠️ Orange (30-59% probability)
-  - ✓ Green (<30% probability)
-  - Hover to show detection reasons
-- CSS Requirements:
-  - Use !important for all styles
-  - High z-index (9999999) to stay on top
-  - Support dark/light themes
-  - Maintain relative positioning
 
-### Bot Detection
-- Probability threshold: >= 0.6 for warnings
-- Score components:
-  - Username patterns (max 0.5)
-  - No followers/following (0.3)
-  - Display name similarity (0.2)
-- Maximum total score: 0.9
-- Avoid duplicate detections
-- Skip community posts
+1. **Component Structure**
+   ```typescript
+   export class ComponentName {
+     readonly #element: HTMLElement;
+     
+     constructor() {
+       this.#element = this.#createElement();
+     }
+     
+     #createElement(): HTMLElement {
+       const el = document.createElement('div');
+       // Add attributes, styles, etc.
+       return el;
+     }
+   }
+   ```
 
-### Debug Logging
-- Use consistent prefixes:
-  - [XBot:Core] - Initialization and processing
-  - [XBot:DOM] - Element operations
-  - [XBot:Analyzer] - Bot detection results
-  - [XBot:UI] - Panel and indicator updates
-- Include relevant data in logs
-- Filter console by prefix for debugging
+2. **Styling**
+   ```css
+   /* Use namespaced classes */
+   .xbd-component-name { }
 
-## Testing
+   /* High specificity selectors */
+   .xbd-component-name[data-theme="dark"] { }
 
-1. Build the extension
-2. Load in Edge
-3. Visit twitter.com/notifications
-4. Check console for debug logs
-5. Verify UI indicators appear
-6. Test with known bot accounts
-7. Verify no duplicate warnings
+   /* Important rules when needed */
+   .xbd-warning { color: red !important; }
+   ```
 
-## Debugging
+### Error Handling
 
-- Check browser console for logs
-- Filter console by [XBot
-- Monitor extraction failures
-- Check score breakdowns
-- Verify pattern matches
+1. **Service Errors**
+   ```typescript
+   try {
+     const result = await service.method();
+   } catch (error) {
+     console.error('[XBot:Service] Error:', error);
+     return null;
+   }
+   ```
 
-## Best Practices
+2. **DOM Operations**
+   ```typescript
+   const element = document.querySelector('[data-testid="id"]');
+   if (!element) {
+     console.warn('[XBot:DOM] Element not found');
+     return;
+   }
+   ```
 
-1. Follow Single Responsibility Principle
-2. Add TypeScript interfaces for data structures
-3. Handle edge cases and errors
-4. Document public methods
-5. Use consistent naming conventions
-6. Add detailed debug logging
-7. Avoid CSS class selectors
-8. Track processed elements 
+## Git Workflow
+
+1. **Branches**
+   - `main`: Production-ready code
+   - `develop`: Development branch
+   - `feature/*`: New features
+   - `fix/*`: Bug fixes
+   - `refactor/*`: Code improvements
+
+2. **Commits**
+   ```
+   type(scope): description
+
+   - feat: New feature
+   - fix: Bug fix
+   - refactor: Code improvement
+   - test: Test updates
+   - docs: Documentation
+   ```
+
+3. **Pull Requests**
+   - Clear title and description
+   - Reference issues
+   - Include tests
+   - Update documentation
+
+## Release Process
+
+1. **Version Update**
+   ```bash
+   npm version patch|minor|major
+   ```
+
+2. **Build & Test**
+   ```bash
+   npm run build
+   npm run test
+   ```
+
+3. **Manual Testing**
+   - Load in Edge
+   - Test core features
+   - Check performance
+   - Verify UI/UX
+
+4. **Release**
+   - Update CHANGELOG.md
+   - Create GitHub release
+   - Tag version
+   - Update Edge store 
