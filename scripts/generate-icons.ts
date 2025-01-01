@@ -30,6 +30,8 @@ async function generateIcons() {
     for (const size of sizes) {
       await fs.writeFile(join(distIconDir, `icon${size}.png`), minimalPNG);
     }
+
+    console.log('✓ Icons generated successfully');
   } catch (error) {
     console.error('Error creating minimal icons:', error);
   }

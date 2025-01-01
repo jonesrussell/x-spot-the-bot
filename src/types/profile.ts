@@ -1,5 +1,5 @@
 // Type definitions
-export type InteractionType = 'like' | 'reply' | 'repost' | 'follow';
+export type InteractionType = 'like' | 'reply' | 'repost' | 'follow' | 'live' | 'other';
 export type NotificationType = 'user_interaction' | 'pinned_post' | 'trending' | 'community_post' | 'multi_user';
 
 // Runtime values
@@ -7,7 +7,9 @@ export const InteractionTypes = {
   Like: 'like',
   Reply: 'reply',
   Repost: 'repost',
-  Follow: 'follow'
+  Follow: 'follow',
+  Live: 'live',
+  Other: 'other'
 } as const;
 
 export const NotificationTypes = {
