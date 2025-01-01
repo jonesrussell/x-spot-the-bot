@@ -7,9 +7,6 @@ export interface ScoreResult {
 
 export class ScoreCalculator {
   static readonly #MAX_PROBABILITY = 0.8;
-  static readonly #PATTERN_THRESHOLD = 0.2;
-  static readonly #NO_FOLLOWERS_SCORE = 0.3;
-  static readonly #DISPLAY_NAME_MATCH_SCORE = 0.2;
 
   public calculateScore(profile: ProfileData, patternScore: number | null, patternReason: string | null): ScoreResult {
     const reasons: string[] = [];
@@ -21,21 +18,10 @@ export class ScoreCalculator {
       if (patternReason) reasons.push(patternReason);
     }
 
-    // Only check additional factors if pattern score is above threshold
-    if (probability >= ScoreCalculator.#PATTERN_THRESHOLD) {
-      // Check followers/following
-      if ((profile.followersCount === 0 && profile.followingCount === 0) ||
-          (profile.followersCount === undefined && profile.followingCount === undefined)) {
-        probability = Math.min(probability + ScoreCalculator.#NO_FOLLOWERS_SCORE, ScoreCalculator.#MAX_PROBABILITY);
-        reasons.push('No followers or following');
-      }
-
-      // Check display name similarity
-      if (profile.displayName && profile.username &&
-          profile.displayName.toLowerCase() === profile.username.toLowerCase()) {
-        probability = Math.min(probability + ScoreCalculator.#DISPLAY_NAME_MATCH_SCORE, ScoreCalculator.#MAX_PROBABILITY);
-        reasons.push('Display name matches username');
-      }
+    // Add score for no followers/following
+    if (profile.followersCount === 0 && profile.followingCount === 0) {
+      probability = Math.min(probability + 0.3, ScoreCalculator.#MAX_PROBABILITY);
+      reasons.push('No followers or following');
     }
 
     return {
