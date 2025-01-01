@@ -76,7 +76,7 @@ Known Deprecation Warnings:
 - [DEP0040] punycode module: Ignore (Jest internal)
 
 Testing Configuration:
-- Jest with ESM support (--experimental-vm-modules)
+- Vitest with native ESM and TypeScript support
 - Test environment: jsdom
 - File naming: *.test.ts in __tests__ directories
 - Mock implementations:
@@ -90,6 +90,13 @@ Testing Configuration:
   * Mock Chrome API calls
   * Visual regression tests for UI
   * Edge case coverage for data extraction
+- Test runner features:
+  * Watch mode with smart file detection
+  * Coverage reporting with v8
+  * Snapshot testing support
+  * Thread isolation for test suites
+  * Native TypeScript support
+  * Compatible with Jest expect syntax
 
 Bot Detection Rules:
 - Probability threshold: >= 0.6 for high probability bots

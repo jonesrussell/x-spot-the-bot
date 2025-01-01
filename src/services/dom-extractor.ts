@@ -64,55 +64,49 @@ export class DOMExtractor {
         return null;
       }
 
-      const users = userLinks
-        .map(link => {
-          const username = link.getAttribute('href')?.slice(1);
-          if (!username) return null;
+      // Get the first user link that's not the current user
+      const userLink = userLinks[0];
+      const username = userLink.getAttribute('href')?.slice(1);
+      if (!username) return null;
 
-          const displayName = link.textContent?.trim() || username;
-          const interactionType = this.#determineInteractionType(text);
-          const isMultiUser = DOMExtractor.#PATTERNS.MULTI_USER.test(text);
-          const notificationType = isMultiUser ? 'multi_user' : 'user_interaction';
-          const isVerified = !!link.querySelector(DOMExtractor.#SELECTORS.VERIFIED_ICON);
+      const displayName = userLink.querySelector(DOMExtractor.#SELECTORS.USER_NAME)?.textContent?.trim() || username;
+      const interactionType = this.#determineInteractionType(text);
+      const isMultiUser = DOMExtractor.#PATTERNS.MULTI_USER.test(text);
+      const notificationType = isMultiUser ? 'multi_user' : 'user_interaction';
+      const isVerified = !!userLink.querySelector(DOMExtractor.#SELECTORS.VERIFIED_ICON);
 
-          let profileImageUrl = 'https://abs.twimg.com/sticky/default_profile_images/default_profile.png';
-          const profileImgs = [...cell.querySelectorAll('img[src*="profile_images"]')]
-            .filter((img): img is HTMLImageElement => img instanceof HTMLImageElement && !!img.src);
+      let profileImageUrl = 'https://abs.twimg.com/sticky/default_profile_images/default_profile.png';
+      const profileImgs = [...cell.querySelectorAll('img[src*="profile_images"]')]
+        .filter((img): img is HTMLImageElement => img instanceof HTMLImageElement && !!img.src);
             
-          const userRect = link.getBoundingClientRect();
-          let closestImg = profileImgs[0];
-          let minDistance = Infinity;
+      const userRect = userLink.getBoundingClientRect();
+      let closestImg = profileImgs[0];
+      let minDistance = Infinity;
 
-          for (const img of profileImgs) {
-            const imgRect = img.getBoundingClientRect();
-            const distance = Math.abs(userRect.top - imgRect.top);
-            if (distance < minDistance) {
-              minDistance = distance;
-              closestImg = img;
-            }
-          }
+      for (const img of profileImgs) {
+        const imgRect = img.getBoundingClientRect();
+        const distance = Math.abs(userRect.top - imgRect.top);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestImg = img;
+        }
+      }
 
-          if (closestImg) {
-            profileImageUrl = closestImg.src;
-          }
+      if (closestImg) {
+        profileImageUrl = closestImg.src;
+      }
 
-          return {
-            username,
-            displayName,
-            profileImageUrl,
-            followersCount: 0,
-            followingCount: 0,
-            interactionTimestamp: Date.now(),
-            interactionType,
-            notificationType,
-            isVerified
-          } satisfies RawProfileData;
-        })
-        .filter((user): user is RawProfileData => user !== null);
-
-      if (!users.length) return null;
-      const firstUser = users[0];
-      return firstUser ?? null;
+      return {
+        username,
+        displayName,
+        profileImageUrl,
+        followersCount: 0,
+        followingCount: 0,
+        interactionTimestamp: Date.now(),
+        interactionType,
+        notificationType,
+        isVerified
+      };
     } catch (error) {
       console.error('[XBot:DOM] Error extracting profile data:', error);
       return null;

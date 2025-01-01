@@ -1,68 +1,90 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ProfileData } from '../../types/profile.js';
 import { StorageService } from '../storage.js';
 
 describe('StorageService', () => {
   let storage: StorageService;
+  let mockStorage: { [key: string]: any };
 
   beforeEach(() => {
+    mockStorage = {};
+    global.chrome = {
+      storage: {
+        local: {
+          get: vi.fn((keys, callback) => {
+            const result: { [key: string]: any } = {};
+            if (typeof keys === 'string') {
+              result[keys] = mockStorage[keys];
+            } else if (Array.isArray(keys)) {
+              keys.forEach(key => {
+                result[key] = mockStorage[key];
+              });
+            } else {
+              Object.assign(result, mockStorage);
+            }
+            if (typeof callback === 'function') callback(result);
+          }),
+          set: vi.fn((items, callback) => {
+            Object.assign(mockStorage, items);
+            if (typeof callback === 'function') callback();
+          }),
+          clear: vi.fn((callback) => {
+            mockStorage = {};
+            if (typeof callback === 'function') callback();
+          })
+        }
+      }
+    } as any;
     storage = new StorageService();
-    chrome.storage.local.clear();
-  });
-
-  afterEach(() => {
-    chrome.storage.local.clear();
   });
 
   describe('saveProfile', () => {
     it('should save a profile to storage', async () => {
-      const mockProfile = {
-        username: 'test_user',
+      const profile: ProfileData = {
+        username: 'testuser',
         displayName: 'Test User',
-        profileImageUrl: 'https://example.com/avatar.jpg',
+        profileImageUrl: 'https://example.com/image.jpg',
         followersCount: 100,
-        followingCount: 200,
+        followingCount: 50,
         interactionTimestamp: Date.now(),
-        interactionType: 'like' as const,
-        notificationType: 'user_interaction' as const,
-        botProbability: 0.8,
-        isVerified: false
-      } satisfies ProfileData;
+        interactionType: 'like',
+        notificationType: 'user_interaction',
+        isVerified: false,
+        botProbability: 0.1
+      };
 
-      await storage.saveProfile(mockProfile);
-
-      const result = await chrome.storage.local.get(['profiles']);
-      expect(result['profiles']).toBeDefined();
-      expect(result['profiles']?.[mockProfile.username]).toEqual(mockProfile);
+      await storage.saveProfile(profile);
+      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+        expect.objectContaining({
+          [`profile:${profile.username}`]: profile
+        }),
+        expect.any(Function)
+      );
     });
   });
 
   describe('getProfile', () => {
     it('should retrieve a profile from storage', async () => {
-      const mockProfile = {
-        username: 'test_user',
+      const profile: ProfileData = {
+        username: 'testuser',
         displayName: 'Test User',
-        profileImageUrl: 'https://example.com/avatar.jpg',
+        profileImageUrl: 'https://example.com/image.jpg',
         followersCount: 100,
-        followingCount: 200,
+        followingCount: 50,
         interactionTimestamp: Date.now(),
-        interactionType: 'like' as const,
-        notificationType: 'user_interaction' as const,
-        botProbability: 0.8,
-        isVerified: false
-      } satisfies ProfileData;
+        interactionType: 'like',
+        notificationType: 'user_interaction',
+        isVerified: false,
+        botProbability: 0.1
+      };
 
-      await chrome.storage.local.set({
-        profiles: {
-          [mockProfile.username]: mockProfile
-        }
-      });
-
-      const result = await storage.getProfile(mockProfile.username);
-      expect(result).toEqual(mockProfile);
+      mockStorage[`profile:${profile.username}`] = profile;
+      const result = await storage.getProfile(profile.username);
+      expect(result).toEqual(profile);
     });
 
     it('should return null for non-existent profile', async () => {
-      const result = await storage.getProfile('non_existent_user');
+      const result = await storage.getProfile('nonexistent');
       expect(result).toBeNull();
     });
   });

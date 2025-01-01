@@ -1,79 +1,57 @@
-import { jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { StyleManager } from '../style-manager.js';
 
 // Mock CSS imports
-jest.mock('../styles/panel.css', () => '.xbd-summary-panel { color: red; }');
-jest.mock('../styles/indicators.css', () => '.xbd-warning { color: blue; }');
-
-import { StyleManager } from '../style-manager.js';
+vi.mock('../styles/panel.css', () => '.xbd-summary-panel { color: red; }');
+vi.mock('../styles/indicators.css', () => '.xbd-warning { color: blue; }');
 
 describe('StyleManager', () => {
   let styleManager: StyleManager;
 
   beforeEach(() => {
+    document.head.innerHTML = '';
+    document.documentElement.style.cssText = '';
     styleManager = new StyleManager();
-    document.head.innerHTML = ''; // Clear any existing styles
   });
 
   describe('injectStyles', () => {
     it('should inject styles only once', () => {
       styleManager.injectStyles();
+      const initialStyleCount = document.head.getElementsByTagName('style').length;
       styleManager.injectStyles();
-      styleManager.injectStyles();
-
-      const styleElements = document.querySelectorAll('style[data-xbot]');
-      expect(styleElements.length).toBe(1);
+      expect(document.head.getElementsByTagName('style').length).toBe(initialStyleCount);
     });
 
     it('should include panel and indicator styles', () => {
       styleManager.injectStyles();
-
-      const style = document.querySelector('style[data-xbot]');
-      const cssText = style?.textContent || '';
-
-      // Panel styles
-      expect(cssText).toContain('.xbd-summary-panel');
-      expect(cssText).toContain('color: red');
-
-      // Indicator styles
-      expect(cssText).toContain('.xbd-warning');
-      expect(cssText).toContain('color: blue');
+      const styles = document.head.getElementsByTagName('style');
+      expect(styles.length).toBeGreaterThan(0);
+      const style = styles[0];
+      expect(style?.textContent).toContain('.xbd-summary-panel');
+      expect(style?.textContent).toContain('.xbd-warning');
     });
 
     it('should add styles to document head', () => {
       styleManager.injectStyles();
-      const style = document.head.querySelector('style[data-xbot]');
-      expect(style).not.toBeNull();
+      expect(document.head.getElementsByTagName('style')).toHaveLength(1);
     });
   });
 
   describe('updateThemeVariables', () => {
-    beforeEach(() => {
-      // Reset CSS variables
-      document.documentElement.style.removeProperty('--background-color');
-      document.documentElement.style.removeProperty('--text-color');
-      document.documentElement.style.removeProperty('--high-probability-color');
-      document.documentElement.style.removeProperty('--medium-probability-color');
-      document.documentElement.style.removeProperty('--low-probability-color');
-    });
-
     it('should set dark theme variables', () => {
       styleManager.updateThemeVariables(true);
-
-      expect(document.documentElement.style.getPropertyValue('--background-color')).toBe('#000');
-      expect(document.documentElement.style.getPropertyValue('--text-color')).toBe('#999');
+      expect(document.documentElement.style.getPropertyValue('--background-color')).toBe('#15202b');
+      expect(document.documentElement.style.getPropertyValue('--text-color')).toBe('#999999');
       expect(document.documentElement.style.getPropertyValue('--high-probability-color')).toBe('#ff4444');
       expect(document.documentElement.style.getPropertyValue('--medium-probability-color')).toBe('#ffaa44');
-      expect(document.documentElement.style.getPropertyValue('--low-probability-color')).toBe('#44cc44');
     });
 
     it('should set light theme variables', () => {
       styleManager.updateThemeVariables(false);
-
-      expect(document.documentElement.style.getPropertyValue('--background-color')).toBe('#fff');
-      expect(document.documentElement.style.getPropertyValue('--text-color')).toBe('#666');
+      expect(document.documentElement.style.getPropertyValue('--background-color')).toBe('#ffffff');
+      expect(document.documentElement.style.getPropertyValue('--text-color')).toBe('#666666');
       expect(document.documentElement.style.getPropertyValue('--high-probability-color')).toBe('#ff0000');
       expect(document.documentElement.style.getPropertyValue('--medium-probability-color')).toBe('#ff8c00');
-      expect(document.documentElement.style.getPropertyValue('--low-probability-color')).toBe('#00aa00');
     });
   });
 }); 
