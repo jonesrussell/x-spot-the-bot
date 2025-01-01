@@ -2,6 +2,7 @@ import { DOMExtractor } from '../services/dom-extractor.js';
 import { ProfileAnalyzer } from '../services/profile-analyzer.js';
 import { StorageService } from '../services/storage.js';
 import { UIManager } from '../services/ui-manager.js';
+import type { ProfileData } from '../types/profile.js';
 
 console.log('[XBot] Content script loaded - X Spot The Bot v1.0.0');
 
@@ -129,19 +130,25 @@ export class BotDetector {
   private async processNotification(notification: HTMLElement): Promise<void> {
     if (notification.hasAttribute('data-xbot-processed')) return;
 
-    const profileData = this.#domExtractor.extractProfileData(notification);
-    if (!profileData) {
+    const rawProfileData = this.#domExtractor.extractProfileData(notification);
+    if (!rawProfileData) {
       notification.setAttribute('data-xbot-processed', 'true');
       return;
     }
 
-    if (this.#processedUsernames.has(profileData.username)) {
+    if (this.#processedUsernames.has(rawProfileData.username)) {
       notification.setAttribute('data-xbot-processed', 'true');
       return;
     }
 
-    const analysis = await this.#profileAnalyzer.analyzeProfile(profileData);
+    const analysis = await this.#profileAnalyzer.analyzeProfile(rawProfileData);
     
+    // Combine raw profile data with bot probability to create full ProfileData
+    const profileData: ProfileData = {
+      ...rawProfileData,
+      botProbability: analysis.probability
+    };
+
     this.#uiManager.addWarningIndicator(notification, {
       username: profileData.username,
       probability: analysis.probability,

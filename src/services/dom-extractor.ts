@@ -1,8 +1,7 @@
 import type { InteractionType, ProfileData } from '../types/profile.js';
 
-interface UserProfileData extends ProfileData {
-  notificationType: 'user_interaction' | 'multi_user';
-}
+// Raw profile data without bot analysis
+type RawProfileData = Omit<ProfileData, 'botProbability'>;
 
 export class DOMExtractor {
   static readonly #SELECTORS = {
@@ -29,32 +28,10 @@ export class DOMExtractor {
     MENTION: /mentioned you|tagged you/i,
     QUOTE: /quoted your|quote tweeted/i,
     LIST: /added you to|created a list/i,
-    SPACE: /started a space|scheduled a space|space is starting/i,
-    BOT_PATTERNS: {
-      RANDOM_ALPHANUMERIC: /^[a-z0-9]{15,}$/,
-      MANY_NUMBERS: /[0-9]{8,}/,
-      BOT_KEYWORDS: /\b(bot|spam|scam|auto)\b|[0-9]{4,}[a-z]+[0-9]{4,}/i,
-      RANDOM_SUFFIX: /[a-z]+[0-9]{8,}$/,
-      NUMERIC_SUFFIX: /[0-9]{8,}$/,
-      RANDOM_LETTERS: /[A-Z]{4,}[0-9]{4,}/
-    }
+    SPACE: /started a space|scheduled a space|space is starting/i
   } as const;
 
-  #calculateBotProbability(username: string): number {
-    let score = 0;
-    const patterns = DOMExtractor.#PATTERNS.BOT_PATTERNS;
-
-    if (patterns.RANDOM_ALPHANUMERIC.test(username)) score += 0.3;
-    if (patterns.MANY_NUMBERS.test(username)) score += 0.2;
-    if (patterns.BOT_KEYWORDS.test(username)) score += 0.3;
-    if (patterns.RANDOM_SUFFIX.test(username)) score += 0.2;
-    if (patterns.NUMERIC_SUFFIX.test(username)) score += 0.2;
-    if (patterns.RANDOM_LETTERS.test(username)) score += 0.2;
-
-    return Math.min(score, 0.9);
-  }
-
-  public extractProfileData(element: HTMLElement): ProfileData | null {
+  public extractProfileData(element: HTMLElement): RawProfileData | null {
     try {
       if (element.classList.contains('xbd-warning')) return null;
 
@@ -96,7 +73,6 @@ export class DOMExtractor {
           const interactionType = this.#determineInteractionType(text);
           const isMultiUser = DOMExtractor.#PATTERNS.MULTI_USER.test(text);
           const notificationType = isMultiUser ? 'multi_user' : 'user_interaction';
-          const botProbability = this.#calculateBotProbability(username);
           const isVerified = !!link.querySelector(DOMExtractor.#SELECTORS.VERIFIED_ICON);
 
           let profileImageUrl = 'https://abs.twimg.com/sticky/default_profile_images/default_profile.png';
@@ -129,24 +105,14 @@ export class DOMExtractor {
             interactionTimestamp: Date.now(),
             interactionType,
             notificationType,
-            botProbability,
             isVerified
-          } satisfies UserProfileData;
+          } satisfies RawProfileData;
         })
-        .filter((user): user is UserProfileData => {
-          if (!user) return false;
-          user.notificationType = DOMExtractor.#PATTERNS.MULTI_USER.test(text)
-            ? 'multi_user'
-            : 'user_interaction';
-          return true;
-        });
+        .filter((user): user is RawProfileData => user !== null);
 
       if (!users.length) return null;
-
-      const userProfile = users[0];
-      if (!userProfile) return null;
-
-      return userProfile;
+      const firstUser = users[0];
+      return firstUser ?? null;
     } catch (error) {
       console.error('[XBot:DOM] Error extracting profile data:', error);
       return null;

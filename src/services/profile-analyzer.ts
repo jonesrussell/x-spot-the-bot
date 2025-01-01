@@ -1,5 +1,8 @@
 import type { BotAnalysis, ProfileData } from '../types/profile.js';
 
+// Raw profile data without bot analysis
+type RawProfileData = Omit<ProfileData, 'botProbability'>;
+
 export class ProfileAnalyzer {
   static readonly #BOT_PATTERNS = {
     RANDOM_ALPHANUMERIC: /^[a-z0-9]{15,}$/,
@@ -10,7 +13,7 @@ export class ProfileAnalyzer {
     RANDOM_LETTERS: /[A-Z]{4,}[0-9]{4,}/
   } as const;
 
-  public analyzeProfile(profile: ProfileData): BotAnalysis {
+  public analyzeProfile(profile: RawProfileData): BotAnalysis {
     const reasons: string[] = [];
     let probability = 0;
 
