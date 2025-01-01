@@ -1,6 +1,6 @@
 import type { BotAnalysis, ProfileData } from '../../types/profile.js';
-import { DOMExtractor } from '../dom-extractor.js';
-import { ProfileAnalyzer } from '../profile-analyzer.js';
+import { ProfileAnalyzer } from '../analysis/profile-analyzer.js';
+import { DOMExtractor } from '../dom/dom-extractor.js';
 import { StatsTracker } from '../stats/stats-tracker.js';
 import { StorageService } from '../storage.js';
 import { UIManager } from '../ui-manager.js';
@@ -27,10 +27,12 @@ export class NotificationProcessor {
   }
 
   public async processNotification(notification: HTMLElement): Promise<void> {
-    if (notification.hasAttribute('data-xbot-processed')) return;
+    if (notification.hasAttribute('data-xbot-processed')) {
+      return;
+    }
 
     const rawProfileData = this.#domExtractor.extractProfileData(notification);
-    if (!rawProfileData) {
+    if (rawProfileData === null) {
       notification.setAttribute('data-xbot-processed', 'true');
       return;
     }
@@ -40,7 +42,12 @@ export class NotificationProcessor {
       return;
     }
 
-    const analysis = await this.#profileAnalyzer.analyzeProfile(rawProfileData);
+    const probability = this.#profileAnalyzer.analyzeBotProbability(rawProfileData);
+    const analysis: BotAnalysis = {
+      username: rawProfileData.username,
+      probability,
+      reasons: []  // TODO: Get reasons from analyzer
+    };
     
     // Combine raw profile data with bot probability to create full ProfileData
     const profileData: ProfileData = {

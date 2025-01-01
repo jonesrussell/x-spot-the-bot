@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ProfileData } from '../../types/profile.js';
 import { StorageService } from '../storage.js';
 
+type StorageKey = string | string[] | Record<string, unknown>;
+
 describe('StorageService', () => {
   let storage: StorageService;
-  let mockStorage: { [key: string]: any };
+  let mockStorage: Record<string, ProfileData>;
 
   beforeEach(() => {
     mockStorage = {};
@@ -14,24 +16,28 @@ describe('StorageService', () => {
       },
       storage: {
         local: {
-          get: vi.fn((keys, callback) => {
-            const result: { [key: string]: any } = {};
-            if (typeof keys === 'string') {
-              result[keys] = mockStorage[keys];
-            } else if (Array.isArray(keys)) {
-              keys.forEach(key => {
-                result[key] = mockStorage[key];
+          get: vi.fn((_keys: StorageKey, callback: (_profiles: Record<string, ProfileData>) => void) => {
+            const matches: Record<string, ProfileData> = {};
+            if (typeof _keys === 'string' && mockStorage[_keys]) {
+              matches[_keys] = mockStorage[_keys];
+            } else if (Array.isArray(_keys)) {
+              _keys.forEach(key => {
+                if (mockStorage[key]) {
+                  matches[key] = mockStorage[key];
+                }
               });
             } else {
-              Object.assign(result, mockStorage);
+              Object.entries(mockStorage).forEach(([key, value]) => {
+                matches[key] = value;
+              });
             }
-            callback(result);
+            callback(matches);
           }),
-          set: vi.fn((items, callback) => {
+          set: vi.fn((items: Record<string, ProfileData>, callback: () => void) => {
             Object.assign(mockStorage, items);
             callback();
           }),
-          clear: vi.fn((callback) => {
+          clear: vi.fn((callback: () => void) => {
             mockStorage = {};
             callback();
           })
